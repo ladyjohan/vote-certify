@@ -1,0 +1,53 @@
+1. System Users and Roles
+
+Administrator/COMELEC Staff
+
+• Manages system settings, user accounts, and security
+
+• Generates reports (total requests, processed certificates)
+
+• Reviews and approves voter’s certificate requests
+
+• Manages request processing and preparation of certificates
+
+• Tracks pending, approved, and completed requests
+
+
+Registered Voters in Olongapo City
+
+• Create an account to request a voter’s certificate
+
+• Submits online requests
+
+• Updates personal information if required
+
+• Views request status and pick-up details
+
+• Upload a valid government-issued ID when requesting a certificate
+
+
+2. Key Features & Functionalities
+
+A. Voter’s Certificate Request System
+
+✅ New request submission for voter’s certificates
+✅ Request tracking (pending, approved, completed)
+✅ Secure authentication for registered voters
+
+B. User Management
+
+✅ Role-based access control (Administrator/COMELEC Staff and Voter)
+✅ Login/logout functionality & password recovery
+✅ Voter registration system with essential details
+
+
+C. Request Processing
+
+✅ COMELEC staff reviews and approves certificate requests.
+✅ Automated request status updates (pending, approved, ready for pickup).
+✅ Search and filter function for tracking requests.
+
+D. Reporting & Analytics
+
+✅ Report generation on total requests, completed certificates, and pending applications.
+✅ Dashboard for tracking request statistics.
