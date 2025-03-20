@@ -1,0 +1,40 @@
+.sidenav {
+  width: 250px;
+  height: 100vh;
+  background: #2c3e50;
+  color: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  transition: all 0.3s ease-in-out;
+
+  .logo {
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+
+    li {
+      padding: 15px;
+      transition: background 0.3s;
+
+      &:hover {
+        background: #34495e;
+      }
+
+      a {
+        color: white;
+        text-decoration: none;
+        display: block;
+      }
+    }
+  }
+}

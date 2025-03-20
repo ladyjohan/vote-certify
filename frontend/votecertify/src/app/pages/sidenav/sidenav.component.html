@@ -1,0 +1,18 @@
+<nav class="sidenav">
+  <div class="logo">VoteCertify</div>
+
+  <ul>
+    <li *ngIf="userRole === 'admin'">
+      <a routerLink="/admin-dashboard">Dashboard</a>
+    </li>
+    <li *ngIf="userRole === 'staff'">
+      <a routerLink="/staff-dashboard">Dashboard</a>
+    </li>
+    <li *ngIf="userRole === 'voter'">
+      <a routerLink="/voter-dashboard">Dashboard</a>
+    </li>
+    <li>
+      <a (click)="logout()">Logout</a>
+    </li>
+  </ul>
+</nav>

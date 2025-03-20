@@ -1,0 +1,39 @@
+<div class="auth-container register">
+  <div class="auth-box">
+    <img src="assets/logo.png" alt="VoteCertify Logo" class="logo watermark" />
+    <h2>Account Registration</h2>
+
+    <!-- Show error message if registration fails -->
+    <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
+
+    <form [formGroup]="registerForm" (ngSubmit)="register()">
+      <div class="input-group">
+        <i class="fas fa-user"></i>
+        <input type="text" placeholder="Full Name" formControlName="fullName" required />
+      </div>
+      <div class="input-group">
+        <i class="fas fa-id-card"></i>
+        <input type="text" placeholder="Voter’s Identification Number" formControlName="voterId"
+               pattern="\d{4}-\d{6}-\d{4}" required />
+      </div>
+      <div class="input-group">
+        <i class="fas fa-calendar-alt"></i>
+        <input type="date" formControlName="birthdate" required />
+      </div>
+      <div class="input-group">
+        <i class="fas fa-envelope"></i>
+        <input type="email" placeholder="Email Address" formControlName="email" required />
+      </div>
+      <div class="input-group">
+        <i class="fas fa-lock"></i>
+        <input type="password" placeholder="Password" formControlName="password" minlength="6" required />
+      </div>
+      <button type="submit" class="btn">
+        Register
+      </button>
+    </form>
+    <p class="login-text">
+      Already have an account? <a routerLink="/login">Log in</a>
+    </p>
+  </div>
+</div>
