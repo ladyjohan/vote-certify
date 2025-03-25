@@ -1,0 +1,15 @@
+.staff-layout {
+  display: flex;
+  height: 100vh;
+}
+
+.sidenav-container {
+  width: 250px; /* Adjust width of the sidenav */
+  background-color: #333;
+}
+
+.content-container {
+  flex-grow: 1;
+  padding: 20px;
+  background-color: #f4f4f4;
+}

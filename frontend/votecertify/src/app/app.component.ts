@@ -3,13 +3,13 @@ import { AuthService } from './services/auth.service';
 import { Router, NavigationEnd } from '@angular/router';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { SidenavComponent } from './pages/sidenav/sidenav.component';
 import { filter } from 'rxjs/operators';
+
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterModule, CommonModule, SidenavComponent],
+  imports: [RouterModule, CommonModule],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })

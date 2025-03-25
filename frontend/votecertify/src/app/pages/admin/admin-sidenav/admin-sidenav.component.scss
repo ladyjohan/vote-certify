@@ -1,0 +1,54 @@
+.sidenav {
+  width: 250px;
+  height: 100vh;
+  background-color: #1e1e2d;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+
+  .logo {
+    text-align: center;
+    img {
+      width: 150px;
+    }
+  }
+
+  nav ul {
+    list-style: none;
+    padding: 0;
+    flex-grow: 1;
+
+    li {
+      margin: 10px 0;
+
+      a, button {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        color: white;
+        text-decoration: none;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        width: 100%;
+        text-align: left;
+        border-radius: 5px;
+        transition: background 0.3s;
+
+        mat-icon {
+          margin-right: 10px;
+        }
+
+        &:hover {
+          background-color: #29293f;
+        }
+      }
+    }
+  }
+
+  .logout {
+    margin-top: auto;
+  }
+}

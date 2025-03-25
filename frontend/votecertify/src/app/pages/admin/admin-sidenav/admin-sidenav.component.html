@@ -1,0 +1,23 @@
+<aside class="sidenav">
+  <div class="logo">
+    <img src="assets/logo.png" alt="VoteCertify Logo" />
+  </div>
+
+  <nav>
+    <ul>
+      <li *ngFor="let link of adminNavLinks">
+        <a [routerLink]="link.route">
+          <mat-icon>{{ link.icon }}</mat-icon>
+          <span>{{ link.label }}</span>
+        </a>
+      </li>
+
+      <li class="logout">
+        <button (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Logout</span>
+        </button>
+      </li>
+    </ul>
+  </nav>
+</aside>

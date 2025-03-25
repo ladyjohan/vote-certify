@@ -1,12 +1,6 @@
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideRouter } from '@angular/router'; // ✅ Import provideRouter
 import { AppComponent } from './app/app.component';
-import { firebaseProviders } from './firebase-config';
-import { routes } from './app/app.routes'; // ✅ Import routes
+import { appConfig } from './app/app.config'; // ✅ Centralized providers & routing
 
-bootstrapApplication(AppComponent, {
-  providers: [
-    ...firebaseProviders,
-    provideRouter(routes), // ✅ Fix: Add router support
-  ],
-}).catch((err) => console.error("🔥 Firebase error:", err));
+bootstrapApplication(AppComponent, appConfig)
+  .catch((err) => console.error("🔥 App Bootstrapping Error:", err));

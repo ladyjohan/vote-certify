@@ -15,6 +15,7 @@ import { RouterModule } from '@angular/router';
 export class LoginComponent {
   loginForm: FormGroup;
   errorMessage = '';
+  loading = false; // ✅ Added to disable button when logging in
 
   constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
     this.loginForm = this.fb.group({
@@ -30,44 +31,17 @@ export class LoginComponent {
     }
 
     this.errorMessage = '';
+    this.loading = true; // ✅ Disable login button while processing
 
     const { email, password } = this.loginForm.value;
     try {
-      const userCredential = await this.authService.login(email, password);
-      const user = userCredential.user;
-
-      if (!user.emailVerified) {
-        await this.authService.logout();
-        this.errorMessage = 'Please verify your email before logging in.';
-        return;
-      }
-
-      // Ensure role is fetched properly
-      const role = await this.authService.getUserRole(user.uid);
-      if (!role) {
-        throw new Error('User role not found.');
-      }
-
+      await this.authService.login(email, password); // ✅ AuthService already handles redirection
       alert('Login successful!');
-
-      // Redirect based on role
-      switch (role) {
-        case 'voter':
-          this.router.navigate(['/voter-dashboard']);
-          break;
-        case 'staff':
-          this.router.navigate(['/staff-dashboard']);
-          break;
-        case 'admin':
-          this.router.navigate(['/admin-dashboard']);
-          break;
-        default:
-          this.router.navigate(['/']);
-      }
-
     } catch (error: any) {
-      this.errorMessage = 'Invalid credentials. Please try again.';
+      this.errorMessage = error.message || 'Login failed. Please try again.';
       console.error('Login error:', error);
+    } finally {
+      this.loading = false; // ✅ Re-enable login button
     }
   }
 }
