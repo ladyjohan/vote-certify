@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { RegisterComponent } from './pages/register/register.component';
 import { LoginComponent } from './pages/login/login.component';
+import { VerifyEmailComponent } from './pages/verify-email/verify-email.component'; // ✅ Import VerifyEmailComponent
 
 // Layout Components
 import { AdminLayoutComponent } from './pages/admin/admin-layout/admin-layout.component';
@@ -22,30 +23,29 @@ export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'register', component: RegisterComponent },
   { path: 'login', component: LoginComponent },
+  { path: 'verify-email', component: VerifyEmailComponent }, // ✅ Added Verify Email Route
 
-// Admin Routes (with AdminLayout)
-{
-  path: 'admin',
-  component: AdminLayoutComponent,
-  children: [
-    { path: 'dashboard', component: AdminDashboardComponent },
-    { path: 'request-overview', component: RequestOverviewComponent },
-    { path: 'user-management', component: AdminUserManagementComponent },  // Corrected path here
-  ],
-},
+  // Admin Routes (with AdminLayout)
+  {
+    path: 'admin',
+    component: AdminLayoutComponent,
+    children: [
+      { path: 'dashboard', component: AdminDashboardComponent },
+      { path: 'request-overview', component: RequestOverviewComponent },
+      { path: 'user-management', component: AdminUserManagementComponent },
+    ],
+  },
 
   // Staff Routes (with StaffLayout)
-// Staff Routes (with StaffLayout)
-{
-  path: 'staff',
-  component: StaffLayoutComponent,
-  children: [
-    { path: 'dashboard', component: StaffDashboardComponent },
-    { path: 'request-management', component: RequestManagementComponent },
-    { path: 'status-overview', component: StatusOverviewComponent },
-  ],
-},
-
+  {
+    path: 'staff',
+    component: StaffLayoutComponent,
+    children: [
+      { path: 'dashboard', component: StaffDashboardComponent },
+      { path: 'request-management', component: RequestManagementComponent },
+      { path: 'status-overview', component: StatusOverviewComponent },
+    ],
+  },
 
   // Voter Routes (with VoterLayout)
   {

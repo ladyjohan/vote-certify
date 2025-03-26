@@ -3,15 +3,15 @@ import {
   Auth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  sendEmailVerification,
   signOut,
   onAuthStateChanged,
   User,
   setPersistence,
   browserLocalPersistence
 } from '@angular/fire/auth';
-import { Firestore, doc, setDoc, getDoc } from '@angular/fire/firestore';
+import { Firestore, doc, setDoc, getDoc, updateDoc } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
+import emailjs from 'emailjs-com';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -21,11 +21,16 @@ export class AuthService {
   private zone = inject(NgZone);
   private user: User | null = null;
 
+  // ✅ EmailJS Configuration
+  private EMAIL_JS_SERVICE_ID = 'service_rrb00wy';
+  private EMAIL_JS_TEMPLATE_ID = 'template_vos13me';
+  private EMAIL_JS_PUBLIC_KEY = 'VrHsZ86VVPD_U6TsA';
+
   constructor() {
     this.initializeAuthState();
   }
 
-  /** ✅ Initialize Auth State (Ensure session persists) */
+  /** ✅ Initialize Auth State */
   private async initializeAuthState() {
     try {
       await setPersistence(this.auth, browserLocalPersistence);
@@ -37,24 +42,12 @@ export class AuthService {
           const userRole = await this.getUserRole(user.uid);
 
           if (userRole) {
-            console.log('🔄 User session valid. Keeping logged in.');
+            console.log('🔄 User session valid.');
             return;
           }
         } else {
-          console.warn('⚠️ No current user detected. Checking Firebase...');
-
-          // 🔥 Force-check Firebase for current user (synchronous)
-          setTimeout(async () => {
-            const currentUser = this.auth.currentUser;
-            if (currentUser) {
-              console.log('✅ User found after delay:', currentUser.email);
-              this.user = currentUser;
-              return;
-            }
-
-            console.log('⚠️ Still no user detected. Redirecting to login.');
-            this.router.navigate(['/login']);
-          }, 2000);
+          console.warn('⚠️ No current user detected. Redirecting to login.');
+          this.router.navigate(['/login']);
         }
       });
     } catch (error) {
@@ -62,13 +55,14 @@ export class AuthService {
     }
   }
 
-  /** ✅ Register a new voter & send verification email */
+  /** ✅ Register & Send Verification + Password via EmailJS */
   async register(fullName: string, voterId: string, birthdate: string, email: string, password: string) {
     try {
       const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
-      await sendEmailVerification(userCredential.user);
+      const uid = userCredential.user.uid;
+      const verificationLink = `http://localhost:4200/verify-email?email=${email}&uid=${uid}`;
 
-      await setDoc(doc(this.firestore, 'users', userCredential.user.uid), {
+      await setDoc(doc(this.firestore, 'users', uid), {
         fullName,
         voterId,
         birthdate,
@@ -77,6 +71,9 @@ export class AuthService {
         status: 'pending' // Pending until email verification
       });
 
+      console.log('✅ User registered successfully. Sending verification link & password...');
+      await this.sendVerificationAndPasswordEmail(fullName, email, password, verificationLink);
+
       return userCredential;
     } catch (error: any) {
       console.error('❌ Registration Error:', error.message);
@@ -84,10 +81,32 @@ export class AuthService {
     }
   }
 
+  /** ✅ Send Verification Link & Password via EmailJS */
+  private async sendVerificationAndPasswordEmail(name: string, email: string, password: string, verificationLink: string) {
+    const emailParams = {
+      name: name,
+      email: email,
+      user_password: password,
+      verification_link: verificationLink
+    };
+
+    try {
+      await emailjs.send(
+        this.EMAIL_JS_SERVICE_ID,
+        this.EMAIL_JS_TEMPLATE_ID,
+        emailParams,
+        this.EMAIL_JS_PUBLIC_KEY
+      );
+
+      console.log('✅ Verification & Password Email sent successfully to:', email);
+    } catch (error) {
+      console.error('❌ Error sending email:', error);
+    }
+  }
+
   /** ✅ Login user & ensure session persists */
   async login(email: string, password: string) {
     try {
-      // 🔥 Force set persistence to ensure session saving
       await setPersistence(this.auth, browserLocalPersistence);
 
       const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
@@ -106,14 +125,19 @@ export class AuthService {
 
       console.log('✅ User Role:', userRole);
 
+      // ✅ Skip email verification for Admin and Staff
       if (userRole === 'admin' || userRole === 'staff') {
         console.log('✅ Admin or Staff detected. Skipping email verification.');
       } else {
-        if (!user.emailVerified) {
+        const userRef = doc(this.firestore, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (!userSnap.exists() || userSnap.data()['status'] !== 'verified') {
           console.error('⚠️ Email not verified. Logging out.');
           await this.logout();
           throw new Error('Please verify your email before logging in.');
         }
+
         console.log('✅ Voter verified. Proceeding to dashboard.');
       }
 
@@ -154,43 +178,39 @@ export class AuthService {
     return new Promise((resolve) => {
       onAuthStateChanged(this.auth, (user) => {
         if (user) {
-          this.user = user; // ✅ Update only if a user exists
+          this.user = user;
           resolve(user);
         } else {
-          console.warn('⚠️ No current user detected, but not logging out immediately.');
           resolve(null);
         }
       });
     });
   }
 
-  /** ✅ Fetch user role from Firestore (Retries up to 3 times) */
-  async getUserRole(uid: string, retries = 3): Promise<string | null> {
+  /** ✅ Fetch user role from Firestore */
+  async getUserRole(uid: string): Promise<string | null> {
     try {
       const userRef = doc(this.firestore, 'users', uid);
       const userSnap = await getDoc(userRef);
 
       if (userSnap.exists()) {
-        const role = userSnap.data()['role'];
-        console.log('✅ Role Retrieved:', role);
-        return role;
+        return userSnap.data()['role'];
       }
-
-      console.warn(`⚠️ No role found for UID: ${uid}. Retries left: ${retries}`);
-
-      if (retries > 0) {
-        return new Promise((resolve) => {
-          setTimeout(async () => {
-            resolve(await this.getUserRole(uid, retries - 1));
-          }, 2000);
-        });
-      }
-
-      console.error('❌ User role could not be retrieved after multiple attempts.');
       return null;
-    } catch (error: any) {
+    } catch (error) {
       console.error('❌ Error fetching user role:', error);
       return null;
+    }
+  }
+
+  /** ✅ Verify Email in Firestore */
+  async verifyEmail(uid: string) {
+    try {
+      const userRef = doc(this.firestore, 'users', uid);
+      await updateDoc(userRef, { status: 'verified' });
+      console.log('✅ Email verified in Firestore.');
+    } catch (error) {
+      console.error('❌ Error verifying email:', error);
     }
   }
 
@@ -200,7 +220,6 @@ export class AuthService {
       console.log('⚠️ Logging out user:', this.user?.email);
       await signOut(this.auth);
 
-      // 🔥 Ensure Firebase session is fully cleared
       this.user = null;
       localStorage.clear();
       sessionStorage.clear();
