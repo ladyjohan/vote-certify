@@ -21,14 +21,7 @@
   </div>
 
   <!-- Search Box -->
-  <div class="search-box">
-    <input
-      type="text"
-      [(ngModel)]="searchQuery"
-      placeholder="Search Users..."
-      (input)="filterUsers()"
-    />
-  </div>
+
 
   <!-- User Table -->
   <table *ngIf="filteredUsers.length > 0" class="user-table">
