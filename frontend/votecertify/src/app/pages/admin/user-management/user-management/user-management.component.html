@@ -34,9 +34,6 @@
             <button class="btn btn-warning" (click)="disableAccount(user.id)" *ngIf="user.status === 'pending'">
               Disable Account
             </button>
-            <button class="btn btn-info" (click)="resendVerificationEmail(user)" *ngIf="user.status === 'pending'">
-              Resend Email
-            </button>
           </ng-container>
           <ng-template #noAction>
             <span class="text-muted">No Actions Available</span>

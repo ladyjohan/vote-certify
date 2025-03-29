@@ -31,7 +31,7 @@ export class AdminUserManagementComponent implements OnInit {
   isAdmin = false;
 
   private EMAIL_JS_SERVICE_ID = 'service_rrb00wy';
-  private EMAIL_JS_TEMPLATE_ID = 'template_vos13me';
+  private EMAIL_JS_TEMPLATE_ID = 'template_8j29e0p';
   private EMAIL_JS_PUBLIC_KEY = 'VrHsZ86VVPD_U6TsA';
 
   constructor(private firestore: Firestore, private toastr: ToastrService) {}
@@ -66,51 +66,67 @@ export class AdminUserManagementComponent implements OnInit {
     }
   }
 
+  async updateStaffStatus(userId: string) {
+    const auth = getAuth();
+    const user = auth.currentUser;
+  
+    if (user && user.emailVerified) {
+      try {
+        const userDocRef = doc(this.firestore, 'users', userId);
+        await updateDoc(userDocRef, { status: 'verified' }); // ✅ Update status
+        console.log('✅ Staff status updated to "verified" in Firestore.');
+      } catch (error) {
+        console.error('❌ Error updating staff status:', error);
+      }
+    }
+  }
+  
   /**
    * Add a new Staff or Admin
    */
   async addStaff() {
     if (!this.isAdmin) return;
-
+  
     const auth = getAuth();
     const password = this.selectedRole === 'staff' ? '123456' : this.staffPassword;
-
+  
     try {
-      // Create user in Firebase Authentication
+      // ✅ Create staff account in Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(auth, this.staffEmail, password);
-      const userId = userCredential.user.uid;
-
-      // Save user details in Firestore
-      const userDocRef = doc(this.firestore, 'users', userId);
-      await setDoc(userDocRef, {
+      const uid = userCredential.user.uid;
+      const verificationLink = `http://localhost:4200/verify-email?uid=${uid}`;
+  
+      // ✅ Save staff details in Firestore with 'pending' status
+      await setDoc(doc(this.firestore, 'users', uid), {
         email: this.staffEmail,
         role: this.selectedRole,
-        status: 'pending',
+        status: 'pending' // Staff must verify email first
       });
-
-      // Send verification email via EmailJS
-      await this.sendVerificationEmail(this.staffEmail, password);
-
-      this.toastr.success(`${this.selectedRole} account created & email sent.`);
+  
+      // ✅ Send verification email with password
+      await this.sendVerificationAndPasswordEmail(this.staffEmail, password, verificationLink);
+  
+      this.toastr.success(`${this.selectedRole} account created. Verification email sent.`);
       this.staffEmail = '';
       this.staffPassword = '';
       await this.loadUsers();
     } catch (error) {
-      this.toastr.error('Error creating account.');
+      this.toastr.error('Error creating staff account.');
       console.error('❌ Error:', error);
     }
   }
-
+  
+  
   /**
    * Send verification email with password
    */
-  async sendVerificationEmail(email: string, password: string) {
+  private async sendVerificationAndPasswordEmail(email: string, password: string, verificationLink: string) {
     const emailParams = {
       email: email,
       user_password: password,
-      verification_link: `http://localhost:4200/verify-email?email=${email}`,
+      verification_link: verificationLink
     };
-
+  
     try {
       await emailjs.send(
         this.EMAIL_JS_SERVICE_ID,
@@ -118,11 +134,13 @@ export class AdminUserManagementComponent implements OnInit {
         emailParams,
         this.EMAIL_JS_PUBLIC_KEY
       );
-      console.log('✅ Email sent successfully');
+  
+      console.log('✅ Verification & Password Email sent successfully to:', email);
     } catch (error) {
-      console.error('❌ Email sending error:', error);
+      console.error('❌ Error sending email:', error);
     }
   }
+  
 
   /**
    * Load Admin and Staff users from Firestore
@@ -152,16 +170,6 @@ export class AdminUserManagementComponent implements OnInit {
       await this.loadUsers();
     } catch (error) {
       this.toastr.error('Error disabling account.');
-      console.error('❌ Error:', error);
-    }
-  }
-
-  async resendVerificationEmail(user: User) {
-    try {
-      await this.sendVerificationEmail(user.email, "123456");
-      this.toastr.info('Verification email resent.');
-    } catch (error) {
-      this.toastr.error('Error resending email.');
       console.error('❌ Error:', error);
     }
   }
