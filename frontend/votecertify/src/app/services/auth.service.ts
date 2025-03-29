@@ -129,13 +129,21 @@ export class AuthService {
       if (userRole === 'admin' || userRole === 'staff') {
         console.log('✅ Admin or Staff detected. Skipping email verification.');
       } else {
+        await user.reload(); // Ensure latest verification status
+
         const userRef = doc(this.firestore, 'users', user.uid);
         const userSnap = await getDoc(userRef);
 
-        if (!userSnap.exists() || userSnap.data()['status'] !== 'verified') {
+        if (!user.emailVerified) {
           console.error('⚠️ Email not verified. Logging out.');
           await this.logout();
           throw new Error('Please verify your email before logging in.');
+        }
+
+        if (!userSnap.exists() || userSnap.data()['status'] !== 'verified') {
+          console.error('⚠️ Account verification issue. Logging out.');
+          await this.logout();
+          throw new Error('Your account verification is pending. Please contact support.');
         }
 
         console.log('✅ Voter verified. Proceeding to dashboard.');
@@ -212,7 +220,7 @@ export class AuthService {
     } catch (error) {
       console.error('❌ Error verifying email:', error);
     }
-  }
+  }  
 
   /** ✅ Log out user */
   async logout() {

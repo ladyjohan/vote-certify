@@ -1,76 +1,107 @@
-.user-management {
-  padding: 20px;
-}
 
-.header {
+
+h2 {
+  text-align: center;
+  color: #333;
   margin-bottom: 20px;
 }
 
-.add-staff-form {
+/* Add Staff/Admin Form */
+.add-user-form {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
   margin-bottom: 20px;
+
+  input,
+  select,
+  button {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+  }
+
+  input {
+    width: 250px;
+  }
+
+  select {
+    width: 120px;
+    background: #fff;
+    cursor: pointer;
+  }
+
+  button {
+    background: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+
+    &:hover {
+      background: #0056b3;
+    }
+  }
 }
 
-.add-staff-form input {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.add-staff-form button {
-  padding: 8px 16px;
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.add-staff-form button:hover {
-  background-color: #45a049;
-}
-
-.search-box {
-  margin-bottom: 20px;
-}
-
-.search-box input {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  width: 200px;
-}
-
-.user-table {
+/* Table */
+.table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+
+  th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+
+  th {
+    background: #007bff;
+    color: #fff;
+  }
+
+  tr:hover {
+    background: #f5f5f5;
+  }
 }
 
-.user-table th,
-.user-table td {
-  padding: 12px;
-  border: 1px solid #ddd;
-  text-align: left;
-}
-
-.user-table th {
-  background-color: #f4f4f4;
-}
-
-button {
-  padding: 6px 12px;
-  margin-right: 5px;
-  border-radius: 4px;
+/* Buttons */
+.btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
   cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  
+  &.btn-warning {
+    background: #ffc107;
+    color: #333;
+
+    &:hover {
+      background: #e0a800;
+    }
+  }
+
+  &.btn-info {
+    background: #17a2b8;
+    color: #fff;
+
+    &:hover {
+      background: #138496;
+    }
+  }
 }
 
-button:hover {
-  opacity: 0.8;
-}
-
-button:nth-child(1) {
-  background-color: #f44336; /* Remove Button */
-  color: white;
+/* No Actions Available */
+.text-muted {
+  color: #888;
+  font-size: 14px;
 }
