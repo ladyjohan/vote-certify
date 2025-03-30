@@ -1,48 +1,103 @@
 .sidenav {
   width: 250px;
   height: 100vh;
-  background-color: #003FCB;
+  background: linear-gradient(180deg, #003FCB 0%, #001F6D 100%);
   color: white;
   display: flex;
   flex-direction: column;
   padding: 20px;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.2);
 
   .logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     text-align: center;
+    width: 90%;
+    margin-bottom: 20px;
+
     img {
       width: 150px;
+      height: auto;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .admin-name {
+      font-size: 16px;
+      font-weight: 600;
+      margin-top: 10px;
+      color: #f0f0f0;
+      text-align: center;
+      text-transform: capitalize;
     }
   }
 
-  nav ul {
-    list-style: none;
-    padding: 0;
-    flex-grow: 1;
+  nav {
+    width: 100%;
+    margin-top: 10px;
 
-    li {
-      margin: 10px 0;
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      width: 100%;
 
-      a, button {
-        display: flex;
-        align-items: center;
-        padding: 10px;
-        color: white;
-        text-decoration: none;
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-size: 16px;
+      li {
         width: 100%;
-        text-align: left;
-        border-radius: 5px;
-        transition: background 0.3s;
+        margin-bottom: 10px;
 
-        mat-icon {
-          margin-right: 10px;
+        a, button {
+          display: flex;
+          align-items: center;
+          padding: 12px 18px;
+          color: white;
+          text-decoration: none;
+          background: none;
+          border: none;
+          cursor: pointer;
+          font-size: 16px;
+          width: calc(100% + 20px); // Add space on right for hover effect
+          text-align: left;
+          border-radius: 8px;
+          transition: all 0.3s ease-in-out;
+          position: relative;
+          overflow: hidden;
+
+          mat-icon {
+            margin-right: 15px;
+            font-size: 22px;
+          }
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            font-weight: 600;
+          }
+
+          &::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 5px;
+            background-color: white;
+            transform: scaleY(0);
+            transition: transform 0.3s ease-in-out;
+          }
+
+          &:hover::before {
+            transform: scaleY(1);
+          }
         }
 
-        &:hover {
-          background-color: #29293f;
+        &.active {
+          a, button {
+            background: rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            font-weight: 600;
+          }
         }
       }
     }
@@ -50,5 +105,51 @@
 
   .logout {
     margin-top: auto;
+    width: 100%;
+
+    button {
+      display: flex;
+      align-items: center;
+      padding: 12px 18px;
+      color: white;
+      text-decoration: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      width: calc(100% + 20px); // Same as nav items
+      text-align: left;
+      border-radius: 8px;
+      transition: all 0.3s ease-in-out;
+      position: relative;
+      overflow: hidden;
+
+      mat-icon {
+        margin-right: 15px;
+        font-size: 22px;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        font-weight: 600;
+      }
+
+      &::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 5px;
+        background-color: white;
+        transform: scaleY(0);
+        transition: transform 0.3s ease-in-out;
+      }
+
+      &:hover::before {
+        transform: scaleY(1);
+      }
+    }
   }
 }

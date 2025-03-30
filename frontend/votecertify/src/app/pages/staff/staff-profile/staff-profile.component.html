@@ -1,0 +1,18 @@
+<div class="profile-container">
+  <h2>User Settings</h2>
+
+  <h3>Name</h3>
+  <p>{{ displayName }}</p>
+
+  <h3>Email</h3>
+  <p>{{ email }}</p>
+
+  <h3>Change Password</h3>
+  <label>Current Password</label>
+  <input type="password" [(ngModel)]="currentPassword">
+
+  <label>New Password</label>
+  <input type="password" [(ngModel)]="newPassword">
+
+  <button (click)="changePassword()">Change Password</button>
+</div>

@@ -4,8 +4,13 @@
   <!-- Add Staff/Admin -->
   <div class="add-user-form">
     <input type="email" [(ngModel)]="staffEmail" placeholder="Enter staff/admin email">
+
+    <!-- Staff Name Input (Only visible when selecting "Staff") -->
+    <input *ngIf="selectedRole === 'staff'" type="text" [(ngModel)]="staffName" placeholder="Enter staff name">
+
+    <!-- Password Input (Only visible for Admin) -->
     <input *ngIf="selectedRole === 'admin'" type="password" [(ngModel)]="staffPassword" placeholder="Enter password">
-    
+
     <select [(ngModel)]="selectedRole">
       <option value="staff">Staff</option>
       <option value="admin">Admin</option>
@@ -18,6 +23,7 @@
   <table class="table">
     <thead>
       <tr>
+        <th>Name</th> <!-- Added Name Column -->
         <th>Email</th>
         <th>Role</th>
         <th>Status</th>
@@ -26,6 +32,7 @@
     </thead>
     <tbody>
       <tr *ngFor="let user of users">
+        <td>{{ user.name }}</td> <!-- Display Name -->
         <td>{{ user.email }}</td>
         <td>{{ user.role }}</td>
         <td>{{ user.status }}</td>

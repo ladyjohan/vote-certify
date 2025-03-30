@@ -9,6 +9,7 @@ import { ToastrService } from 'ngx-toastr';
 // Define User Interface
 interface User {
   id: string;
+  name: string;
   email: string;
   role: string;
   status: string;
@@ -22,6 +23,7 @@ interface User {
   imports: [CommonModule, FormsModule],
 })
 export class AdminUserManagementComponent implements OnInit {
+  staffName: string = '';
   staffEmail: string = '';
   staffPassword: string = '';
   selectedRole: string = 'staff'; // Default role
@@ -98,11 +100,15 @@ export class AdminUserManagementComponent implements OnInit {
       const userStatus = this.selectedRole === 'admin' ? 'verified' : 'pending';
 
       // Save staff/admin details in Firestore
+      const userName = this.selectedRole === 'admin' ? 'Admin' : this.staffName; // Set name based on role
+
       await setDoc(doc(this.firestore, 'users', uid), {
         email: this.staffEmail,
         role: this.selectedRole,
-        status: userStatus // Admin = "verified", Staff = "pending"
+        status: userStatus, // Admin = "verified", Staff = "pending"
+        name: userName // Added name field
       });
+
 
       // Send verification email only for Staff
       if (this.selectedRole === 'staff') {
@@ -148,14 +154,22 @@ export class AdminUserManagementComponent implements OnInit {
     const querySnapshot = await getDocs(usersCollectionRef);
 
     this.users = querySnapshot.docs
-      .map(doc => ({ id: doc.id, ...doc.data() } as User))
+    .map(doc => {
+      const data = doc.data() as User;
+      return {
+        id: doc.id,
+        name: data.name || '', // Ensure name is included
+        email: data.email,
+        role: data.role,
+        status: data.status
+      };
+    })
       .filter(user => user.role === 'admin' || user.role === 'staff'); // Only show Admin & Staff
 
     this.filteredUsers = this.users;
   }
 
   //Disable an unverified account
-
   async disableAccount(userId: string) {
     const confirmDisable = confirm("Are you sure you want to disable this account?");
     if (!confirmDisable) return;
@@ -170,6 +184,9 @@ export class AdminUserManagementComponent implements OnInit {
         return;
       }
 
+      const userData = userDocSnap.data() as { name?: string };
+      console.log(`Disabling account: ${userData.name} (${userId})`);
+
       await updateDoc(userDocRef, { status: 'disabled' });
       this.toastr.warning('Account disabled successfully.');
       await this.loadUsers();
@@ -178,5 +195,4 @@ export class AdminUserManagementComponent implements OnInit {
       console.error('❌ Error:', error);
     }
   }
-
 }
