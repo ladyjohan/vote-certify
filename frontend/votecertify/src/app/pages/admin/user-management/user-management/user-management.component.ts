@@ -41,9 +41,8 @@ export class AdminUserManagementComponent implements OnInit {
     await this.loadUsers();
   }
 
-  /**
-   * Check if logged-in user is an Admin
-   */
+  // Check if logged-in user is an Admin
+
   async checkAdminRole() {
     const auth = getAuth();
     const user = auth.currentUser;
@@ -69,7 +68,7 @@ export class AdminUserManagementComponent implements OnInit {
   async updateStaffStatus(userId: string) {
     const auth = getAuth();
     const user = auth.currentUser;
-  
+
     if (user && user.emailVerified) {
       try {
         const userDocRef = doc(this.firestore, 'users', userId);
@@ -80,53 +79,54 @@ export class AdminUserManagementComponent implements OnInit {
       }
     }
   }
-  
-  /**
-   * Add a new Staff or Admin
-   */
+
+  // Add a new Staff or Admin
   async addStaff() {
     if (!this.isAdmin) return;
-  
+
     const auth = getAuth();
     const password = this.selectedRole === 'staff' ? '123456' : this.staffPassword;
-  
+
     try {
-      // ✅ Create staff account in Firebase Authentication
+      // Create staff/admin account in Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(auth, this.staffEmail, password);
-      const uid = userCredential.user.uid;
+      const user = userCredential.user;
+      const uid = user.uid;
       const verificationLink = `http://localhost:4200/verify-email?uid=${uid}`;
-  
-      // ✅ Save staff details in Firestore with 'pending' status
+
+      // Set status based on role
+      const userStatus = this.selectedRole === 'admin' ? 'verified' : 'pending';
+
+      // Save staff/admin details in Firestore
       await setDoc(doc(this.firestore, 'users', uid), {
         email: this.staffEmail,
         role: this.selectedRole,
-        status: 'pending' // Staff must verify email first
+        status: userStatus // Admin = "verified", Staff = "pending"
       });
-  
-      // ✅ Send verification email with password
-      await this.sendVerificationAndPasswordEmail(this.staffEmail, password, verificationLink);
-  
-      this.toastr.success(`${this.selectedRole} account created. Verification email sent.`);
+
+      // Send verification email only for Staff
+      if (this.selectedRole === 'staff') {
+        await this.sendVerificationAndPasswordEmail(this.staffEmail, password, verificationLink);
+      }
+
+      this.toastr.success(`${this.selectedRole} account created successfully.`);
       this.staffEmail = '';
       this.staffPassword = '';
       await this.loadUsers();
     } catch (error) {
-      this.toastr.error('Error creating staff account.');
+      this.toastr.error('Error creating staff/admin account.');
       console.error('❌ Error:', error);
     }
   }
-  
-  
-  /**
-   * Send verification email with password
-   */
+
+  //Send verification email with password
   private async sendVerificationAndPasswordEmail(email: string, password: string, verificationLink: string) {
     const emailParams = {
       email: email,
       user_password: password,
       verification_link: verificationLink
     };
-  
+
     try {
       await emailjs.send(
         this.EMAIL_JS_SERVICE_ID,
@@ -134,17 +134,15 @@ export class AdminUserManagementComponent implements OnInit {
         emailParams,
         this.EMAIL_JS_PUBLIC_KEY
       );
-  
+
       console.log('✅ Verification & Password Email sent successfully to:', email);
     } catch (error) {
       console.error('❌ Error sending email:', error);
     }
   }
-  
 
-  /**
-   * Load Admin and Staff users from Firestore
-   */
+
+  // Load Admin and Staff users from Firestore
   async loadUsers() {
     const usersCollectionRef = collection(this.firestore, 'users');
     const querySnapshot = await getDocs(usersCollectionRef);
@@ -156,16 +154,23 @@ export class AdminUserManagementComponent implements OnInit {
     this.filteredUsers = this.users;
   }
 
-  /**
-   * Disable an unverified account
-   */
+  //Disable an unverified account
 
   async disableAccount(userId: string) {
     const confirmDisable = confirm("Are you sure you want to disable this account?");
     if (!confirmDisable) return;
 
     try {
-      await updateDoc(doc(this.firestore, 'users', userId), { status: 'disabled' });
+      const userDocRef = doc(this.firestore, 'users', userId);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (!userDocSnap.exists()) {
+        this.toastr.error('User does not exist.');
+        console.error('❌ Error: User document not found in Firestore.');
+        return;
+      }
+
+      await updateDoc(userDocRef, { status: 'disabled' });
       this.toastr.warning('Account disabled successfully.');
       await this.loadUsers();
     } catch (error) {
@@ -173,4 +178,5 @@ export class AdminUserManagementComponent implements OnInit {
       console.error('❌ Error:', error);
     }
   }
+
 }
