@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@types/tinycolor2": "^1.4.6",
+    "tinycolor2": "^1.6.0"
+  }
+}
