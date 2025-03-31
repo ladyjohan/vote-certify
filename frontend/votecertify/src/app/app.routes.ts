@@ -11,7 +11,7 @@ import { VoterLayoutComponent } from './pages/voter/voter-layout/voter-layout.co
 // Page Components
 import { DashboardComponent as VoterDashboardComponent } from './pages/voter/dashboard/dashboard/dashboard.component';
 import { AdminDashboardComponent } from './pages/admin/dashboard/dashboard/dashboard.component';
-import { DashboardComponent as StaffDashboardComponent } from './pages/staff/dashboard/dashboard/dashboard.component';
+import { StaffDashboardComponent } from './pages/staff/dashboard/dashboard/dashboard.component';
 import { RequestFormComponent } from './pages/voter/request-form/request-form/request-form.component';
 import { CertificateStatusComponent } from './pages/voter/certificate-status/certificate-status/certificate-status.component';
 import { RequestManagementComponent } from './pages/staff/request-management/request-management/request-management.component';

@@ -3,34 +3,34 @@ import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { importProvidersFrom } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 
-// ✅ Firebase Imports
+// Firebase Imports
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 
-// ✅ ngx-toastr & Animations
+// ngx-toastr & Animations
 import { provideToastr } from 'ngx-toastr';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
-// ✅ App Routes
+// App Routes
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    // ✅ Required for animations & Toastr
+    // Required for animations & Toastr
     provideAnimations(),
     provideToastr(), // Enables Toast Notifications
 
-    // ✅ Enables Reactive Forms globally
+    // Enables Reactive Forms globally
     importProvidersFrom(ReactiveFormsModule),
 
-    // ✅ Optimizes Zone.js change detection
+    // Optimizes Zone.js change detection
     provideZoneChangeDetection({ eventCoalescing: true }),
 
-    // ✅ Router Configuration
+    // Router Configuration
     provideRouter(routes, withComponentInputBinding()),
 
-    // ✅ Firebase Configuration
+    // Firebase Configuration
     provideFirebaseApp(() =>
       initializeApp({
         projectId: "vote-certify-5e2ee",

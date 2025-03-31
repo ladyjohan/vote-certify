@@ -1,6 +1,8 @@
 {
   "dependencies": {
     "@types/tinycolor2": "^1.4.6",
+    "chart.js": "^4.4.8",
+    "ng2-charts": "^8.0.0",
     "tinycolor2": "^1.6.0"
   }
 }
