@@ -1,0 +1,153 @@
+/* Updated SCSS with matching class names */
+
+.request-management-container {
+  padding: 2rem;
+  font-family: Arial, sans-serif;
+  color: #333;
+
+  .title {
+    color: #f7c300;
+    text-shadow: 1px 1px 0 #000;
+    font-weight: bold;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .request-card {
+    background: white;
+    border: 10px solid #ffd73a;
+    border-radius: 15px;
+    padding: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+    .request-table {
+      width: 100%;
+      border-collapse: collapse;
+
+      th {
+        background: #002d9b;
+        color: white;
+        text-align: left;
+        padding: 0.75rem;
+        font-weight: bold;
+      }
+
+      td {
+        background: #e6e6e6;
+        padding: 0.75rem;
+      }
+
+      .actions {
+        display: flex;
+        gap: 0.5rem;
+
+        .view {
+          padding: 0.5rem;
+          background-color: #f7c300;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+        }
+      }
+    }
+
+    .no-requests {
+      padding: 1rem;
+      text-align: center;
+      font-style: italic;
+      color: #666;
+    }
+  }
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+
+  .modal {
+    background: #fff;
+    border-radius: 12px;
+    padding: 2rem;
+    width: 450px;
+    max-width: 90%;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+
+    h3 {
+      margin-top: 0;
+      color: #002d9b;
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .details p,
+    .attachments p,
+    .attachments a {
+      margin: 0.5rem 0;
+    }
+
+    .attachments a {
+      display: inline-block;
+      color: #0050b3;
+      text-decoration: none;
+      font-weight: bold;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    .remarks {
+      margin-top: 1rem;
+
+      textarea {
+        width: 100%;
+        min-height: 80px;
+        padding: 0.5rem;
+        font-size: 0.95rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        resize: vertical;
+      }
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1.5rem;
+
+      button {
+        flex: 1;
+        margin: 0 0.25rem;
+        padding: 0.6rem 1rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+
+        &.approve {
+          background-color: #4caf50;
+          color: white;
+        }
+
+        &.decline {
+          background-color: #f44336;
+          color: white;
+        }
+
+        &.close {
+          background-color: #888;
+          color: white;
+        }
+      }
+    }
+  }
+}
