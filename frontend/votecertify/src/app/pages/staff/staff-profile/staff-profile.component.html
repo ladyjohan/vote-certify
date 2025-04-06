@@ -1,18 +1,55 @@
 <div class="profile-container">
   <h2>User Settings</h2>
 
-  <h3>Name</h3>
-  <p>{{ displayName }}</p>
+  <div class="info-group">
+    <label>Name</label>
+    <p>{{ displayName }}</p>
+  </div>
 
-  <h3>Email</h3>
-  <p>{{ email }}</p>
+  <div class="info-group">
+    <label>Email</label>
+    <p>{{ email }}</p>
+  </div>
 
   <h3>Change Password</h3>
-  <label>Current Password</label>
-  <input type="password" [(ngModel)]="currentPassword">
 
-  <label>New Password</label>
-  <input type="password" [(ngModel)]="newPassword">
+  <!-- Current Password -->
+  <div class="form-group">
+    <label>Current Password <span class="required">*</span></label>
+    <div class="input-wrapper">
+      <input [type]="showCurrentPassword ? 'text' : 'password'" [(ngModel)]="currentPassword" placeholder="Enter current password">
+      <button type="button" class="toggle-btn" (click)="toggleVisibility('current')">
+        <i class="material-icons">{{ showCurrentPassword ? 'visibility_off' : 'visibility' }}</i>
+      </button>
+    </div>
+  </div>
 
-  <button (click)="changePassword()">Change Password</button>
+  <!-- New Password -->
+  <div class="form-group">
+    <label>New Password <span class="required">*</span></label>
+    <div class="input-wrapper">
+      <input [type]="showNewPassword ? 'text' : 'password'" [(ngModel)]="newPassword" (input)="checkPasswordStrength()" placeholder="Enter new password">
+      <button type="button" class="toggle-btn" (click)="toggleVisibility('new')">
+        <i class="material-icons">{{ showNewPassword ? 'visibility_off' : 'visibility' }}</i>
+      </button>
+    </div>
+    <div class="strength" *ngIf="newPassword">
+      <small [ngStyle]="{ color: passwordStrengthColor }">Password Strength: {{ passwordStrength }}</small>
+    </div>
+  </div>
+
+  <!-- Confirm Password -->
+  <div class="form-group">
+    <label>Confirm New Password <span class="required">*</span></label>
+    <div class="input-wrapper">
+      <input [type]="showConfirmPassword ? 'text' : 'password'" [(ngModel)]="confirmPassword" placeholder="Re-enter new password">
+      <button type="button" class="toggle-btn" (click)="toggleVisibility('confirm')">
+        <i class="material-icons">{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</i>
+      </button>
+    </div>
+  </div>
+
+  <button class="submit-btn" (click)="confirmChangePassword()" [disabled]="loading">
+    {{ loading ? 'Processing...' : 'Change Password' }}
+  </button>
 </div>
