@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { getAuth, createUserWithEmailAndPassword, deleteUser } from '@angular/fire/auth';  // Add deleteUser import
+import { getAuth, createUserWithEmailAndPassword, deleteUser, initializeAuth, browserLocalPersistence, browserPopupRedirectResolver } from '@angular/fire/auth';
+import { FirebaseApp, provideFirebaseApp, initializeApp } from '@angular/fire/app';
+import { environment } from '../../../../../environments/environment'; // Adjust this path based on your setup
 import { Firestore, doc, setDoc, collection, getDocs, getDoc, updateDoc, deleteDoc } from '@angular/fire/firestore'; // Add deleteDoc import
 import { FormsModule } from '@angular/forms';
 import emailjs from 'emailjs-com';
@@ -83,47 +85,52 @@ export class AdminUserManagementComponent implements OnInit {
 
   // Add a new Staff or Admin
   async addStaff() {
-    if (!this.isAdmin) return;  // Ensure only admins can add users
-
-    const auth = getAuth();  // Get the Firebase Auth instance
-    const password = this.selectedRole === 'staff' ? '123456' : this.staffPassword;  // Default password for staff
-
+    if (!this.isAdmin) return;
+  
+    const password = this.selectedRole === 'staff' ? '123456' : this.staffPassword;
+  
     try {
-      // Step 1: Create a new user with the email and password
-      const userCredential = await createUserWithEmailAndPassword(auth, this.staffEmail, password);
-      const user = userCredential.user;  // Get the newly created user object
-      const uid = user.uid;  // Extract the user's UID
-
-      // Step 2: Save the user details to Firestore (users collection)
-      const userStatus = this.selectedRole === 'admin' ? 'verified' : 'pending';  // Set status based on role
-      const userName = this.selectedRole === 'admin' ? 'Admin' : this.staffName;  // Set name based on role
-
+      // ✅ 1. Create secondary app instance to preserve admin session
+      const secondaryApp = initializeApp(environment.firebaseConfig, 'Secondary');
+      const secondaryAuth = initializeAuth(secondaryApp, {
+        persistence: browserLocalPersistence,
+        popupRedirectResolver: browserPopupRedirectResolver,
+      });
+  
+      // ✅ 2. Create the user on the secondary auth instance
+      const userCredential = await createUserWithEmailAndPassword(secondaryAuth, this.staffEmail, password);
+      const user = userCredential.user;
+      const uid = user.uid;
+  
+      // ✅ 3. Sign out the secondary auth instance immediately
+      await secondaryAuth.signOut();
+  
+      // ✅ 4. Save user to Firestore
+      const userStatus = this.selectedRole === 'admin' ? 'verified' : 'pending';
+      const userName = this.selectedRole === 'admin' ? 'Admin' : this.staffName;
+  
       await setDoc(doc(this.firestore, 'users', uid), {
         email: this.staffEmail,
         role: this.selectedRole,
-        status: userStatus,  // Admin = "verified", Staff = "pending"
-        name: userName  // Added name field
+        status: userStatus,
+        name: userName,
       });
-
-      // Step 3: Optionally send a verification email for staff (if role is staff)
+  
+      // ✅ 5. Send email if staff
       if (this.selectedRole === 'staff') {
         const verificationLink = `http://localhost:4200/verify-email?uid=${uid}`;
         await this.sendVerificationAndPasswordEmail(this.staffEmail, password, verificationLink);
       }
-
-      // Step 4: Don't sign out the current user. The current session remains intact.
-
+  
       this.toastr.success(`${this.selectedRole} account created successfully.`);
-      this.staffEmail = '';  // Clear the email input
-      this.staffPassword = '';  // Clear the password input
-      await this.loadUsers();  // Reload users list
-
+      this.staffEmail = '';
+      this.staffPassword = '';
+      await this.loadUsers();
     } catch (error) {
-      // If an error occurs, show an error message
       this.toastr.error('Error creating staff/admin account.');
       console.error('❌ Error:', error);
     }
-  }
+  }  
 
   //Send verification email with password
   private async sendVerificationAndPasswordEmail(email: string, password: string, verificationLink: string) {
