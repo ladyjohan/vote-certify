@@ -5,7 +5,6 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 
-
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -36,12 +35,12 @@ export class AppComponent implements OnInit {
 
           // ✅ Redirect only if not already on the correct page
           const currentRoute = this.router.url;
-          if (role === 'voter' && currentRoute !== '/voter-dashboard') {
-            this.router.navigate(['/voter-dashboard']);
-          } else if (role === 'staff' && currentRoute !== '/staff-dashboard') {
-            this.router.navigate(['/staff-dashboard']);
-          } else if (role === 'admin' && currentRoute !== '/admin-dashboard') {
-            this.router.navigate(['/admin-dashboard']);
+          if (role === 'voter' && currentRoute !== '/voter/dashboard') {
+            this.router.navigate(['/voter/dashboard']);
+          } else if (role === 'staff' && currentRoute !== '/staff/dashboard') {
+            this.router.navigate(['/staff/dashboard']);
+          } else if (role === 'admin' && currentRoute !== '/admin/dashboard') {
+            this.router.navigate(['/admin/dashboard']);
           }
         } else {
           this.router.navigate(['/login']); // Default fallback

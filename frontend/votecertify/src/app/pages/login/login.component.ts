@@ -18,7 +18,6 @@ export class LoginComponent {
   errorMessage: string = '';
   loading = false;
 
-  // ✅ Use AngularFire's DI (Dependency Injection)
   private auth: Auth = inject(Auth);
   private firestore: Firestore = inject(Firestore);
 
@@ -33,11 +32,10 @@ export class LoginComponent {
     });
   }
 
-  // ✅ Update Firestore Status After Email Verification
   async updateStaffStatus(userId: string) {
     try {
       const userDocRef = doc(this.firestore, 'users', userId);
-      await setDoc(userDocRef, { status: 'verified' }, { merge: true }); // ✅ Merge fields safely
+      await setDoc(userDocRef, { status: 'verified' }, { merge: true });
       console.log('✅ Staff status updated to "verified" in Firestore.');
     } catch (error) {
       console.error('❌ Error updating staff status:', error);
@@ -49,50 +47,54 @@ export class LoginComponent {
       this.toastr.error('Please enter a valid email and password.', 'Login Failed');
       return;
     }
-  
+
     this.errorMessage = '';
     this.loading = true;
     const { email, password } = this.loginForm.value;
-  
+
     try {
       const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
       const user = userCredential.user;
-  
-      // ✅ Reload user data to get the latest email verification status
+
       await user.reload();
-  
-      // ✅ Fetch user data from Firestore
+
       const userDocRef = doc(this.firestore, 'users', user.uid);
       const userDocSnap = await getDoc(userDocRef);
-  
+
       if (userDocSnap.exists()) {
         const userData = userDocSnap.data();
         const userRole = userData['role'];
-        let userStatus = userData['status']; // Firestore status
-  
+        let userStatus = userData['status'];
+
         console.log(`🔍 Firestore User Status: ${userStatus}`);
-  
+
+        // ❌ Block login if status is "disabled"
+        if (userStatus === 'disabled') {
+          this.toastr.error('Your account has been disabled. Please contact the administrator.', 'Access Denied');
+          await signOut(this.auth);
+          return;
+        }
+
+        // ✅ Admin skips email verification
         if (userRole === 'admin') {
           console.log('✅ Admin detected. Skipping email verification check.');
         } else if (userRole === 'staff' || userRole === 'voter') {
-          // ✅ If Firestore status is still "pending" but email is verified, update it
           if (user.emailVerified && userStatus !== 'verified') {
             console.log('⏳ Updating Firestore status to "verified"...');
             await setDoc(userDocRef, { status: 'verified' }, { merge: true });
             userStatus = 'verified';
           }
-  
-          // ✅ Block login if Firestore status is still "pending"
+
           if (userStatus !== 'verified') {
             this.toastr.warning('Please verify your email before logging in.', 'Email Not Verified');
             await signOut(this.auth);
             return;
           }
         }
-  
+
         this.toastr.success('Welcome back!', 'Login Successful');
-  
-        // ✅ Redirect user based on role
+
+        // ✅ Route based on role
         if (userRole === 'admin') {
           this.router.navigate(['/admin/dashboard']);
         } else if (userRole === 'staff') {
@@ -109,7 +111,7 @@ export class LoginComponent {
       }
     } catch (error: any) {
       console.error('Login Error:', error);
-  
+
       if (error.code === 'auth/user-not-found') {
         this.errorMessage = 'No account found with this email.';
       } else if (error.code === 'auth/wrong-password') {
@@ -119,10 +121,10 @@ export class LoginComponent {
       } else {
         this.errorMessage = 'Login failed. Please check your credentials.';
       }
-  
+
       this.toastr.error(this.errorMessage, 'Login Failed');
     } finally {
       this.loading = false;
     }
-  }  
+  }
 }

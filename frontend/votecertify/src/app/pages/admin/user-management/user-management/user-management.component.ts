@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { getAuth, createUserWithEmailAndPassword } from '@angular/fire/auth';
-import { Firestore, doc, setDoc, collection, getDocs, getDoc, updateDoc } from '@angular/fire/firestore';
+import { getAuth, createUserWithEmailAndPassword, deleteUser } from '@angular/fire/auth';  // Add deleteUser import
+import { Firestore, doc, setDoc, collection, getDocs, getDoc, updateDoc, deleteDoc } from '@angular/fire/firestore'; // Add deleteDoc import
 import { FormsModule } from '@angular/forms';
 import emailjs from 'emailjs-com';
 import { ToastrService } from 'ngx-toastr';
@@ -44,7 +44,6 @@ export class AdminUserManagementComponent implements OnInit {
   }
 
   // Check if logged-in user is an Admin
-
   async checkAdminRole() {
     const auth = getAuth();
     const user = auth.currentUser;
@@ -84,42 +83,43 @@ export class AdminUserManagementComponent implements OnInit {
 
   // Add a new Staff or Admin
   async addStaff() {
-    if (!this.isAdmin) return;
+    if (!this.isAdmin) return;  // Ensure only admins can add users
 
-    const auth = getAuth();
-    const password = this.selectedRole === 'staff' ? '123456' : this.staffPassword;
+    const auth = getAuth();  // Get the Firebase Auth instance
+    const password = this.selectedRole === 'staff' ? '123456' : this.staffPassword;  // Default password for staff
 
     try {
-      // Create staff/admin account in Firebase Authentication
+      // Step 1: Create a new user with the email and password
       const userCredential = await createUserWithEmailAndPassword(auth, this.staffEmail, password);
-      const user = userCredential.user;
-      const uid = user.uid;
-      const verificationLink = `http://localhost:4200/verify-email?uid=${uid}`;
+      const user = userCredential.user;  // Get the newly created user object
+      const uid = user.uid;  // Extract the user's UID
 
-      // Set status based on role
-      const userStatus = this.selectedRole === 'admin' ? 'verified' : 'pending';
-
-      // Save staff/admin details in Firestore
-      const userName = this.selectedRole === 'admin' ? 'Admin' : this.staffName; // Set name based on role
+      // Step 2: Save the user details to Firestore (users collection)
+      const userStatus = this.selectedRole === 'admin' ? 'verified' : 'pending';  // Set status based on role
+      const userName = this.selectedRole === 'admin' ? 'Admin' : this.staffName;  // Set name based on role
 
       await setDoc(doc(this.firestore, 'users', uid), {
         email: this.staffEmail,
         role: this.selectedRole,
-        status: userStatus, // Admin = "verified", Staff = "pending"
-        name: userName // Added name field
+        status: userStatus,  // Admin = "verified", Staff = "pending"
+        name: userName  // Added name field
       });
 
-
-      // Send verification email only for Staff
+      // Step 3: Optionally send a verification email for staff (if role is staff)
       if (this.selectedRole === 'staff') {
+        const verificationLink = `http://localhost:4200/verify-email?uid=${uid}`;
         await this.sendVerificationAndPasswordEmail(this.staffEmail, password, verificationLink);
       }
 
+      // Step 4: Don't sign out the current user. The current session remains intact.
+
       this.toastr.success(`${this.selectedRole} account created successfully.`);
-      this.staffEmail = '';
-      this.staffPassword = '';
-      await this.loadUsers();
+      this.staffEmail = '';  // Clear the email input
+      this.staffPassword = '';  // Clear the password input
+      await this.loadUsers();  // Reload users list
+
     } catch (error) {
+      // If an error occurs, show an error message
       this.toastr.error('Error creating staff/admin account.');
       console.error('❌ Error:', error);
     }
@@ -147,7 +147,6 @@ export class AdminUserManagementComponent implements OnInit {
     }
   }
 
-
   // Load Admin and Staff users from Firestore
   async loadUsers() {
     const usersCollectionRef = collection(this.firestore, 'users');
@@ -169,7 +168,7 @@ export class AdminUserManagementComponent implements OnInit {
     this.filteredUsers = this.users;
   }
 
-  //Disable an unverified account
+  // Disable an account
   async disableAccount(userId: string) {
     const confirmDisable = confirm("Are you sure you want to disable this account?");
     if (!confirmDisable) return;
@@ -180,18 +179,68 @@ export class AdminUserManagementComponent implements OnInit {
 
       if (!userDocSnap.exists()) {
         this.toastr.error('User does not exist.');
-        console.error('❌ Error: User document not found in Firestore.');
         return;
       }
 
       const userData = userDocSnap.data() as { name?: string };
-      console.log(`Disabling account: ${userData.name} (${userId})`);
-
       await updateDoc(userDocRef, { status: 'disabled' });
       this.toastr.warning('Account disabled successfully.');
       await this.loadUsers();
     } catch (error) {
       this.toastr.error('Error disabling account.');
+      console.error('❌ Error:', error);
+    }
+  }
+
+  // Enable a disabled account
+  async enableAccount(userId: string) {
+    const confirmEnable = confirm("Are you sure you want to enable this account?");
+    if (!confirmEnable) return;
+
+    try {
+      const userDocRef = doc(this.firestore, 'users', userId);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (!userDocSnap.exists()) {
+        this.toastr.error('User does not exist.');
+        return;
+      }
+
+      await updateDoc(userDocRef, { status: 'verified' });
+      this.toastr.success('Account enabled successfully.');
+      await this.loadUsers();
+    } catch (error) {
+      this.toastr.error('Error enabling account.');
+      console.error('❌ Error:', error);
+    }
+  }
+
+
+  async deleteAccount(userId: string) {
+    const confirmDelete = confirm("Are you sure you want to delete this account?");
+    if (!confirmDelete) return;
+
+    try {
+      // Get the user document reference from Firestore
+      const userDocRef = doc(this.firestore, 'users', userId);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (!userDocSnap.exists()) {
+        this.toastr.error('User does not exist.');
+        return;
+      }
+
+      // Delete the user document from Firestore
+      await deleteDoc(userDocRef);
+
+      this.toastr.success('Account deleted successfully.');
+
+      // Update the frontend by removing the deleted user from the users array
+      this.users = this.users.filter(user => user.id !== userId);
+      this.filteredUsers = this.filteredUsers.filter(user => user.id !== userId);
+
+    } catch (error) {
+      this.toastr.error('Error deleting account.');
       console.error('❌ Error:', error);
     }
   }

@@ -23,7 +23,7 @@
   <table class="table">
     <thead>
       <tr>
-        <th>Name</th> <!-- Added Name Column -->
+        <th>Name</th>
         <th>Email</th>
         <th>Role</th>
         <th>Status</th>
@@ -31,20 +31,27 @@
       </tr>
     </thead>
     <tbody>
+      <!-- Loop through the users array -->
       <tr *ngFor="let user of users">
-        <td>{{ user.name }}</td> <!-- Display Name -->
+        <td>{{ user.name }}</td>
         <td>{{ user.email }}</td>
         <td>{{ user.role }}</td>
         <td>{{ user.status }}</td>
         <td>
-          <ng-container *ngIf="user.status !== 'verified'; else noAction">
-            <button class="btn btn-warning" (click)="disableAccount(user.id)" *ngIf="user.status === 'pending'">
-              Disable Account
-            </button>
+          <!-- Actions based on the user's status -->
+          <ng-container *ngIf="user.status === 'pending'">
+            <button class="btn btn-danger" (click)="deleteAccount(user.id)">Delete</button>
           </ng-container>
-          <ng-template #noAction>
-            <span class="text-muted">No Actions Available</span>
-          </ng-template>
+
+          <!-- Show Disable button only for verified accounts -->
+          <ng-container *ngIf="user.status === 'verified'">
+            <button class="btn btn-warning" (click)="disableAccount(user.id)">Disable</button>
+          </ng-container>
+
+          <!-- Show Enable button only for disabled accounts -->
+          <ng-container *ngIf="user.status === 'disabled'">
+            <button class="btn btn-success" (click)="enableAccount(user.id)">Enable</button>
+          </ng-container>
         </td>
       </tr>
     </tbody>
