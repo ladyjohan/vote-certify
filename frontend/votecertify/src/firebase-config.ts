@@ -1,25 +1,19 @@
-import { Injectable } from '@angular/core';
-import { inject } from '@angular/core';
 import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
 import { provideAuth, getAuth } from '@angular/fire/auth';
 import { provideFirestore, getFirestore, Firestore } from '@angular/fire/firestore';
 import { environment } from './environments/environment';
-import { getDoc, doc } from 'firebase/firestore';
+import { getDoc, doc } from '@angular/fire/firestore';
 
-// ✅ Set up Firebase providers correctly for Angular
+// ✅ Set up Firebase providers correctly
 export const firebaseProviders = [
   provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
   provideAuth(() => getAuth()),
   provideFirestore(() => getFirestore())
 ];
 
-@Injectable({
-  providedIn: 'root'
-})
 export class ExampleService {
-  private firestore: Firestore = inject(Firestore); // ✅ Inject Firestore service
+  private firestore: Firestore = getFirestore(); // ✅ Initialize Firestore properly
 
-  // ✅ Get a Firestore document by collection name and document ID
   async getDocument(collection: string, id: string): Promise<any> {
     try {
       const docRef = doc(this.firestore, collection, id);

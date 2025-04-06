@@ -31,62 +31,55 @@ export class AuthService {
   }
 
   /** ✅ Initialize Auth State */
-/** ✅ Initialize Auth State */
-private async initializeAuthState() {
-  try {
-    // Set persistence once
-    await setPersistence(this.auth, browserLocalPersistence);
+  private async initializeAuthState() {
+    try {
+      await setPersistence(this.auth, browserLocalPersistence);
 
-    onAuthStateChanged(this.auth, async (user) => {
-      if (user) {
-        console.log('✅ User authenticated:', user.email);
-        this.user = user;
-        const userRole = await this.getUserRole(user.uid);
+      onAuthStateChanged(this.auth, async (user) => {
+        if (user) {
+          console.log('✅ User authenticated:', user.email);
+          this.user = user;
+          const userRole = await this.getUserRole(user.uid);
 
-        if (userRole) {
-          console.log('🔄 User session valid.');
-          return;
+          if (userRole) {
+            console.log('🔄 User session valid.');
+            return;
+          }
+        } else {
+          console.warn('⚠️ No current user detected. Redirecting to login.');
+          this.router.navigate(['/login']);
         }
-      } else {
-        console.warn('⚠️ No current user detected. Redirecting to login.');
-        this.router.navigate(['/login']);
-      }
-    });
-  } catch (error) {
-    console.error('❌ Error setting auth persistence:', error);
+      });
+    } catch (error) {
+      console.error('❌ Error setting auth persistence:', error);
+    }
   }
-}
-
-
 
   /** ✅ Register & Send Verification + Password via EmailJS */
-async register(fullName: string, voterId: string, birthdate: string, email: string, password: string) {
-  try {
-    const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
-    const uid = userCredential.user.uid;
-    const verificationLink = `http://localhost:4200/verify-email?email=${email}&uid=${uid}`;
+  async register(fullName: string, voterId: string, birthdate: string, email: string, password: string) {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
+      const uid = userCredential.user.uid;
+      const verificationLink = `http://localhost:4200/verify-email?email=${email}&uid=${uid}`;
 
-    // Set the user data in Firestore after successful registration
-    await setDoc(doc(this.firestore, 'users', uid), {
-      fullName,
-      voterId,
-      birthdate,
-      email,
-      role: 'voter',
-      status: 'pending' // Pending until email verification
-    });
+      await setDoc(doc(this.firestore, 'users', uid), {
+        fullName,
+        voterId,
+        birthdate,
+        email,
+        role: 'voter',
+        status: 'pending' // Pending until email verification
+      });
 
-    console.log('✅ User registered successfully. Sending verification link & password...');
-    await this.sendVerificationAndPasswordEmail(fullName, email, password, verificationLink);
+      console.log('✅ User registered successfully. Sending verification link & password...');
+      await this.sendVerificationAndPasswordEmail(fullName, email, password, verificationLink);
 
-    // Don't log the user out, just return the userCredential
-    return userCredential;
-  } catch (error: any) {
-    console.error('❌ Registration Error:', error.message);
-    throw new Error(error.message || 'Registration failed. Please try again.');
+      return userCredential;
+    } catch (error: any) {
+      console.error('❌ Registration Error:', error.message);
+      throw new Error(error.message || 'Registration failed. Please try again.');
+    }
   }
-}
-
 
   /** ✅ Send Verification Link & Password via EmailJS */
   private async sendVerificationAndPasswordEmail(name: string, email: string, password: string, verificationLink: string) {
@@ -227,7 +220,7 @@ async register(fullName: string, voterId: string, birthdate: string, email: stri
     } catch (error) {
       console.error('❌ Error verifying email:', error);
     }
-  }
+  }  
 
   /** ✅ Log out user */
   async logout() {
