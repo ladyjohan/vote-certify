@@ -15,6 +15,7 @@ export class StaffDashboardComponent implements OnInit {
   forApproval: number = 0;
   onProcess: number = 0;
   totalProcessed: number = 0;
+  declinedRequests: number = 0;  // Declined requests counter
   chart: any;
 
   constructor(private firestore: Firestore) {}
@@ -43,6 +44,11 @@ export class StaffDashboardComponent implements OnInit {
     const totalProcessedQuery = query(requestsRef, where('status', '==', 'Completed'));
     const totalProcessedSnapshot = await getDocs(totalProcessedQuery);
     this.totalProcessed = totalProcessedSnapshot.size;
+
+    // Declined Requests: Requests where status is 'Declined'
+    const declinedRequestsQuery = query(requestsRef, where('status', '==', 'Declined'));
+    const declinedRequestsSnapshot = await getDocs(declinedRequestsQuery);
+    this.declinedRequests = declinedRequestsSnapshot.size;
   }
 
   // Fetch the total requests this month for the bar graph
