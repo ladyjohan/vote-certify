@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { getAuth, createUserWithEmailAndPassword, deleteUser } from '@angular/fire/auth';  // Add deleteUser import
+import { getAuth, createUserWithEmailAndPassword, deleteUser } from '@angular/fire/auth'; // Add deleteUser import
 import { Firestore, doc, setDoc, collection, getDocs, getDoc, updateDoc, deleteDoc } from '@angular/fire/firestore'; // Add deleteDoc import
 import { FormsModule } from '@angular/forms';
 import emailjs from 'emailjs-com';
 import { ToastrService } from 'ngx-toastr';
+import { inject } from '@angular/core';
 
 // Define User Interface
 interface User {
@@ -36,7 +37,11 @@ export class AdminUserManagementComponent implements OnInit {
   private EMAIL_JS_TEMPLATE_ID = 'template_8j29e0p';
   private EMAIL_JS_PUBLIC_KEY = 'VrHsZ86VVPD_U6TsA';
 
-  constructor(private firestore: Firestore, private toastr: ToastrService) {}
+  // Inject Firestore and Auth via Angular Dependency Injection
+  private firestore: Firestore = inject(Firestore);
+  private auth = getAuth(); // Firebase Auth instance
+
+  constructor(private toastr: ToastrService) {}
 
   async ngOnInit() {
     await this.checkAdminRole();
@@ -45,8 +50,7 @@ export class AdminUserManagementComponent implements OnInit {
 
   // Check if logged-in user is an Admin
   async checkAdminRole() {
-    const auth = getAuth();
-    const user = auth.currentUser;
+    const user = this.auth.currentUser;
     if (user) {
       const userDocRef = doc(this.firestore, 'users', user.uid);
       const userDocSnap = await getDoc(userDocRef);
@@ -66,10 +70,9 @@ export class AdminUserManagementComponent implements OnInit {
     }
   }
 
+  // Update staff status to 'verified'
   async updateStaffStatus(userId: string) {
-    const auth = getAuth();
-    const user = auth.currentUser;
-
+    const user = this.auth.currentUser;
     if (user && user.emailVerified) {
       try {
         const userDocRef = doc(this.firestore, 'users', userId);
@@ -84,48 +87,46 @@ export class AdminUserManagementComponent implements OnInit {
   // Add a new Staff or Admin
   async addStaff() {
     if (!this.isAdmin) return;  // Ensure only admins can add users
-
-    const auth = getAuth();  // Get the Firebase Auth instance
+  
     const password = this.selectedRole === 'staff' ? '123456' : this.staffPassword;  // Default password for staff
-
+  
     try {
       // Step 1: Create a new user with the email and password
-      const userCredential = await createUserWithEmailAndPassword(auth, this.staffEmail, password);
+      const userCredential = await createUserWithEmailAndPassword(this.auth, this.staffEmail, password);
       const user = userCredential.user;  // Get the newly created user object
       const uid = user.uid;  // Extract the user's UID
-
+  
       // Step 2: Save the user details to Firestore (users collection)
       const userStatus = this.selectedRole === 'admin' ? 'verified' : 'pending';  // Set status based on role
       const userName = this.selectedRole === 'admin' ? 'Admin' : this.staffName;  // Set name based on role
-
+  
       await setDoc(doc(this.firestore, 'users', uid), {
         email: this.staffEmail,
         role: this.selectedRole,
         status: userStatus,  // Admin = "verified", Staff = "pending"
         name: userName  // Added name field
       });
-
+  
       // Step 3: Optionally send a verification email for staff (if role is staff)
       if (this.selectedRole === 'staff') {
         const verificationLink = `http://localhost:4200/verify-email?uid=${uid}`;
         await this.sendVerificationAndPasswordEmail(this.staffEmail, password, verificationLink);
       }
-
-      // Step 4: Don't sign out the current user. The current session remains intact.
-
+  
+      // Step 4: Ensure that no signOut or session reset happens here
       this.toastr.success(`${this.selectedRole} account created successfully.`);
       this.staffEmail = '';  // Clear the email input
       this.staffPassword = '';  // Clear the password input
       await this.loadUsers();  // Reload users list
-
+  
     } catch (error) {
       // If an error occurs, show an error message
       this.toastr.error('Error creating staff/admin account.');
       console.error('❌ Error:', error);
     }
   }
-
-  //Send verification email with password
+  
+  // Send verification email with password
   private async sendVerificationAndPasswordEmail(email: string, password: string, verificationLink: string) {
     const emailParams = {
       email: email,
@@ -163,7 +164,7 @@ export class AdminUserManagementComponent implements OnInit {
         status: data.status
       };
     })
-      .filter(user => user.role === 'admin' || user.role === 'staff'); // Only show Admin & Staff
+    .filter(user => user.role === 'admin' || user.role === 'staff'); // Only show Admin & Staff
 
     this.filteredUsers = this.users;
   }
@@ -215,7 +216,7 @@ export class AdminUserManagementComponent implements OnInit {
     }
   }
 
-
+  // Delete a user account
   async deleteAccount(userId: string) {
     const confirmDelete = confirm("Are you sure you want to delete this account?");
     if (!confirmDelete) return;
