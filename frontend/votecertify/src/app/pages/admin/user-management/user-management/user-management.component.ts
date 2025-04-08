@@ -7,6 +7,7 @@ import { Firestore, doc, setDoc, collection, getDocs, getDoc, updateDoc, deleteD
 import { FormsModule } from '@angular/forms';
 import emailjs from 'emailjs-com';
 import { ToastrService } from 'ngx-toastr';
+import Swal from 'sweetalert2';
 
 // Define User Interface
 interface User {
@@ -28,7 +29,7 @@ export class AdminUserManagementComponent implements OnInit {
   staffName: string = '';
   staffEmail: string = '';
   staffPassword: string = '';
-  selectedRole: string = 'staff'; // Default role
+  selectedRole: string = 'staff';
   users: User[] = [];
   filteredUsers: User[] = [];
   searchQuery: string = '';
@@ -86,9 +87,9 @@ export class AdminUserManagementComponent implements OnInit {
   // Add a new Staff or Admin
   async addStaff() {
     if (!this.isAdmin) return;
-  
+
     const password = this.selectedRole === 'staff' ? '123456' : this.staffPassword;
-  
+
     try {
       // ✅ 1. Create secondary app instance to preserve admin session
       const secondaryApp = initializeApp(environment.firebaseConfig, 'Secondary');
@@ -96,32 +97,32 @@ export class AdminUserManagementComponent implements OnInit {
         persistence: browserLocalPersistence,
         popupRedirectResolver: browserPopupRedirectResolver,
       });
-  
+
       // ✅ 2. Create the user on the secondary auth instance
       const userCredential = await createUserWithEmailAndPassword(secondaryAuth, this.staffEmail, password);
       const user = userCredential.user;
       const uid = user.uid;
-  
+
       // ✅ 3. Sign out the secondary auth instance immediately
       await secondaryAuth.signOut();
-  
+
       // ✅ 4. Save user to Firestore
       const userStatus = this.selectedRole === 'admin' ? 'verified' : 'pending';
       const userName = this.selectedRole === 'admin' ? 'Admin' : this.staffName;
-  
+
       await setDoc(doc(this.firestore, 'users', uid), {
         email: this.staffEmail,
         role: this.selectedRole,
         status: userStatus,
         name: userName,
       });
-  
+
       // ✅ 5. Send email if staff
       if (this.selectedRole === 'staff') {
         const verificationLink = `http://localhost:4200/verify-email?uid=${uid}`;
         await this.sendVerificationAndPasswordEmail(this.staffEmail, password, verificationLink);
       }
-  
+
       this.toastr.success(`${this.selectedRole} account created successfully.`);
       this.staffEmail = '';
       this.staffPassword = '';
@@ -130,7 +131,7 @@ export class AdminUserManagementComponent implements OnInit {
       this.toastr.error('Error creating staff/admin account.');
       console.error('❌ Error:', error);
     }
-  }  
+  }
 
   //Send verification email with password
   private async sendVerificationAndPasswordEmail(email: string, password: string, verificationLink: string) {
@@ -175,80 +176,100 @@ export class AdminUserManagementComponent implements OnInit {
     this.filteredUsers = this.users;
   }
 
-  // Disable an account
-  async disableAccount(userId: string) {
-    const confirmDisable = confirm("Are you sure you want to disable this account?");
-    if (!confirmDisable) return;
+   // Disable an account with SweetAlert2
+   async disableAccount(userId: string) {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You are about to disable this account.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, disable it!',
+      cancelButtonText: 'Cancel'
+    });
 
-    try {
-      const userDocRef = doc(this.firestore, 'users', userId);
-      const userDocSnap = await getDoc(userDocRef);
+    if (result.isConfirmed) {
+      try {
+        const userDocRef = doc(this.firestore, 'users', userId);
+        const userDocSnap = await getDoc(userDocRef);
 
-      if (!userDocSnap.exists()) {
-        this.toastr.error('User does not exist.');
-        return;
+        if (!userDocSnap.exists()) {
+          this.toastr.error('User does not exist.');
+          return;
+        }
+
+        const userData = userDocSnap.data() as { name?: string };
+        await updateDoc(userDocRef, { status: 'disabled' });
+        this.toastr.warning('Account disabled successfully.');
+        await this.loadUsers();
+      } catch (error) {
+        this.toastr.error('Error disabling account.');
+        console.error('❌ Error:', error);
       }
-
-      const userData = userDocSnap.data() as { name?: string };
-      await updateDoc(userDocRef, { status: 'disabled' });
-      this.toastr.warning('Account disabled successfully.');
-      await this.loadUsers();
-    } catch (error) {
-      this.toastr.error('Error disabling account.');
-      console.error('❌ Error:', error);
     }
   }
 
-  // Enable a disabled account
+  // Enable a disabled account with SweetAlert2
   async enableAccount(userId: string) {
-    const confirmEnable = confirm("Are you sure you want to enable this account?");
-    if (!confirmEnable) return;
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You are about to enable this account.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, enable it!',
+      cancelButtonText: 'Cancel'
+    });
 
-    try {
-      const userDocRef = doc(this.firestore, 'users', userId);
-      const userDocSnap = await getDoc(userDocRef);
+    if (result.isConfirmed) {
+      try {
+        const userDocRef = doc(this.firestore, 'users', userId);
+        const userDocSnap = await getDoc(userDocRef);
 
-      if (!userDocSnap.exists()) {
-        this.toastr.error('User does not exist.');
-        return;
+        if (!userDocSnap.exists()) {
+          this.toastr.error('User does not exist.');
+          return;
+        }
+
+        await updateDoc(userDocRef, { status: 'verified' });
+        this.toastr.success('Account enabled successfully.');
+        await this.loadUsers();
+      } catch (error) {
+        this.toastr.error('Error enabling account.');
+        console.error('❌ Error:', error);
       }
-
-      await updateDoc(userDocRef, { status: 'verified' });
-      this.toastr.success('Account enabled successfully.');
-      await this.loadUsers();
-    } catch (error) {
-      this.toastr.error('Error enabling account.');
-      console.error('❌ Error:', error);
     }
   }
 
-
+  // Delete account with SweetAlert2
   async deleteAccount(userId: string) {
-    const confirmDelete = confirm("Are you sure you want to delete this account?");
-    if (!confirmDelete) return;
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You are about to permanently delete this account.",
+      icon: 'error',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel'
+    });
 
-    try {
-      // Get the user document reference from Firestore
-      const userDocRef = doc(this.firestore, 'users', userId);
-      const userDocSnap = await getDoc(userDocRef);
+    if (result.isConfirmed) {
+      try {
+        const userDocRef = doc(this.firestore, 'users', userId);
+        const userDocSnap = await getDoc(userDocRef);
 
-      if (!userDocSnap.exists()) {
-        this.toastr.error('User does not exist.');
-        return;
+        if (!userDocSnap.exists()) {
+          this.toastr.error('User does not exist.');
+          return;
+        }
+
+        await deleteDoc(userDocRef);
+
+        this.toastr.success('Account deleted successfully.');
+
+        this.users = this.users.filter(user => user.id !== userId);
+        this.filteredUsers = this.filteredUsers.filter(user => user.id !== userId);
+      } catch (error) {
+        this.toastr.error('Error deleting account.');
+        console.error('❌ Error:', error);
       }
-
-      // Delete the user document from Firestore
-      await deleteDoc(userDocRef);
-
-      this.toastr.success('Account deleted successfully.');
-
-      // Update the frontend by removing the deleted user from the users array
-      this.users = this.users.filter(user => user.id !== userId);
-      this.filteredUsers = this.filteredUsers.filter(user => user.id !== userId);
-
-    } catch (error) {
-      this.toastr.error('Error deleting account.');
-      console.error('❌ Error:', error);
     }
   }
 }
