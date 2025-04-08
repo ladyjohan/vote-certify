@@ -29,23 +29,36 @@
   </div>
 </div>
 
+<!-- Spinner Modal -->
+<div class="spinner-backdrop" *ngIf="isLoadingDetails">
+  <div class="spinner-modal">
+    <div class="spinner-circle"></div>
+  </div>
+</div>
+
 <!-- Modal -->
-<div class="modal-backdrop" *ngIf="selectedRequest">
+<div class="modal-backdrop" *ngIf="selectedRequest && !isLoadingDetails">
   <div class="modal">
     <h3>Request Details</h3>
 
     <div class="details">
       <p><strong>Name:</strong> {{ selectedRequest.fullName }}</p>
-      <p><strong>ID:</strong> {{ selectedRequest.voterId }}</p>
+      <p><strong>Voter Identification Number:</strong> {{ selectedRequest.voterId }}</p>
       <p><strong>Purpose:</strong> {{ selectedRequest.purpose }}</p>
     </div>
 
     <div class="attachments">
-      <p><strong>Attachment 1:</strong></p>
-      <a [href]="selectedRequest.attachment1Url" target="_blank" rel="noopener">📄 View Document 1</a>
+      <p><strong>Gov ID:</strong></p>
+      <img *ngIf="selectedRequest.attachment1Url"
+           [src]="selectedRequest.attachment1Url"
+           alt="Gov ID"
+           style="max-width: 100%; border: 1px solid #ccc; margin-bottom: 10px;" />
 
-      <p><strong>Attachment 2:</strong></p>
-      <a [href]="selectedRequest.attachment2Url" target="_blank" rel="noopener">📄 View Document 2</a>
+      <p><strong>Selfie:</strong></p>
+      <img *ngIf="selectedRequest.attachment2Url"
+           [src]="selectedRequest.attachment2Url"
+           alt="Selfie"
+           style="max-width: 100%; border: 1px solid #ccc;" />
     </div>
 
     <div class="modal-actions">

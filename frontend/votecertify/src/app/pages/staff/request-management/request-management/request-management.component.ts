@@ -3,6 +3,7 @@ import { Firestore, collection, getDocs, query, where, doc, updateDoc } from '@a
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
+import { SupabaseService } from '../../../../services/supabase.service';
 
 @Component({
   selector: 'app-request-management',
@@ -15,7 +16,10 @@ export class RequestManagementComponent implements OnInit {
   pendingRequests: any[] = [];
   selectedRequest: any = null;
 
-  constructor(private firestore: Firestore) {}
+  constructor(
+    private firestore: Firestore,
+    private supabaseService: SupabaseService
+  ) {}
 
   ngOnInit() {
     this.getPendingRequests();
@@ -31,9 +35,34 @@ export class RequestManagementComponent implements OnInit {
     });
   }
 
-  openDetails(request: any) {
-    this.selectedRequest = request;
+  isLoadingDetails = false;
+
+  async openDetails(request: any) {
+    this.isLoadingDetails = true;
+    try {
+      const [govIdFolder, govIdFile] = request.govIdUrl.split('/');
+      const [selfieFolder, selfieFile] = request.selfieUrl.split('/');
+
+      const [attachment1Url, attachment2Url] = await Promise.all([
+        this.supabaseService.getSignedFileUrl(govIdFolder as 'gov_ids' | 'selfies', govIdFile),
+        this.supabaseService.getSignedFileUrl(selfieFolder as 'gov_ids' | 'selfies', selfieFile),
+      ]);
+
+      this.selectedRequest = {
+        ...request,
+        attachment1Url,
+        attachment2Url
+      };
+    } catch (error) {
+      console.error('Error loading images:', error);
+      Swal.fire('Error', 'Could not load attachments.', 'error');
+    } finally {
+      this.isLoadingDetails = false;
+    }
   }
+
+
+
 
   closeDetails() {
     this.selectedRequest = null;
