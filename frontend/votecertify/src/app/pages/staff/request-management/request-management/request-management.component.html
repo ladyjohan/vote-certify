@@ -8,6 +8,7 @@
           <th>Voter Name</th>
           <th>Voter ID</th>
           <th>Purpose</th>
+          <th>No. of Copies</th> <!-- Added Column -->
           <th>Actions</th>
         </tr>
       </thead>
@@ -16,6 +17,7 @@
           <td class="name">{{ request.fullName }}</td>
           <td class="id">{{ request.voterId }}</td>
           <td class="purpose">{{ request.purpose }}</td>
+          <td class="copies">{{ request.copiesRequested }}</td> <!-- Display the number of copies requested -->
           <td class="actions">
             <button class="view-btn" (click)="openDetails(request)">View Details</button>
           </td>
@@ -63,6 +65,7 @@
       <p><strong>Name:</strong> {{ selectedRequest.fullName }}</p>
       <p><strong>Voter Identification Number:</strong> {{ selectedRequest.voterId }}</p>
       <p><strong>Purpose:</strong> {{ selectedRequest.purpose }}</p>
+      <p><strong>No. of Copies:</strong> {{ selectedRequest.copiesRequested }}</p> <!-- Display number of copies -->
     </div>
 
     <div class="attachments">
@@ -79,4 +82,3 @@
     </div>
   </div>
 </div>
-

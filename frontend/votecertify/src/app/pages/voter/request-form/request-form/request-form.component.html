@@ -1,15 +1,15 @@
 <form [formGroup]="requestForm" (ngSubmit)="submitRequest()">
   <div class="voter-info">
     <div>
-      <label for="voterId">Voter ID:</label>
+      <label>Voter ID:</label>
       <span>{{ voterId }}</span>
     </div>
     <div>
-      <label for="fullName">Full Name:</label>
+      <label>Full Name:</label>
       <span>{{ fullName }}</span>
     </div>
     <div>
-      <label for="birthdate">Birthdate:</label>
+      <label>Birthdate:</label>
       <span>{{ birthdate }}</span>
     </div>
   </div>
@@ -17,11 +17,16 @@
   <label for="purpose">Purpose:</label>
   <input type="text" id="purpose" formControlName="purpose" required />
 
-  <label for="govId">Government-Issued ID (JPG, max 5MB):</label>
-  <input type="file" id="govId" (change)="handleFileUpload($event, 'govId')" accept="image/jpeg" required />
+  <label for="copiesRequested">No. of Original Copies:</label>
+  <select id="copiesRequested" formControlName="copiesRequested">
+    <option *ngFor="let num of [1, 2, 3]" [value]="num">{{ num }}</option>
+  </select>
 
-  <label for="selfie">Selfie with ID (JPG, max 5MB):</label>
-  <input type="file" id="selfie" (change)="handleFileUpload($event, 'selfie')" accept="image/jpeg" required />
+  <label for="govId">Government-Issued ID (JPG/PNG, max 5MB):</label>
+  <input type="file" id="govId" (change)="handleFileUpload($event, 'govId')" accept="image/jpeg, image/png" required />
+
+  <label for="selfie">Selfie with ID (JPG/PNG, max 5MB):</label>
+  <input type="file" id="selfie" (change)="handleFileUpload($event, 'selfie')" accept="image/jpeg, image/png" required />
 
   <button type="submit" [disabled]="isSubmitting || voterNotFound">
     {{ isSubmitting ? 'Submitting...' : 'Submit Request' }}

@@ -32,6 +32,7 @@ export class RequestFormComponent implements OnInit {
   ) {
     this.requestForm = this.fb.group({
       purpose: ['', Validators.required],
+      copiesRequested: [1, [Validators.required, Validators.min(1), Validators.max(3)]],
       govId: [null, Validators.required],
       selfie: [null, Validators.required]
     });
@@ -120,7 +121,7 @@ export class RequestFormComponent implements OnInit {
     if (!confirm.isConfirmed) return;
 
     this.isSubmitting = true;
-    const { purpose, govId, selfie } = this.requestForm.value;
+    const { purpose, copiesRequested, govId, selfie } = this.requestForm.value;
 
     try {
       if (!govId || !selfie) {
@@ -144,6 +145,7 @@ export class RequestFormComponent implements OnInit {
         fullName: this.fullName,
         birthdate: this.birthdate,
         purpose,
+        copiesRequested,
         govIdUrl: `gov_ids/${govIdFileName}`,
         selfieUrl: `selfies/${selfieFileName}`,
         status: 'Pending',
@@ -156,6 +158,7 @@ export class RequestFormComponent implements OnInit {
 
       this.requestForm.reset({
         purpose: '',
+        copiesRequested: 1,
         govId: null,
         selfie: null
       });
