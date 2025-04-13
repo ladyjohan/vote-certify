@@ -45,9 +45,9 @@ private async initializeAuthState() {
         const userRole = await this.getUserRole(user.uid);
         console.log('🔄 User role:', userRole);
 
-        // Stay on /verify-email regardless of emailVerified
-        if (currentUrl.startsWith('/verify-email')) {
-          return; // ✅ Don't redirect, let verify-email.component handle display
+        // Don't redirect to verify-email if we're already on that page
+        if (currentUrl.startsWith('/verify-email') || currentUrl === '/login') {
+          return;
         }
 
         // If not verified, force redirect to /verify-email

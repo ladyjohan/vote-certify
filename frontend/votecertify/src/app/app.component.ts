@@ -35,12 +35,12 @@ export class AppComponent implements OnInit {
 
           const currentRoute = this.router.url;
 
-          // ✅ Stop any redirection if on verify-email
-          if (currentRoute.startsWith('/verify-email')) {
+          // ✅ Don't redirect if you're already on the verify-email page or login page
+          if (currentRoute.startsWith('/verify-email') || currentRoute === '/login') {
             return;
           }
 
-          // ✅ ONLY redirect if email is verified
+          // ✅ Only redirect if email is verified
           if (user.emailVerified) {
             if (role === 'voter' && currentRoute !== '/voter/dashboard') {
               this.router.navigate(['/voter/dashboard']);
@@ -50,7 +50,7 @@ export class AppComponent implements OnInit {
               this.router.navigate(['/admin/dashboard']);
             }
           } else {
-            // 🚫 Email not verified — stay on verification page
+            // 🚫 Email not verified — stay on the verification page
             this.router.navigate(['/verify-email']);
           }
         } else {
@@ -71,6 +71,7 @@ export class AppComponent implements OnInit {
       this.showSidenav = !excludedRoutes.includes(event.url);
     });
   }
+
 
 
   /** ✅ Logout Function */
