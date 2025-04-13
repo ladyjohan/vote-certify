@@ -7,7 +7,7 @@ import {
   onAuthStateChanged,
   User,
   setPersistence,
-  browserLocalPersistence
+  browserSessionPersistence
 } from '@angular/fire/auth';
 import { Firestore, doc, setDoc, getDoc, updateDoc } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
@@ -33,7 +33,7 @@ export class AuthService {
   /** ✅ Initialize Auth State */
   private async initializeAuthState() {
     try {
-      await setPersistence(this.auth, browserLocalPersistence);
+      await setPersistence(this.auth, browserSessionPersistence);
 
       onAuthStateChanged(this.auth, async (user) => {
         if (user) {
@@ -107,7 +107,7 @@ export class AuthService {
   /** ✅ Login user & ensure session persists */
   async login(email: string, password: string) {
     try {
-      await setPersistence(this.auth, browserLocalPersistence);
+      await setPersistence(this.auth, browserSessionPersistence);
 
       const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
       const user = userCredential.user;
@@ -220,7 +220,7 @@ export class AuthService {
     } catch (error) {
       console.error('❌ Error verifying email:', error);
     }
-  }  
+  }
 
   /** ✅ Log out user */
   async logout() {

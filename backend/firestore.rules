@@ -1,17 +1,52 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
+
     // Voter Pool: Only allow read access (Registration verification)
     match /voter_pool/{voterId} {
       allow read: if true; // Everyone can read voter data
       allow write: if false; // No direct write access
     }
 
-    // Users Collection: Allow user creation
+    // Users Collection: Allow authenticated users to read, update their own data, or admins/staff to update others
     match /users/{userId} {
-      allow read: if request.auth != null; // Logged-in users can read their own data
-      allow write: if request.auth != null && request.auth.uid == userId; // Users can only write their own data
+      // Allow read access for authenticated users
+      allow read: if request.auth != null;
+
+      // Allow update only if user is updating their own data or if admin/staff is updating any user
+      allow update: if request.auth != null && (
+        request.auth.uid == userId ||  // Can update own data
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ["admin", "staff"]  // Admin/staff can update any user
+      );
+
+      // Allow users to create their own account (voter self-registration) or admin to create staff accounts
+      allow create: if request.auth != null && (
+        request.auth.uid == userId ||  // Voter can create their own account
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'  // Admin can create staff accounts
+      );
+
+      // Allow delete only by Admin
+      allow delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';  // Admin only can delete users
+    }
+
+    // Requests Collection: Allow authenticated users to submit requests and admins/staff to approve/decline
+    match /requests/{requestId} {
+      // Allow authenticated users to read requests (but only their own requests for staff/admin)
+      allow read: if request.auth != null;
+
+      // Allow authenticated users to create requests if their voterId matches the one in the request
+      allow write: if request.auth != null && request.resource.data.voterId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.voterId;
+
+      // Allow staff/admin to update the request status
+      allow update: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ["admin", "staff"]  // Staff or Admin can update request status
+      );
+
+      // Allow delete only if the request is in a pending state (Admin/Staff can delete pending requests)
+      allow delete: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ["admin", "staff"] &&
+        resource.data.status == "Pending";  // Only allow delete if the status is "Pending"
     }
   }
 }
