@@ -95,13 +95,13 @@ export class RequestManagementComponent implements OnInit {
       this.pendingRequests = this.pendingRequests.filter(r => r.id !== request.id);
       this.closeDetails();
 
-      Swal.fire('Approved!', `${request.voterName}'s request has been approved.`, 'success');
+      Swal.fire('Approved!', `${request.fullName}'s request has been approved.`, 'success');
     }
   }
 
   async declineRequest(request: any) {
     const { value: remarks } = await Swal.fire({
-      title: `Decline ${request.voterName}'s request?`,
+      title: `Decline ${request.fullName}'s request?`,
       input: 'textarea',
       inputLabel: 'Remarks',
       inputPlaceholder: 'Enter reason for declining...',
@@ -123,7 +123,7 @@ export class RequestManagementComponent implements OnInit {
       this.pendingRequests = this.pendingRequests.filter(r => r.id !== request.id);
       this.closeDetails();
 
-      Swal.fire('Declined!', `${request.voterName}'s request has been declined.`, 'error');
+      Swal.fire('Declined!', `${request.fullName}'s request has been declined.`, 'error');
     } else if (remarks !== undefined) {
       Swal.fire('Missing Remarks', 'Please enter a remark to decline.', 'warning');
     }
