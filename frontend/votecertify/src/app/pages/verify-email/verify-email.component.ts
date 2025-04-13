@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule } from '@angular/common'; // ✅ Import this
+import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-verify-email',
-  standalone: true, // ✅ Standalone component
-  imports: [CommonModule], // ✅ Import CommonModule for *ngIf
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './verify-email.component.html',
   styleUrls: ['./verify-email.component.scss']
 })
@@ -35,9 +35,5 @@ export class VerifyEmailComponent implements OnInit {
     } else {
       this.isVerified = false;
     }
-  }
-
-  goBack() {
-    this.router.navigate(['/']); // ✅ Redirects back to home
   }
 }

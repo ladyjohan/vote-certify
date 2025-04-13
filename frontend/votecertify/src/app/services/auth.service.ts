@@ -30,30 +30,40 @@ export class AuthService {
     this.initializeAuthState();
   }
 
-  /** ✅ Initialize Auth State */
-  private async initializeAuthState() {
-    try {
-      await setPersistence(this.auth, browserSessionPersistence);
+/** ✅ Initialize Auth State */
+private async initializeAuthState() {
+  try {
+    await setPersistence(this.auth, browserSessionPersistence);
 
-      onAuthStateChanged(this.auth, async (user) => {
-        if (user) {
-          console.log('✅ User authenticated:', user.email);
-          this.user = user;
-          const userRole = await this.getUserRole(user.uid);
+    onAuthStateChanged(this.auth, async (user) => {
+      const currentUrl = this.router.url;
 
-          if (userRole) {
-            console.log('🔄 User session valid.');
-            return;
-          }
-        } else {
-          console.warn('⚠️ No current user detected. Redirecting to login.');
-          this.router.navigate(['/login']);
+      if (user) {
+        console.log('✅ User authenticated:', user.email);
+        this.user = user;
+
+        const userRole = await this.getUserRole(user.uid);
+        console.log('🔄 User role:', userRole);
+
+        // Stay on /verify-email regardless of emailVerified
+        if (currentUrl.startsWith('/verify-email')) {
+          return; // ✅ Don't redirect, let verify-email.component handle display
         }
-      });
-    } catch (error) {
-      console.error('❌ Error setting auth persistence:', error);
-    }
+
+        // If not verified, force redirect to /verify-email
+        if (!user.emailVerified) {
+          this.router.navigate(['/verify-email']);
+        }
+      } else {
+        console.warn('⚠️ No user found. Redirecting to login.');
+        this.router.navigate(['/login']);
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error setting auth persistence:', error);
   }
+}
+
 
   /** ✅ Register & Send Verification + Password via EmailJS */
   async register(fullName: string, voterId: string, birthdate: string, email: string, password: string) {
@@ -126,8 +136,8 @@ export class AuthService {
       console.log('✅ User Role:', userRole);
 
       // ✅ Skip email verification for Admin and Staff
-      if (userRole === 'admin' || userRole === 'staff') {
-        console.log('✅ Admin or Staff detected. Skipping email verification.');
+      if (userRole === 'admin') {
+        console.log('✅ Admin detected. Skipping email verification.');
       } else {
         await user.reload(); // Ensure latest verification status
 
@@ -157,24 +167,25 @@ export class AuthService {
     }
   }
 
-  /** ✅ Redirect user based on role */
-  private redirectUser(role: string) {
-    const roleRoutes: { [key: string]: string } = {
-      admin: '/admin/dashboard',
-      staff: '/staff/dashboard',
-      voter: '/voter/dashboard'
-    };
+/** ✅ Redirect user based on role */
+private redirectUser(role: string) {
+  const roleRoutes: { [key: string]: string } = {
+    admin: '/admin/dashboard',
+    staff: '/staff/dashboard',
+    voter: '/voter/dashboard'
+  };
 
-    const route = roleRoutes[role];
+  const route = roleRoutes[role];
 
-    if (route) {
-      console.log(`🔀 Redirecting to: ${route}`);
-      this.zone.run(() => this.router.navigate([route]));
-    } else {
-      console.error('⚠️ Unknown role. Redirecting to login.');
-      this.router.navigate(['/login']);
-    }
+  if (route) {
+    console.log(`🔀 Redirecting to: ${route}`);
+    this.zone.run(() => this.router.navigate([route]));
+  } else {
+    console.error('⚠️ Unknown role. Redirecting to login.');
+    this.router.navigate(['/login']);
   }
+}
+
 
   /** ✅ Check if user is logged in */
   async isUserLoggedIn(): Promise<boolean> {

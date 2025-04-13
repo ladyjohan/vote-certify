@@ -33,17 +33,28 @@ export class AppComponent implements OnInit {
           this.userLoggedIn = true;
           this.userRole = role;
 
-          // ✅ Redirect only if not already on the correct page
           const currentRoute = this.router.url;
-          if (role === 'voter' && currentRoute !== '/voter/dashboard') {
-            this.router.navigate(['/voter/dashboard']);
-          } else if (role === 'staff' && currentRoute !== '/staff/dashboard') {
-            this.router.navigate(['/staff/dashboard']);
-          } else if (role === 'admin' && currentRoute !== '/admin/dashboard') {
-            this.router.navigate(['/admin/dashboard']);
+
+          // ✅ Stop any redirection if on verify-email
+          if (currentRoute.startsWith('/verify-email')) {
+            return;
+          }
+
+          // ✅ ONLY redirect if email is verified
+          if (user.emailVerified) {
+            if (role === 'voter' && currentRoute !== '/voter/dashboard') {
+              this.router.navigate(['/voter/dashboard']);
+            } else if (role === 'staff' && currentRoute !== '/staff/dashboard') {
+              this.router.navigate(['/staff/dashboard']);
+            } else if (role === 'admin' && currentRoute !== '/admin/dashboard') {
+              this.router.navigate(['/admin/dashboard']);
+            }
+          } else {
+            // 🚫 Email not verified — stay on verification page
+            this.router.navigate(['/verify-email']);
           }
         } else {
-          this.router.navigate(['/login']); // Default fallback
+          this.router.navigate(['/login']);
         }
       } else {
         this.router.navigate(['/login']);
@@ -53,14 +64,14 @@ export class AppComponent implements OnInit {
       this.router.navigate(['/login']);
     }
 
-    // ✅ Listen for route changes to update sidenav visibility
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
-      const excludedRoutes = ['/login', '/register'];
+      const excludedRoutes = ['/login', '/register', '/verify-email'];
       this.showSidenav = !excludedRoutes.includes(event.url);
     });
   }
+
 
   /** ✅ Logout Function */
   async logout() {
@@ -68,7 +79,7 @@ export class AppComponent implements OnInit {
       await this.authService.logout();
       this.userLoggedIn = false;
       this.userRole = null;
-      localStorage.clear(); // ✅ Clear stored data
+      localStorage.clear();
       sessionStorage.clear();
       this.router.navigate(['/login']);
     } catch (error) {
