@@ -15,6 +15,8 @@ import { SupabaseService } from '../../../../services/supabase.service';
 export class RequestManagementComponent implements OnInit {
   pendingRequests: any[] = [];
   selectedRequest: any = null;
+  isLoadingDetails = false;
+  activeAttachment: { type: 'gov_id' | 'selfie', url: string } | null = null;
 
   constructor(
     private firestore: Firestore,
@@ -30,42 +32,44 @@ export class RequestManagementComponent implements OnInit {
     const pendingQuery = query(requestsRef, where('status', '==', 'Pending'));
     const pendingSnapshot = await getDocs(pendingQuery);
 
-    this.pendingRequests = pendingSnapshot.docs.map(doc => {
-      return { id: doc.id, ...doc.data() };
-    });
+    this.pendingRequests = pendingSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
   }
 
-  isLoadingDetails = false;
+  openDetails(request: any) {
+    this.selectedRequest = request;
+  }
 
-  async openDetails(request: any) {
-    this.isLoadingDetails = true;
+  // View Attachment (Gov ID or Selfie)
+  async viewAttachment(type: 'gov_id' | 'selfie') {
+    if (!this.selectedRequest) return;
+
     try {
-      const [govIdFolder, govIdFile] = request.govIdUrl.split('/');
-      const [selfieFolder, selfieFile] = request.selfieUrl.split('/');
+      const urlPath = type === 'gov_id' ? this.selectedRequest.govIdUrl : this.selectedRequest.selfieUrl;
+      const [folder, file] = urlPath.split('/') ?? [];
 
-      const [attachment1Url, attachment2Url] = await Promise.all([
-        this.supabaseService.getSignedFileUrl(govIdFolder as 'gov_ids' | 'selfies', govIdFile),
-        this.supabaseService.getSignedFileUrl(selfieFolder as 'gov_ids' | 'selfies', selfieFile),
-      ]);
+      if (!folder || !file) throw new Error('Invalid file path');
 
-      this.selectedRequest = {
-        ...request,
-        attachment1Url,
-        attachment2Url
+      const signedUrl = await this.supabaseService.getSignedFileUrl(folder as 'gov_ids' | 'selfies', file);
+      this.activeAttachment = {
+        type,
+        url: signedUrl
       };
     } catch (error) {
-      console.error('Error loading images:', error);
-      Swal.fire('Error', 'Could not load attachments.', 'error');
-    } finally {
-      this.isLoadingDetails = false;
+      console.error('Error loading attachment:', error);
+      Swal.fire('Error', 'Failed to load attachment.', 'error');
     }
   }
 
-
-
+  closeAttachmentModal() {
+    this.activeAttachment = null;  // Close the image preview modal
+  }
 
   closeDetails() {
-    this.selectedRequest = null;
+    this.selectedRequest = null;   // Close the request details modal
+    this.activeAttachment = null; // Ensure the attachment modal is also closed
   }
 
   async approveRequest(request: any) {

@@ -17,7 +17,7 @@
           <td class="id">{{ request.voterId }}</td>
           <td class="purpose">{{ request.purpose }}</td>
           <td class="actions">
-            <button class="view" (click)="openDetails(request)">🔍</button>
+            <button class="view-btn" (click)="openDetails(request)">View Details</button>
           </td>
         </tr>
       </tbody>
@@ -36,10 +36,28 @@
   </div>
 </div>
 
-<!-- Modal -->
+<!-- Image Preview Modal for Gov ID and Selfie (Placed above everything) -->
+<div class="image-preview-backdrop" *ngIf="activeAttachment">
+  <div class="image-preview-modal">
+    <h3>{{ activeAttachment.type === 'gov_id' ? 'Government ID' : 'Selfie' }}</h3>
+    <img [src]="activeAttachment.url" alt="Attachment Preview" class="preview-img" />
+    <button class="close-btn" (click)="closeAttachmentModal()">×</button>
+  </div>
+</div>
+
+<!-- Main Request Details Modal -->
 <div class="modal-backdrop" *ngIf="selectedRequest && !isLoadingDetails">
   <div class="modal">
-    <h3>Request Details</h3>
+    <!-- Close Button at Top Right -->
+    <button class="close-btn" (click)="closeDetails()">×</button>
+
+    <!-- Image Preview Section (moved to top) -->
+    <div class="image-preview-container">
+      <img class="preview-img" [src]="selectedRequest.gov_id_image_url" alt="Gov ID Image" *ngIf="selectedRequest?.gov_id_image_url">
+      <img class="preview-img" [src]="selectedRequest.selfie_image_url" alt="Selfie Image" *ngIf="selectedRequest?.selfie_image_url">
+    </div>
+
+    <h3 class="modal-title">Request Details</h3>
 
     <div class="details">
       <p><strong>Name:</strong> {{ selectedRequest.fullName }}</p>
@@ -49,22 +67,16 @@
 
     <div class="attachments">
       <p><strong>Gov ID:</strong></p>
-      <img *ngIf="selectedRequest.attachment1Url"
-           [src]="selectedRequest.attachment1Url"
-           alt="Gov ID"
-           style="max-width: 100%; border: 1px solid #ccc; margin-bottom: 10px;" />
+      <button class="view-btn" (click)="viewAttachment('gov_id')">View Gov ID</button>
 
       <p><strong>Selfie:</strong></p>
-      <img *ngIf="selectedRequest.attachment2Url"
-           [src]="selectedRequest.attachment2Url"
-           alt="Selfie"
-           style="max-width: 100%; border: 1px solid #ccc;" />
+      <button class="view-btn" (click)="viewAttachment('selfie')">View Selfie</button>
     </div>
 
     <div class="modal-actions">
-      <button class="approve" (click)="approveRequest(selectedRequest)">Approve</button>
-      <button class="decline" (click)="declineRequest(selectedRequest)">Decline</button>
-      <button class="close" (click)="closeDetails()">Close</button>
+      <button class="approve-btn" (click)="approveRequest(selectedRequest)">Approve</button>
+      <button class="decline-btn" (click)="declineRequest(selectedRequest)">Decline</button>
     </div>
   </div>
 </div>
+
