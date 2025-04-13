@@ -1,1 +1,28 @@
-<p>certificate-status works!</p>
+<div *ngIf="request; else noRequest">
+  <h3 class="text-lg font-semibold mb-2">Voter Certificate Request Status</h3>
+  <p><strong>Voter ID:</strong> {{ request.voterId }}</p>
+  <p><strong>Full Name:</strong> {{ request.fullName }}</p>
+  <p><strong>Birthdate:</strong> {{ request.birthdate }}</p>
+  <p><strong>Purpose:</strong> {{ request.purpose }}</p>
+  <p><strong>Copies Requested:</strong> {{ request.copiesRequested }}</p>
+  <p><strong>Status:</strong>
+    <span [ngClass]="{
+      'text-yellow-500': request.status === 'Pending',
+      'text-green-600': request.status === 'Approved' || request.status === 'Ready for Pickup',
+      'text-red-600': request.status === 'Declined'
+    }">{{ request.status }}</span>
+  </p>
+  <p><strong>Submitted At:</strong>{{ formatDate(request.submittedAt) }}</p>
+
+  <ng-container *ngIf="request.status === 'Approved' || request.status === 'Ready for Pickup'">
+    <p><strong>Pick-up Date:</strong>{{ request.pickupDate || 'To be scheduled' }}</p>
+  </ng-container>
+
+  <ng-container *ngIf="request.status === 'Declined'">
+    <p><strong>Remarks:</strong>{{ request.remarks || 'No remarks provided.' }}</p>
+  </ng-container>
+</div>
+
+<ng-template #noRequest>
+  <p>You haven't submitted any certificate requests yet.</p>
+</ng-template>

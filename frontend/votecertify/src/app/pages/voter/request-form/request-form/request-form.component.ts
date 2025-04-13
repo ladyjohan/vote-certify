@@ -23,6 +23,7 @@ export class RequestFormComponent implements OnInit {
   voterId: string = '';
   fullName: string = '';
   birthdate: string = '';
+  hasPendingRequest: boolean = false;  // Flag to track if the user has a pending request
 
   constructor(
     private firestore: Firestore,
@@ -43,6 +44,7 @@ export class RequestFormComponent implements OnInit {
       if (user) {
         this.currentUser = user;
         await this.fetchVoterDetails(user.email);
+        await this.checkForPendingRequest(); // Check if the user has a pending request
       }
     });
   }
@@ -99,8 +101,12 @@ export class RequestFormComponent implements OnInit {
   }
 
   async submitRequest() {
-    if (this.requestForm.invalid || this.voterNotFound) {
-      Swal.fire('Incomplete Form', 'Please fill in all fields correctly.', 'warning');
+    if (this.requestForm.invalid || this.voterNotFound || this.hasPendingRequest) {
+      if (this.hasPendingRequest) {
+        Swal.fire('Pending Request', 'You already have a pending request. Please wait for it to be processed before submitting a new one.', 'warning');
+      } else {
+        Swal.fire('Incomplete Form', 'Please fill in all fields correctly.', 'warning');
+      }
       return;
     }
 
@@ -175,6 +181,6 @@ export class RequestFormComponent implements OnInit {
     const q = query(requestsRef, where('voterId', '==', this.voterId), where('status', '==', 'Pending'));
 
     const querySnapshot = await getDocs(q);
-    return !querySnapshot.empty;
+    this.hasPendingRequest = !querySnapshot.empty; // Set the flag based on the result
   }
 }

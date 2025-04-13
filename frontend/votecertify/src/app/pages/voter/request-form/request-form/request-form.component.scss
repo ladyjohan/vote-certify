@@ -6,6 +6,7 @@ form {
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   font-family: 'Roboto', sans-serif;
+
 }
 
 label {
@@ -137,4 +138,66 @@ input[type="file"]:focus::-webkit-file-upload-button {
 
 .modal-footer {
   background-color: #d4edda;
+}
+/* Style for the dropdown container */
+.copy-selection-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.copy-selection-container label {
+  font-size: 1rem;
+  color: #333;
+}
+
+.copy-selection-container select {
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  color: #333;
+  background-color: #f9fafb;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  outline: none;
+  width: 100%; /* Full width */
+  transition: all 0.3s ease;
+
+  /* Hover and focus styles */
+  &:hover,
+  &:focus {
+    border-color: #4CAF50; /* Green color for focus */
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+  }
+}
+
+/* Additional spacing and styles for form container */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.voter-info div {
+  display: flex;
+  justify-content: space-between;
+}
+
+button {
+  padding: 1rem;
+  background-color: #4CAF50; /* Green background */
+  color: white;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 100%; /* Full-width button */
+
+  &:hover {
+    background-color: #45a049; /* Darker green on hover */
+  }
+
+  &:disabled {
+    background-color: #9e9e9e;
+    cursor: not-allowed;
+  }
 }
