@@ -104,10 +104,9 @@ export class RequestManagementComponent implements OnInit {
     const { value: remarks } = await Swal.fire({
       title: `Decline ${request.fullName}'s request?`,
       input: 'textarea',
-      inputLabel: 'Remarks',
       inputPlaceholder: 'Enter reason for declining...',
       inputAttributes: {
-        'aria-label': 'Remarks'
+
       },
       showCancelButton: true,
       confirmButtonText: 'Decline',

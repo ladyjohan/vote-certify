@@ -42,8 +42,8 @@ export class AppComponent implements OnInit {
 
           // ✅ Only redirect if email is verified
           if (user.emailVerified) {
-            if (role === 'voter' && currentRoute !== '/voter/dashboard') {
-              this.router.navigate(['/voter/dashboard']);
+            if (role === 'voter' && currentRoute !== '/voter/request-form') {
+              this.router.navigate(['/voter/request-form']);
             } else if (role === 'staff' && currentRoute !== '/staff/dashboard') {
               this.router.navigate(['/staff/dashboard']);
             } else if (role === 'admin' && currentRoute !== '/admin/dashboard') {

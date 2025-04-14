@@ -54,7 +54,6 @@ export const routes: Routes = [
     path: 'voter',
     component: VoterLayoutComponent,
     children: [
-      { path: 'dashboard', component: VoterDashboardComponent },
       { path: 'request-form', component: RequestFormComponent },
       { path: 'certificate-status', component: CertificateStatusComponent },
     ],

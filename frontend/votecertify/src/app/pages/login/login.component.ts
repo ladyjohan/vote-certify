@@ -100,7 +100,7 @@ export class LoginComponent {
         } else if (userRole === 'staff') {
           this.router.navigate(['/staff/dashboard']);
         } else if (userRole === 'voter') {
-          this.router.navigate(['/voter/dashboard']);
+          this.router.navigate(['/voter/request-form']);
         } else {
           this.toastr.error('Unauthorized role.', 'Login Failed');
           await signOut(this.auth);

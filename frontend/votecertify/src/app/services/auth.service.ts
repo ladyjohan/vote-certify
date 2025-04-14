@@ -172,7 +172,7 @@ private redirectUser(role: string) {
   const roleRoutes: { [key: string]: string } = {
     admin: '/admin/dashboard',
     staff: '/staff/dashboard',
-    voter: '/voter/dashboard'
+    voter: '/voter/request-form',
   };
 
   const route = roleRoutes[role];

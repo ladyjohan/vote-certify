@@ -51,7 +51,6 @@ export class VoterSidenavComponent implements OnInit {
   }
 
   voterNavLinks = [
-    { label: 'Dashboard', icon: 'dashboard', route: '/voter/dashboard' },
     { label: 'Request Form', icon: 'post_add', route: '/voter/request-form' },
     { label: 'Certificate Status', icon: 'assignment', route: '/voter/certificate-status' },
   ];
