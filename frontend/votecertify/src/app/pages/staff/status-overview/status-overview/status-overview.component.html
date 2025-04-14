@@ -1,1 +1,33 @@
-<p>status-overview works!</p>
+<div class="status-overview-container">
+  <h2 class="title">Status Overview</h2>
+
+<div class="search-bar">
+  <i class="fas fa-search search-icon"></i>
+  <input [formControl]="searchControl" type="text" placeholder="Search by Voter Name or Voter ID" />
+</div>
+
+<div class="request-list">
+  <div class="request-header">
+    <span>Full Name</span>
+    <span>Voter ID</span>
+    <span>Pickup Date</span>
+    <span>Status</span>
+    <span>Actions</span>
+  </div>
+
+  <div class="request-item" *ngFor="let request of filteredRequests">
+    <span>{{ request.fullName }}</span>
+    <span>{{ request.voterId }}</span>
+    <span>{{ request.pickupDate ? (request.pickupDate | date:'MM/dd/yyyy') : 'N/A' }}</span>
+    <span>{{ request.status }}</span>
+    <span class="action-buttons">
+      <button
+        *ngIf="request.status === 'Approved' || request.status === 'Ready for Pickup'"
+        (click)="markAsCompleted(request)"
+        class="complete-btn"
+      >
+         Mark as Completed
+      </button>
+    </span>
+  </div>
+</div>
