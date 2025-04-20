@@ -27,13 +27,11 @@ export class AdminRequestOverviewComponent implements OnInit {
 
     this.searchControl.valueChanges.pipe(debounceTime(300)).subscribe(searchText => {
       const term = (searchText || '').toLowerCase();
-      this.filteredRequests = this.allRequests.filter(req =>
-        this.searchInFields(req, term)
-      );
+      this.filteredRequests = this.allRequests.filter(req => this.searchInFields(req, term));
     });
   }
 
-  // Method to load requests from Firestore
+  // 🔄 Load all requests from Firestore
   async loadRequests() {
     const requestsRef = collection(this.firestore, 'requests');
     const snapshot = await getDocs(requestsRef);
@@ -51,7 +49,7 @@ export class AdminRequestOverviewComponent implements OnInit {
     this.filteredRequests = [...this.allRequests];
   }
 
-  // Method to check if any field contains the search term
+  // 🔍 Search logic (matches any relevant field)
   searchInFields(request: any, term: string): boolean {
     return (
       (request.fullName?.toLowerCase().includes(term) || '') ||
@@ -62,19 +60,38 @@ export class AdminRequestOverviewComponent implements OnInit {
     );
   }
 
-  // Method to calculate processing time
+  // ⏱ Calculate processing time in days
   getProcessingTime(request: any): string {
     if (request.submittedAt && request.pickupDate) {
       const pickupDate = new Date(request.pickupDate);
-      const diff = Math.ceil(
-        (pickupDate.getTime() - request.submittedAt.getTime()) / (1000 * 60 * 60 * 24)
-      );
-      return `${diff} day(s)`;
+      if (!isNaN(pickupDate.getTime())) {
+        const diff = Math.ceil(
+          (pickupDate.getTime() - request.submittedAt.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        return `${diff} day(s)`;
+      }
     }
     return 'N/A';
   }
 
-  // Method to export data to PDF
+  // 🏷️ Get status badge class
+  getStatusClass(status: string): string {
+    switch ((status || '').toLowerCase()) {
+      case 'approved':
+        return 'status-approved';
+      case 'pending':
+        return 'status-pending';
+      case 'declined':
+      case 'rejected':
+        return 'status-declined';
+      case 'completed':
+        return 'status-completed';
+      default:
+        return 'status-default';
+    }
+  }
+
+  // 📄 Export table data to PDF
   exportPDF() {
     const doc = new jsPDF();
     const columns = ['Voter Name', 'Status', 'Submitted Date', 'Pickup Date', 'Processing Time'];
@@ -90,21 +107,21 @@ export class AdminRequestOverviewComponent implements OnInit {
     autoTable(doc, {
       startY: 20,
       head: [columns],
-      body: rows,
+      body: rows
     });
 
-    doc.save('Voter Request Overview Report.pdf');
+    doc.save('Voter_Request_Overview_Report.pdf');
   }
 
-  // Format date method
+  // 📆 Format Date object to string
   private formatDate(date: Date | null): string {
     return date ? this.datePipe.transform(date, 'MM/dd/yyyy') ?? 'N/A' : 'N/A';
   }
 
-  // Format pickupDate method
+  // 📅 Format pickupDate string to readable date
   private formatDateString(dateStr: string | null): string {
     if (!dateStr) return 'N/A';
     const date = new Date(dateStr);
-    return this.formatDate(date);
+    return isNaN(date.getTime()) ? 'N/A' : this.formatDate(date);
   }
 }

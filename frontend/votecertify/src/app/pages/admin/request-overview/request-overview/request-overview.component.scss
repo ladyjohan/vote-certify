@@ -10,15 +10,16 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
+  gap: 1rem;
 }
 
 .search-bar {
-  width: 100%;
+  flex-grow: 1;
   position: relative;
 }
 
 .search-bar input {
-  width: 100%;
+  width: 90%;
   padding: 0.75rem 1rem 0.75rem 2.5rem;
   font-size: 1rem;
   border-radius: 10px;
@@ -45,8 +46,7 @@
 }
 
 .export-btn-container {
-  width: 20%;
-  text-align: right;
+  flex-shrink: 0;
 }
 
 .export-btn {
@@ -76,10 +76,11 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
+/* Use 5 columns to match your HTML content */
 .request-header,
 .request-item {
   display: grid;
-  grid-template-columns: 2fr 2fr 2fr 1.5fr 2fr 2fr 2fr 1.5fr;
+  grid-template-columns: 2fr 1.5fr 2fr 2fr 1.5fr;
   padding: 1rem 1.25rem;
   align-items: center;
 }
@@ -96,8 +97,51 @@
   border-bottom: 1px solid #f1f5f9;
   font-size: 0.95rem;
   color: #111827;
+  transition: background-color 0.2s;
 }
 
 .request-item:hover {
   background-color: #f9fafb;
+}
+
+.status-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  display: inline-block;
+  text-align: center;
+  width: fit-content;
+}
+
+/* Status Colors */
+.status-pending {
+  background-color: #fff7cc;
+  color: #b08900;
+  border: 1px solid #ffe58f;
+}
+
+.status-approved {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #10b981;
+}
+
+.status-declined {
+  background-color: #ffe4e6;
+  color: #b91c1c;
+  border: 1px solid #f87171;
+}
+
+.status-completed {
+  background-color: #e0f2fe;
+  color: #1e3a8a;
+  border: 1px solid #60a5fa;
+}
+
+.status-default {
+  background-color: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
 }

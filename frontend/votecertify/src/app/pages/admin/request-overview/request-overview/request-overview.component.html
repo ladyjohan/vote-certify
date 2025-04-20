@@ -1,7 +1,6 @@
 <div class="admin-overview-container">
   <h2 class="title">Request Overview</h2>
 
-  <!-- Flex container for search bar and export button -->
   <div class="top-row">
     <div class="search-bar">
       <i class="fas fa-search search-icon"></i>
@@ -26,7 +25,9 @@
 
     <div class="request-item" *ngFor="let request of filteredRequests">
       <span>{{ request.fullName }}</span>
-      <span>{{ request.status }}</span>
+      <span class="status-badge" [ngClass]="getStatusClass(request.status)">
+        {{ request.status }}
+      </span>
       <span>{{ request.submittedAt | date: 'MM/dd/yyyy' }}</span>
       <span>{{ request.pickupDate | date: 'MM/dd/yyyy' }}</span>
       <span>{{ getProcessingTime(request) }}</span>
