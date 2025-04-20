@@ -1,1 +1,35 @@
-<p>request-overview works!</p>
+<div class="admin-overview-container">
+  <h2 class="title">Request Overview</h2>
+
+  <!-- Flex container for search bar and export button -->
+  <div class="top-row">
+    <div class="search-bar">
+      <i class="fas fa-search search-icon"></i>
+      <input [formControl]="searchControl" type="text" placeholder="Search Voter Request" />
+    </div>
+
+    <div class="export-btn-container">
+      <button class="export-btn" (click)="exportPDF()">
+        <i class="fas fa-file-pdf"></i> Export to PDF
+      </button>
+    </div>
+  </div>
+
+  <div class="request-list">
+    <div class="request-header">
+      <span>Voter Name</span>
+      <span>Status</span>
+      <span>Submitted Date</span>
+      <span>Pickup Date</span>
+      <span>Processing Time</span>
+    </div>
+
+    <div class="request-item" *ngFor="let request of filteredRequests">
+      <span>{{ request.fullName }}</span>
+      <span>{{ request.status }}</span>
+      <span>{{ request.submittedAt | date: 'MM/dd/yyyy' }}</span>
+      <span>{{ request.pickupDate | date: 'MM/dd/yyyy' }}</span>
+      <span>{{ getProcessingTime(request) }}</span>
+    </div>
+  </div>
+</div>

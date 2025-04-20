@@ -16,7 +16,7 @@ import { RequestFormComponent } from './pages/voter/request-form/request-form/re
 import { CertificateStatusComponent } from './pages/voter/certificate-status/certificate-status/certificate-status.component';
 import { RequestManagementComponent } from './pages/staff/request-management/request-management/request-management.component';
 import { StatusOverviewComponent } from './pages/staff/status-overview/status-overview/status-overview.component';
-import { RequestOverviewComponent } from './pages/admin/request-overview/request-overview/request-overview.component';
+import { AdminRequestOverviewComponent } from './pages/admin/request-overview/request-overview/request-overview.component';
 import { AdminUserManagementComponent } from './pages/admin/user-management/user-management/user-management.component';
 import { StaffProfileComponent } from './pages/staff/staff-profile/staff-profile.component';
 
@@ -32,7 +32,7 @@ export const routes: Routes = [
     component: AdminLayoutComponent,
     children: [
       { path: 'dashboard', component: AdminDashboardComponent },
-      { path: 'request-overview', component: RequestOverviewComponent },
+      { path: 'request-overview', component: AdminRequestOverviewComponent },
       { path: 'user-management', component: AdminUserManagementComponent },
     ],
   },
