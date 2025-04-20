@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { RequestOverviewComponent } from './request-overview.component';
+import { AdminRequestOverviewComponent } from './request-overview.component';
 
 describe('RequestOverviewComponent', () => {
-  let component: RequestOverviewComponent;
-  let fixture: ComponentFixture<RequestOverviewComponent>;
+  let component: AdminRequestOverviewComponent;
+  let fixture: ComponentFixture<AdminRequestOverviewComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RequestOverviewComponent]
+      imports: [AdminRequestOverviewComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(RequestOverviewComponent);
+    fixture = TestBed.createComponent(AdminRequestOverviewComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
