@@ -1,28 +1,66 @@
-<div *ngIf="request; else noRequest">
-  <h3 class="text-lg font-semibold mb-2">Voter Certificate Request Status</h3>
-  <p><strong>Voter ID:</strong> {{ request.voterId }}</p>
-  <p><strong>Full Name:</strong> {{ request.fullName }}</p>
-  <p><strong>Birthdate:</strong> {{ request.birthdate }}</p>
-  <p><strong>Purpose:</strong> {{ request.purpose }}</p>
-  <p><strong>Copies Requested:</strong> {{ request.copiesRequested }}</p>
-  <p><strong>Status:</strong>
-    <span [ngClass]="{
-      'text-yellow-500': request.status === 'Pending',
-      'text-green-600': request.status === 'Approved' || request.status === 'Ready for Pickup',
-      'text-red-600': request.status === 'Declined'
-    }">{{ request.status }}</span>
-  </p>
-  <p><strong>Submitted At:</strong>{{ formatDate(request.submittedAt) }}</p>
+<div *ngIf="requests.length > 0; else noRequest" class="status-history">
+  <h3>Your Certificate Request History</h3>
 
-  <ng-container *ngIf="request.status === 'Approved' || request.status === 'Ready for Pickup'">
-    <p><strong>Pick-up Date:</strong>{{ request.pickupDate || 'To be scheduled' }}</p>
-  </ng-container>
+  <!-- Filters -->
+  <div class="filters">
+    <label>
+      Filter by Status:
+      <select [(ngModel)]="selectedStatus">
+        <option value="">All</option>
+        <option value="Pending">Pending</option>
+        <option value="Approved">Approved</option>
+        <option value="Completed">Completed</option>
+        <option value="Declined">Declined</option>
+      </select>
+    </label>
 
-  <ng-container *ngIf="request.status === 'Declined'">
-    <p><strong>Remarks:</strong>{{ request.remarks || 'No remarks provided.' }}</p>
-  </ng-container>
+    <label>
+      Sort by:
+      <select [(ngModel)]="sortOrder">
+        <option value="desc">Newest First</option>
+        <option value="asc">Oldest First</option>
+      </select>
+    </label>
+  </div>
+
+  <!-- Timeline -->
+  <div class="timeline">
+    <div *ngFor="let request of filteredRequests()" class="timeline-item"
+         [ngClass]="{
+           'pending': request.status === 'Pending',
+           'approved': request.status === 'Approved',
+           'completed': request.status === 'Completed',
+           'declined': request.status === 'Declined'
+         }">
+      <div class="marker"></div>
+      <div class="content">
+        <p><strong>Voter ID:</strong> {{ request.voterId }}</p>
+        <p><strong>Full Name:</strong> {{ request.fullName }}</p>
+        <p><strong>Birthdate:</strong> {{ request.birthdate }}</p>
+        <p><strong>Purpose:</strong> {{ request.purpose }}</p>
+        <p><strong>Copies Requested:</strong> {{ request.copiesRequested }}</p>
+        <p><strong>Status: </strong>
+          <span [ngClass]="{
+            'text-yellow-500': request.status === 'Pending',
+            'text-green-600': request.status === 'Approved' || request.status === 'Ready for Pickup',
+            'text-red-600': request.status === 'Declined',
+            'text-grey-600': request.status === 'Completed'
+          }">{{ request.status }}</span>
+        </p>
+        <p><strong>Submitted At:</strong> {{ formatDate(request.submittedAt) }}</p>
+
+        <ng-container *ngIf="request.status === 'Approved' || request.status === 'Ready for Pickup'">
+          <p><strong>Pick-up Date:</strong> {{ request.pickupDate || 'To be scheduled' }}</p>
+        </ng-container>
+
+        <ng-container *ngIf="request.status === 'Declined'">
+          <p><strong>Remarks:</strong> {{ request.remarks || 'No remarks provided.' }}</p>
+        </ng-container>
+      </div>
+    </div>
+  </div>
 </div>
 
 <ng-template #noRequest>
-  <p>You haven't submitted any certificate requests yet.</p>
+  <p class="no-request">You haven't submitted any certificate requests yet.</p>
 </ng-template>

@@ -4,53 +4,123 @@
   background-color: #f9fafb;
   border-radius: 1rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  max-width: 700px;
+  max-width: 100%;
+  width: 100%;
   margin: 2rem auto;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 h3 {
   font-size: 1.5rem;
-  color: #1f2937; // dark gray
+  color: #1f2937;
   margin-bottom: 1.5rem;
   border-bottom: 2px solid #e5e7eb;
   padding-bottom: 0.5rem;
+  word-wrap: break-word;
 }
 
-p {
-  font-size: 1rem;
-  color: #374151; // medium gray
-  margin-bottom: 0.75rem;
+.filters {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1rem;
 
-  strong {
-    color: #111827; // dark gray
-    font-weight: 600;
-    display: inline-block;
-    width: 160px;
+  label {
+    font-size: 1rem;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
-  span {
-    font-weight: 600;
+  select {
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    max-width: 200px;
   }
 }
 
-/* Status Color Overrides */
+.status-history {
+  max-width: 100%;
+  height: 750px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  word-wrap: break-word;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.timeline-item {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.timeline-item .marker {
+  width: 12px;
+  height: 12px;
+  background-color: #10b981;
+  border-radius: 50%;
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.timeline-item .content {
+  flex-grow: 1;
+}
+
+.timeline-item .content p {
+  margin: 0.25rem 0;
+}
+
+.pending {
+  border-left: 4px solid #f59e0b;
+}
+
+.approved {
+  border-left: 4px solid #10b981;
+}
+
+.completed {
+  border-left: 4px solid #4f4f4f;
+}
+
+.declined {
+  border-left: 4px solid #ef4444;
+}
+
 .text-yellow-500 {
-  color: #f59e0b; // amber
+  color: #f59e0b;
 }
 
 .text-green-600 {
-  color: #10b981; // emerald
+  color: #10b981;
 }
 
 .text-red-600 {
-  color: #ef4444; // rose
+  color: #ef4444;
 }
 
-/* No request fallback */
-::ng-deep ng-template#noRequest p {
+.no-request {
   text-align: center;
-  font-size: 1.1rem;
-  color: #6b7280; // gray
-  padding: 2rem 1rem;
+  font-size: 1.2rem;
+  color: #6b7280;
+  padding: 2rem;
 }
