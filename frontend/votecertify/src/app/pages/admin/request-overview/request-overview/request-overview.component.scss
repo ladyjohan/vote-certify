@@ -145,3 +145,28 @@
   color: #374151;
   border: 1px solid #d1d5db;
 }
+
+.filter-container {
+  flex-shrink: 0;
+}
+
+.filter-container label,
+.sort-container label {
+  margin-right: 0.5rem;
+  font-weight: 600;
+}
+
+.filter-container select,
+.sort-container select {
+  margin-right: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  font-size: 0.95rem;
+}
+
+.sort-container {
+  display: flex;
+  align-items: center;
+}

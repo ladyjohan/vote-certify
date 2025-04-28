@@ -21,17 +21,18 @@ export class AdminRequestOverviewComponent implements OnInit {
   allRequests: any[] = [];
   filteredRequests: any[] = [];
   searchControl = new FormControl('');
+  currentSortField: string = 'submittedAt';
+  currentSortDirection: 'asc' | 'desc' = 'asc';
+  currentStatusFilter: string = 'all';
 
   async ngOnInit() {
     await this.loadRequests();
 
-    this.searchControl.valueChanges.pipe(debounceTime(300)).subscribe(searchText => {
-      const term = (searchText || '').toLowerCase();
-      this.filteredRequests = this.allRequests.filter(req => this.searchInFields(req, term));
+    this.searchControl.valueChanges.pipe(debounceTime(300)).subscribe(() => {
+      this.applyFilters();
     });
   }
 
-  // 🔄 Load all requests from Firestore
   async loadRequests() {
     const requestsRef = collection(this.firestore, 'requests');
     const snapshot = await getDocs(requestsRef);
@@ -46,10 +47,22 @@ export class AdminRequestOverviewComponent implements OnInit {
       };
     });
 
-    this.filteredRequests = [...this.allRequests];
+    this.applyFilters();
   }
 
-  // 🔍 Search logic (matches any relevant field)
+  applyFilters() {
+    const term = (this.searchControl.value || '').toLowerCase();
+
+    this.filteredRequests = this.allRequests.filter(req => {
+      const matchesSearch = this.searchInFields(req, term);
+      const matchesStatus = this.currentStatusFilter === 'all' ||
+        (req.status || '').toLowerCase() === this.currentStatusFilter;
+      return matchesSearch && matchesStatus;
+    });
+
+    this.sortRequests();
+  }
+
   searchInFields(request: any, term: string): boolean {
     return (
       (request.fullName?.toLowerCase().includes(term) || '') ||
@@ -60,7 +73,43 @@ export class AdminRequestOverviewComponent implements OnInit {
     );
   }
 
-  // ⏱ Calculate processing time in days
+  sortRequests() {
+    this.filteredRequests.sort((a, b) => {
+      let valueA = a[this.currentSortField];
+      let valueB = b[this.currentSortField];
+
+      if (this.currentSortField === 'submittedAt' || this.currentSortField === 'pickupDate') {
+        valueA = valueA ? new Date(valueA).getTime() : 0;
+        valueB = valueB ? new Date(valueB).getTime() : 0;
+      } else {
+        valueA = (valueA || '').toString().toLowerCase();
+        valueB = (valueB || '').toString().toLowerCase();
+      }
+
+      if (valueA < valueB) return this.currentSortDirection === 'asc' ? -1 : 1;
+      if (valueA > valueB) return this.currentSortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  onSortFieldChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.currentSortField = target.value;
+    this.sortRequests();
+  }
+
+  onSortDirectionChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.currentSortDirection = target.value as 'asc' | 'desc';
+    this.sortRequests();
+  }
+
+  onStatusFilterChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.currentStatusFilter = target.value;
+    this.applyFilters();
+  }
+
   getProcessingTime(request: any): string {
     if (request.submittedAt && request.pickupDate) {
       const pickupDate = new Date(request.pickupDate);
@@ -74,7 +123,6 @@ export class AdminRequestOverviewComponent implements OnInit {
     return 'N/A';
   }
 
-  // 🏷️ Get status badge class
   getStatusClass(status: string): string {
     switch ((status || '').toLowerCase()) {
       case 'approved':
@@ -91,7 +139,6 @@ export class AdminRequestOverviewComponent implements OnInit {
     }
   }
 
-  // 📄 Export table data to PDF
   exportPDF() {
     const doc = new jsPDF();
     const columns = ['Voter Name', 'Status', 'Submitted Date', 'Pickup Date', 'Processing Time'];
@@ -113,13 +160,11 @@ export class AdminRequestOverviewComponent implements OnInit {
     doc.save('Voter_Request_Overview_Report.pdf');
   }
 
-  // 📆 Format Date object to string
-  private formatDate(date: Date | null): string {
+  formatDate(date: Date | null): string {
     return date ? this.datePipe.transform(date, 'MM/dd/yyyy') ?? 'N/A' : 'N/A';
   }
 
-  // 📅 Format pickupDate string to readable date
-  private formatDateString(dateStr: string | null): string {
+  formatDateString(dateStr: string | null): string {
     if (!dateStr) return 'N/A';
     const date = new Date(dateStr);
     return isNaN(date.getTime()) ? 'N/A' : this.formatDate(date);

@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { Firestore, collection, getDocs, query, where, doc, updateDoc } from '@angular/fire/firestore';
+import { Firestore, collection, getDocs, query, where, doc, updateDoc, getDoc } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
 import { SupabaseService } from '../../../../services/supabase.service';
+import emailjs from 'emailjs-com';
+
 
 @Component({
   selector: 'app-request-management',
@@ -93,6 +95,9 @@ export class RequestManagementComponent implements OnInit {
         pickupDate: date
       });
 
+      //Send Email after approval
+      await this.sendApprovalEmail(request, date);
+
       this.pendingRequests = this.pendingRequests.filter(r => r.id !== request.id);
       this.closeDetails();
 
@@ -128,4 +133,29 @@ export class RequestManagementComponent implements OnInit {
       Swal.fire('Missing Remarks', 'Please enter a remark to decline.', 'warning');
     }
   }
+
+  async sendApprovalEmail(request: any, pickupDate: string) {
+    const templateParams = {
+      name: request.fullName,
+      pickup_date: pickupDate,
+      copies_requested: request.copiesRequested,
+      voter_id: request.voterId,
+      email: request.email
+    };
+  
+    // Use SECOND EmailJS Account credentials
+    emailjs.init('c4wdO5d7b4OvOf5ae'); // Second account Public Key
+  
+    try {
+      const result = await emailjs.send(
+        'service_g5f5afj',  // your service id
+        'template_gbdx50m', // your template id
+        templateParams
+      );
+      console.log('Approval Email sent!', result.text);
+    } catch (error) {
+      console.error('Failed to send approval email:', error);
+      Swal.fire('Error', 'Failed to send approval email.', 'error');
+    }
+  }  
 }

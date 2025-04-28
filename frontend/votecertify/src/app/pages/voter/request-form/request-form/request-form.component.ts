@@ -154,6 +154,7 @@ export class RequestFormComponent implements OnInit {
         copiesRequested,
         govIdUrl: `gov_ids/${govIdFileName}`,
         selfieUrl: `selfies/${selfieFileName}`,
+        email: this.currentUser?.email, 
         status: 'Pending',
         submittedAt: new Date()
       };

@@ -7,6 +7,31 @@
       <input [formControl]="searchControl" type="text" placeholder="Search Voter Request" />
     </div>
 
+    <div class="filter-container">
+      <label for="statusFilter">Status:</label>
+      <select id="statusFilter" (change)="onStatusFilterChange($event)">
+        <option value="all">All</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="completed">Completed</option>
+      </select>
+    </div>
+
+    <div class="sort-container">
+      <label for="sortField">Sort By:</label>
+      <select id="sortField" (change)="onSortFieldChange($event)">
+        <option value="fullName">Name</option>
+        <option value="status">Status</option>
+        <option value="submittedAt">Submitted Date</option>
+        <option value="pickupDate">Pickup Date</option>
+      </select>
+
+      <select id="sortDirection" (change)="onSortDirectionChange($event)">
+        <option value="asc">Oldest First</option>
+        <option value="desc">Newest First</option>
+      </select>
+    </div>
+
     <div class="export-btn-container">
       <button class="export-btn" (click)="exportPDF()">
         <i class="fas fa-file-pdf"></i> Export to PDF
@@ -24,12 +49,12 @@
     </div>
 
     <div class="request-item" *ngFor="let request of filteredRequests">
-      <span>{{ request.fullName }}</span>
+      <span>{{ request.fullName || 'N/A' }}</span>
       <span class="status-badge" [ngClass]="getStatusClass(request.status)">
-        {{ request.status }}
+        {{ request.status || 'N/A' }}
       </span>
-      <span>{{ request.submittedAt | date: 'MM/dd/yyyy' }}</span>
-      <span>{{ request.pickupDate | date: 'MM/dd/yyyy' }}</span>
+      <span>{{ request.submittedAt ? (request.submittedAt | date: 'MM/dd/yyyy') : 'N/A' }}</span>
+      <span>{{ formatDateString(request.pickupDate) }}</span>
       <span>{{ getProcessingTime(request) }}</span>
     </div>
   </div>
