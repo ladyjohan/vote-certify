@@ -1,208 +1,175 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { Firestore, collection, getDocs, query, where } from '@angular/fire/firestore';
-import { Chart, PieController, ArcElement, Tooltip, Legend, BarController, CategoryScale, BarElement, Title, LinearScale } from 'chart.js'; // Import necessary components
+import { Chart, PieController, ArcElement, Tooltip, Legend, BarController, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-staff-dashboard',
-  standalone: true,  // Ensure the component is standalone
-  imports: [CommonModule],  // Only import CommonModule here
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
 export class StaffDashboardComponent implements OnInit {
-  // Card stats
-  forApproval: number = 0;
-  onProcess: number = 0;
-  totalProcessed: number = 0;
-  declinedRequests: number = 0;  // Declined requests counter
-  chart: any;
+  forApproval = 0;
+  onProcess = 0;
+  totalProcessed = 0;
+  declinedRequests = 0;
+
+  @ViewChild('combinedPieChartCanvas') combinedPieChartCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('requestsChartCanvas') requestsChartCanvas!: ElementRef<HTMLCanvasElement>;
+
+  combinedPieChart: Chart | undefined;
+  barChart: Chart | undefined;
 
   constructor(private firestore: Firestore) {}
 
-  ngOnInit() {
-    this.getRequestsStats();
-    this.getRequestsThisMonth();
-    Chart.register(PieController, ArcElement, Tooltip, Legend, BarController, CategoryScale, LinearScale, BarElement, Title); // Register Pie and Bar Chart components
+  ngOnInit(): void {
+    Chart.register(PieController, ArcElement, Tooltip, Legend, BarController, CategoryScale, LinearScale, BarElement, Title);
+    this.loadDashboardData();
   }
 
-  // Fetch stats for requests
-  async getRequestsStats() {
+  async loadDashboardData(): Promise<void> {
+    await Promise.all([
+      this.getRequestsStats(),
+      this.getRequestsThisMonth()
+    ]);
+  }
+
+  async getRequestsStats(): Promise<void> {
     const requestsRef = collection(this.firestore, 'requests');
 
-    // For Approval: Requests where status is 'Pending'
-    const forApprovalQuery = query(requestsRef, where('status', '==', 'Pending'));
-    const forApprovalSnapshot = await getDocs(forApprovalQuery);
-    this.forApproval = forApprovalSnapshot.size;
+    const statuses = [
+      { field: 'Pending', setter: (count: number) => this.forApproval = count },
+      { field: 'Approved', setter: (count: number) => this.onProcess = count },
+      { field: 'Completed', setter: (count: number) => this.totalProcessed = count },
+      { field: 'Declined', setter: (count: number) => this.declinedRequests = count }
+    ];
 
-    // On Process: Requests where status is 'Approved'
-    const onProcessQuery = query(requestsRef, where('status', '==', 'Approved'));
-    const onProcessSnapshot = await getDocs(onProcessQuery);
-    this.onProcess = onProcessSnapshot.size;
-
-    // Total Processed: Requests where status is 'Completed'
-    const totalProcessedQuery = query(requestsRef, where('status', '==', 'Completed'));
-    const totalProcessedSnapshot = await getDocs(totalProcessedQuery);
-    this.totalProcessed = totalProcessedSnapshot.size;
-
-    // Declined Requests: Requests where status is 'Declined'
-    const declinedRequestsQuery = query(requestsRef, where('status', '==', 'Declined'));
-    const declinedRequestsSnapshot = await getDocs(declinedRequestsQuery);
-    this.declinedRequests = declinedRequestsSnapshot.size;
-
-    this.createPieCharts();
-  }
-
-  // Create the pie charts
-  createPieCharts(): void {
-    const forApprovalCtx = document.getElementById('forApprovalChart') as HTMLCanvasElement;
-    const onProcessCtx = document.getElementById('onProcessChart') as HTMLCanvasElement;
-    const declinedRequestsCtx = document.getElementById('declinedRequestsChart') as HTMLCanvasElement;
-    const totalProcessedCtx = document.getElementById('totalProcessedChart') as HTMLCanvasElement;
-
-    // Create pie chart for For Approval
-    new Chart(forApprovalCtx, {
-      type: 'pie',
-      data: {
-        datasets: [{
-          data: [this.forApproval, 100 - this.forApproval], // Show percentage of pending requests
-          backgroundColor: ['#003FCB', '#ffffff'],
-          borderColor: ['#fff', '#fff'],
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true
-      }
-    });
-
-    // Create pie chart for Approved Requests
-    new Chart(onProcessCtx, {
-      type: 'pie',
-      data: {
-        datasets: [{
-          data: [this.onProcess, 100 - this.onProcess],
-          backgroundColor: ['#003FCB', '#ffffff'],
-          borderColor: ['#fff', '#fff'],
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true
-      }
-    });
-
-    // Create pie chart for Declined Requests
-    new Chart(declinedRequestsCtx, {
-      type: 'pie',
-      data: {
-        datasets: [{
-          data: [this.declinedRequests, 100 - this.declinedRequests],
-          backgroundColor: ['#003FCB', '#ffffff'],
-          borderColor: ['#fff', '#fff'],
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true
-      }
-    });
-
-    // Create pie chart for Total Processed
-    new Chart(totalProcessedCtx, {
-      type: 'pie',
-      data: {
-        datasets: [{
-          data: [this.totalProcessed, 100 - this.totalProcessed],
-          backgroundColor: ['#003FCB', '#ffffff'],
-          borderColor: ['#fff', '#fff'],
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true
-      }
-    });
-  }
-
-  // Fetch the total requests this month for the bar graph
-  async getRequestsThisMonth() {
-    const requestsRef = collection(this.firestore, 'requests');
-    const currentMonth = new Date().getMonth(); // Get the current month (0-11)
-    const currentYear = new Date().getFullYear();
-
-    // Query for requests submitted this month
-    const monthQuery = query(
-      requestsRef,
-      where('submittedAt', '>=', new Date(currentYear, currentMonth, 1)),
-      where('submittedAt', '<', new Date(currentYear, currentMonth + 1, 0))
-    );
-    const monthSnapshot = await getDocs(monthQuery);
-
-    // Prepare data for the bar chart
-    const requestCounts = Array(31).fill(0); // For each day of the month (1-31)
-
-    monthSnapshot.forEach(doc => {
-      const request = doc.data();
-      const submittedAt = request['submittedAt'].toDate();
-      const day = submittedAt.getDate() - 1; // Days start from 1 in the calendar, so subtract 1 for zero-based index
-      requestCounts[day]++;
-    });
-
-    // Ensure that the chart is rendered even if requestCounts is empty
-    if (monthSnapshot.size === 0) {
-      requestCounts.fill(0);  // If no data, keep all days with value 0
+    for (const status of statuses) {
+      const q = query(requestsRef, where('status', '==', status.field));
+      const snapshot = await getDocs(q);
+      status.setter(snapshot.size);
     }
 
-    // Initialize the chart with the data
-    this.createBarChart(requestCounts);
+    setTimeout(() => {
+      this.createCombinedPieChart();
+    }, 0);
   }
 
-  // Create the bar chart for total requests this month
-  createBarChart(requestCounts: number[]): void {
-    const ctx = document.getElementById('requestsChart') as HTMLCanvasElement;
+  createCombinedPieChart(): void {
+    const ctx = this.combinedPieChartCanvas?.nativeElement;
+    if (!ctx) return;
 
-    // Initialize chart with data
-    if (ctx) {
-      if (this.chart) {
-        this.chart.destroy();
+    if (this.combinedPieChart) {
+      this.combinedPieChart.destroy();
+    }
+
+    this.combinedPieChart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: ['For Approval', 'Approved', 'Declined', 'Completed'],
+        datasets: [{
+          data: [
+            this.forApproval,
+            this.onProcess,
+            this.declinedRequests,
+            this.totalProcessed
+          ],
+          backgroundColor: [
+            '#FFD600', // For Approval
+            '#00C853', // Approved
+            '#D50000', // Declined
+            '#003FCB'  // Completed
+          ],
+          borderColor: '#ffffff',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          },
+          tooltip: {
+            enabled: true
+          }
+        }
       }
+    });
+  }
 
-      const maxValue = Math.max(...requestCounts) || 50;  // Set a default max value to avoid errors if data is 0
+  async getRequestsThisMonth(): Promise<void> {
+    const requestsRef = collection(this.firestore, 'requests');
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
-      this.chart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: Array.from({ length: 31 }, (_, i) => `Day ${i + 1}`),
-          datasets: [{
-            label: 'Total Requests This Month',
-            data: requestCounts,
-            backgroundColor: '#003FCB',
-            borderColor: '#001F6D',
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            x: {
-              type: 'category',
-              labels: Array.from({ length: 31 }, (_, i) => `Day ${i + 1}`)
-            },
-            y: {
-              beginAtZero: true,
-              min: 0,
-              max: maxValue + 10,
-              ticks: {
-                stepSize: 10,
-                callback: function(tickValue: string | number) {
-                  return tickValue;
-                }
-              }
+    const monthQuery = query(
+      requestsRef,
+      where('submittedAt', '>=', startOfMonth),
+      where('submittedAt', '<=', endOfMonth)
+    );
+
+    const monthSnapshot = await getDocs(monthQuery);
+    const requestCounts = Array(31).fill(0);
+
+    monthSnapshot.forEach(doc => {
+      const data = doc.data();
+      const submittedAt = data['submittedAt']?.toDate?.();
+      if (submittedAt instanceof Date) {
+        const dayIndex = submittedAt.getDate() - 1;
+        requestCounts[dayIndex]++;
+      }
+    });
+
+    setTimeout(() => {
+      this.createBarChart(requestCounts);
+    }, 0);
+  }
+
+  createBarChart(requestCounts: number[]): void {
+    const ctx = this.requestsChartCanvas?.nativeElement;
+    if (!ctx) return;
+
+    if (this.barChart) {
+      this.barChart.destroy();
+    }
+
+    const maxRequests = Math.max(...requestCounts, 10);
+
+    this.barChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: Array.from({ length: 31 }, (_, i) => `Day ${i + 1}`),
+        datasets: [{
+          label: 'Total Requests This Month',
+          data: requestCounts,
+          backgroundColor: '#003FCB',
+          borderColor: '#001F6D',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Day of Month'
+            }
+          },
+          y: {
+            beginAtZero: true,
+            min: 0,
+            max: maxRequests + 10,
+            ticks: {
+              stepSize: 10
             }
           }
         }
-      });
-    }
+      }
+    });
   }
 }

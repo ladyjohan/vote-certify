@@ -5,9 +5,6 @@
     </div>
     <h3>For Approval</h3>
     <p>{{ forApproval }}</p>
-    <div class="pie-chart">
-      <canvas id="forApprovalChart"></canvas>
-    </div>
   </div>
   <div class="card">
     <div class="icon">
@@ -15,9 +12,6 @@
     </div>
     <h3>Approved Requests</h3>
     <p>{{ onProcess }}</p>
-    <div class="pie-chart">
-      <canvas id="onProcessChart"></canvas>
-    </div>
   </div>
   <div class="card">
     <div class="icon">
@@ -25,9 +19,6 @@
     </div>
     <h3>Declined Requests</h3>
     <p>{{ declinedRequests }}</p>
-    <div class="pie-chart">
-      <canvas id="declinedRequestsChart"></canvas>
-    </div>
   </div>
   <div class="card">
     <div class="icon">
@@ -35,16 +26,23 @@
     </div>
     <h3>Total Processed</h3>
     <p>{{ totalProcessed }}</p>
-    <div class="pie-chart">
-      <canvas id="totalProcessedChart"></canvas>
-    </div>
-  </div>
-  <!-- Bar Chart for Total Requests This Month -->
-<div class="chart-container">
-  <h2>Total Requests This Month</h2>
-  <div class="chart-wrapper">
-    <canvas id="requestsChart"></canvas>
   </div>
 </div>
 
+<div class="charts-row">
+  <!-- Pie Chart -->
+  <div class="chart-container pie-chart">
+    <h2>Requests Overview</h2>
+    <div class="chart-wrapper">
+      <canvas #combinedPieChartCanvas></canvas>
+    </div>
+  </div>
+
+  <!-- Bar Chart -->
+  <div class="chart-container bar-chart">
+    <h2>Total Requests This Month</h2>
+    <div class="chart-wrapper">
+      <canvas #requestsChartCanvas></canvas>
+    </div>
+  </div>
 </div>
