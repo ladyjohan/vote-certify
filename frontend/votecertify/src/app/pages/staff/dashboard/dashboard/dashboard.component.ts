@@ -2,6 +2,8 @@ import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { Firestore, collection, getDocs, query, where } from '@angular/fire/firestore';
 import { Chart, PieController, ArcElement, Tooltip, Legend, BarController, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
 import { CommonModule } from '@angular/common';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+
 
 @Component({
   selector: 'app-staff-dashboard',
@@ -25,7 +27,7 @@ export class StaffDashboardComponent implements OnInit {
   constructor(private firestore: Firestore) {}
 
   ngOnInit(): void {
-    Chart.register(PieController, ArcElement, Tooltip, Legend, BarController, CategoryScale, LinearScale, BarElement, Title);
+    Chart.register(PieController, ArcElement, Tooltip, Legend, BarController, CategoryScale, LinearScale, BarElement, Title, ChartDataLabels);
     this.loadDashboardData();
   }
 
@@ -65,6 +67,8 @@ export class StaffDashboardComponent implements OnInit {
       this.combinedPieChart.destroy();
     }
 
+    const total = this.forApproval + this.onProcess + this.declinedRequests + this.totalProcessed;
+
     this.combinedPieChart = new Chart(ctx, {
       type: 'pie',
       data: {
@@ -93,10 +97,29 @@ export class StaffDashboardComponent implements OnInit {
             position: 'bottom'
           },
           tooltip: {
-            enabled: true
+            enabled: true,
+            callbacks: {
+              label: (context) => {
+                const value = context.raw as number;
+                const percentage = total ? ((value / total) * 100).toFixed(1) : '0';
+                return `${context.label}: ${percentage}% (${value})`;
+              }
+            }
+          },
+          datalabels: {
+            color: '#fff',
+            font: {
+              weight: 'bold',
+              size: 14
+            },
+            formatter: (value, context) => {
+              const percentage = total ? ((value / total) * 100).toFixed(1) : '0';
+              return `${percentage}% (${value})`;
+            }
           }
         }
-      }
+      },
+      plugins: [ChartDataLabels]
     });
   }
 

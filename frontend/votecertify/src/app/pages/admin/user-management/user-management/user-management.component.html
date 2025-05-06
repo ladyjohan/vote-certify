@@ -38,19 +38,21 @@
         <td>{{ user.role }}</td>
         <td>{{ user.status }}</td>
         <td>
-          <!-- Actions based on the user's status -->
-          <ng-container *ngIf="user.status === 'pending'">
-            <button class="btn btn-danger" (click)="deleteAccount(user.id)">Delete</button>
+          <!-- 🛡️ Only show actions if NOT my own account -->
+          <ng-container *ngIf="user.id !== currentUserId">
+            <!-- Show Delete button for pending -->
+            <button *ngIf="user.status === 'pending'" class="btn btn-danger" (click)="deleteAccount(user.id)">Delete</button>
+
+            <!-- Show Disable button for verified -->
+            <button *ngIf="user.status === 'verified'" class="btn btn-warning" (click)="disableAccount(user.id)">Disable</button>
+
+            <!-- Show Enable button for disabled -->
+            <button *ngIf="user.status === 'disabled'" class="btn btn-success" (click)="enableAccount(user.id)">Enable</button>
           </ng-container>
 
-          <!-- Show Disable button only for verified accounts -->
-          <ng-container *ngIf="user.status === 'verified'">
-            <button class="btn btn-warning" (click)="disableAccount(user.id)">Disable</button>
-          </ng-container>
-
-          <!-- Show Enable button only for disabled accounts -->
-          <ng-container *ngIf="user.status === 'disabled'">
-            <button class="btn btn-success" (click)="enableAccount(user.id)">Enable</button>
+          <!-- 🔒 If my own account -->
+          <ng-container *ngIf="user.id === currentUserId">
+            <span class="text-muted">Your account</span>
           </ng-container>
         </td>
       </tr>

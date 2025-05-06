@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { getAuth, createUserWithEmailAndPassword, deleteUser, initializeAuth, browserLocalPersistence, browserPopupRedirectResolver } from '@angular/fire/auth';
+import { getAuth, createUserWithEmailAndPassword, initializeAuth, browserLocalPersistence, browserPopupRedirectResolver } from '@angular/fire/auth';
 import { FirebaseApp, provideFirebaseApp, initializeApp } from '@angular/fire/app';
 import { environment } from '../../../../../environments/environment'; // Adjust this path based on your setup
-import { Firestore, doc, setDoc, collection, getDocs, getDoc, updateDoc, deleteDoc } from '@angular/fire/firestore'; // Add deleteDoc import
+import { Firestore, doc, setDoc, collection, getDocs, getDoc, updateDoc, deleteDoc } from '@angular/fire/firestore';
 import { FormsModule } from '@angular/forms';
 import emailjs from 'emailjs-com';
 import { ToastrService } from 'ngx-toastr';
@@ -34,6 +34,7 @@ export class AdminUserManagementComponent implements OnInit {
   filteredUsers: User[] = [];
   searchQuery: string = '';
   isAdmin = false;
+  currentUserId: string = ''; // 🆕 Add currentUserId
 
   private EMAIL_JS_SERVICE_ID = 'service_rrb00wy';
   private EMAIL_JS_TEMPLATE_ID = 'template_8j29e0p';
@@ -44,9 +45,13 @@ export class AdminUserManagementComponent implements OnInit {
   async ngOnInit() {
     await this.checkAdminRole();
     await this.loadUsers();
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (user) {
+      this.currentUserId = user.uid; // 🆕 Save logged-in Admin's UID
+    }
   }
 
-  // Check if logged-in user is an Admin
   async checkAdminRole() {
     const auth = getAuth();
     const user = auth.currentUser;
@@ -76,7 +81,7 @@ export class AdminUserManagementComponent implements OnInit {
     if (user && user.emailVerified) {
       try {
         const userDocRef = doc(this.firestore, 'users', userId);
-        await updateDoc(userDocRef, { status: 'verified' }); // ✅ Update status
+        await updateDoc(userDocRef, { status: 'verified' });
         console.log('✅ Staff status updated to "verified" in Firestore.');
       } catch (error) {
         console.error('❌ Error updating staff status:', error);
@@ -84,29 +89,24 @@ export class AdminUserManagementComponent implements OnInit {
     }
   }
 
-  // Add a new Staff or Admin
   async addStaff() {
     if (!this.isAdmin) return;
 
     const password = this.selectedRole === 'staff' ? '123456' : this.staffPassword;
 
     try {
-      // ✅ 1. Create secondary app instance to preserve admin session
       const secondaryApp = initializeApp(environment.firebaseConfig, 'Secondary');
       const secondaryAuth = initializeAuth(secondaryApp, {
         persistence: browserLocalPersistence,
         popupRedirectResolver: browserPopupRedirectResolver,
       });
 
-      // ✅ 2. Create the user on the secondary auth instance
       const userCredential = await createUserWithEmailAndPassword(secondaryAuth, this.staffEmail, password);
       const user = userCredential.user;
       const uid = user.uid;
 
-      // ✅ 3. Sign out the secondary auth instance immediately
       await secondaryAuth.signOut();
 
-      // ✅ 4. Save user to Firestore
       const userStatus = this.selectedRole === 'admin' ? 'verified' : 'pending';
       const userName = this.selectedRole === 'admin' ? 'Admin' : this.staffName;
 
@@ -117,7 +117,6 @@ export class AdminUserManagementComponent implements OnInit {
         name: userName,
       });
 
-      // ✅ 5. Send email if staff
       if (this.selectedRole === 'staff') {
         const verificationLink = `http://localhost:4200/verify-email?uid=${uid}`;
         await this.sendVerificationAndPasswordEmail(this.staffEmail, password, verificationLink);
@@ -133,7 +132,6 @@ export class AdminUserManagementComponent implements OnInit {
     }
   }
 
-  //Send verification email with password
   private async sendVerificationAndPasswordEmail(email: string, password: string, verificationLink: string) {
     const emailParams = {
       email: email,
@@ -155,29 +153,33 @@ export class AdminUserManagementComponent implements OnInit {
     }
   }
 
-  // Load Admin and Staff users from Firestore
   async loadUsers() {
     const usersCollectionRef = collection(this.firestore, 'users');
     const querySnapshot = await getDocs(usersCollectionRef);
 
     this.users = querySnapshot.docs
-    .map(doc => {
-      const data = doc.data() as User;
-      return {
-        id: doc.id,
-        name: data.name || '', // Ensure name is included
-        email: data.email,
-        role: data.role,
-        status: data.status
-      };
-    })
-      .filter(user => user.role === 'admin' || user.role === 'staff'); // Only show Admin & Staff
+      .map(doc => {
+        const data = doc.data() as User;
+        return {
+          id: doc.id,
+          name: data.name || '',
+          email: data.email,
+          role: data.role,
+          status: data.status
+        };
+      })
+      .filter(user => user.role === 'admin' || user.role === 'staff');
 
     this.filteredUsers = this.users;
   }
 
-   // Disable an account with SweetAlert2
-   async disableAccount(userId: string) {
+  // Disable an account with SweetAlert2
+  async disableAccount(userId: string) {
+    if (userId === this.currentUserId) {
+      this.toastr.error('You cannot disable your own account.');
+      return;
+    }
+
     const result = await Swal.fire({
       title: 'Are you sure?',
       text: "You are about to disable this account.",
@@ -197,7 +199,6 @@ export class AdminUserManagementComponent implements OnInit {
           return;
         }
 
-        const userData = userDocSnap.data() as { name?: string };
         await updateDoc(userDocRef, { status: 'disabled' });
         this.toastr.warning('Account disabled successfully.');
         await this.loadUsers();
@@ -208,8 +209,13 @@ export class AdminUserManagementComponent implements OnInit {
     }
   }
 
-  // Enable a disabled account with SweetAlert2
+  // Enable a disabled account
   async enableAccount(userId: string) {
+    if (userId === this.currentUserId) {
+      this.toastr.error('You cannot enable your own account.');
+      return;
+    }
+
     const result = await Swal.fire({
       title: 'Are you sure?',
       text: "You are about to enable this account.",
@@ -239,8 +245,13 @@ export class AdminUserManagementComponent implements OnInit {
     }
   }
 
-  // Delete account with SweetAlert2
+  // Delete an account
   async deleteAccount(userId: string) {
+    if (userId === this.currentUserId) {
+      this.toastr.error('You cannot delete your own account.');
+      return;
+    }
+
     const result = await Swal.fire({
       title: 'Are you sure?',
       text: "You are about to permanently delete this account.",
@@ -263,7 +274,6 @@ export class AdminUserManagementComponent implements OnInit {
         await deleteDoc(userDocRef);
 
         this.toastr.success('Account deleted successfully.');
-
         this.users = this.users.filter(user => user.id !== userId);
         this.filteredUsers = this.filteredUsers.filter(user => user.id !== userId);
       } catch (error) {
