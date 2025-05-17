@@ -3,7 +3,7 @@ import { Firestore, collection, getDocs, query, where } from '@angular/fire/fire
 import { Chart, PieController, ArcElement, Tooltip, Legend, BarController, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
 import { CommonModule } from '@angular/common';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-
+import { Inject } from '@angular/core';  // Added import to inject dependencies properly
 
 @Component({
   selector: 'app-staff-dashboard',
@@ -24,7 +24,7 @@ export class StaffDashboardComponent implements OnInit {
   combinedPieChart: Chart | undefined;
   barChart: Chart | undefined;
 
-  constructor(private firestore: Firestore) {}
+  constructor(@Inject(Firestore) private firestore: Firestore) {}  // Inject Firestore correctly here
 
   ngOnInit(): void {
     Chart.register(PieController, ArcElement, Tooltip, Legend, BarController, CategoryScale, LinearScale, BarElement, Title, ChartDataLabels);

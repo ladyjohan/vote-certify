@@ -4,21 +4,26 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
-  onAuthStateChanged,
   User,
-  setPersistence,
-  browserSessionPersistence
 } from '@angular/fire/auth';
+
+import {
+  browserSessionPersistence,
+  setPersistence,
+  onAuthStateChanged,
+} from 'firebase/auth';
+
 import { Firestore, doc, setDoc, getDoc, updateDoc } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import emailjs from 'emailjs-com';
 
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private auth: Auth = inject(Auth);
-  private firestore: Firestore = inject(Firestore);
-  private router = inject(Router);
-  private zone = inject(NgZone);
+  private auth: Auth;
+  private firestore: Firestore;
+  private router: Router;
+  private zone: NgZone;
   private user: User | null = null;
 
   // ✅ EmailJS Configuration
@@ -27,43 +32,45 @@ export class AuthService {
   private EMAIL_JS_PUBLIC_KEY = 'VrHsZ86VVPD_U6TsA';
 
   constructor() {
+    this.auth = inject(Auth);
+    this.firestore = inject(Firestore);
+    this.router = inject(Router);
+    this.zone = inject(NgZone);
+
     this.initializeAuthState();
   }
 
-/** ✅ Initialize Auth State */
-private async initializeAuthState() {
-  try {
-    await setPersistence(this.auth, browserSessionPersistence);
+  /** ✅ Initialize Auth State */
+  private async initializeAuthState() {
+    try {
+      await setPersistence(this.auth, browserSessionPersistence);
 
-    onAuthStateChanged(this.auth, async (user) => {
-      const currentUrl = this.router.url;
+      onAuthStateChanged(this.auth, async (user) => {
+        this.zone.run(async () => {  // ✅ Ensures Angular change detection is aware
+          const currentUrl = this.router.url;
 
-      if (user) {
-        console.log('✅ User authenticated:', user.email);
-        this.user = user;
+          if (user) {
+            console.log('✅ User authenticated:', user.email);
+            this.user = user;
 
-        const userRole = await this.getUserRole(user.uid);
-        console.log('🔄 User role:', userRole);
+            const userRole = await this.getUserRole(user.uid);
+            console.log('🔄 User role:', userRole);
 
-        // Don't redirect to verify-email if we're already on that page
-        if (currentUrl.startsWith('/verify-email') || currentUrl === '/login') {
-          return;
-        }
+            if (currentUrl.startsWith('/verify-email') || currentUrl === '/login') return;
 
-        // If not verified, force redirect to /verify-email
-        if (!user.emailVerified) {
-          this.router.navigate(['/verify-email']);
-        }
-      } else {
-        console.warn('⚠️ No user found. Redirecting to login.');
-        this.router.navigate(['/login']);
-      }
-    });
-  } catch (error) {
-    console.error('❌ Error setting auth persistence:', error);
+            if (!user.emailVerified) {
+              this.router.navigate(['/verify-email']);
+            }
+          } else {
+            console.warn('⚠️ No user found. Redirecting to login.');
+            this.router.navigate(['/login']);
+          }
+        });
+      });
+    } catch (error) {
+      console.error('❌ Error setting auth persistence:', error);
+    }
   }
-}
-
 
   /** ✅ Register & Send Verification + Password via EmailJS */
   async register(fullName: string, voterId: string, birthdate: string, email: string, password: string) {
@@ -192,10 +199,11 @@ private redirectUser(role: string) {
     return !!this.user;
   }
 
-  /** ✅ Get the currently logged-in user */
-  async getCurrentUser(): Promise<User | null> {
-    return new Promise((resolve) => {
-      onAuthStateChanged(this.auth, (user) => {
+/** ✅ Get the currently logged-in user */
+async getCurrentUser(): Promise<User | null> {
+  return new Promise((resolve) => {
+    onAuthStateChanged(this.auth, (user) => {
+      this.zone.run(() => {  // Ensures Angular change detection is aware
         if (user) {
           this.user = user;
           resolve(user);
@@ -204,34 +212,42 @@ private redirectUser(role: string) {
         }
       });
     });
-  }
+  });
+}
 
-  /** ✅ Fetch user role from Firestore */
-  async getUserRole(uid: string): Promise<string | null> {
-    try {
+
+/** ✅ Fetch user role from Firestore */
+async getUserRole(uid: string): Promise<string | null> {
+  try {
+    // Ensure the Firebase API call runs inside Angular's zone
+    return await this.zone.run(() => {
       const userRef = doc(this.firestore, 'users', uid);
-      const userSnap = await getDoc(userRef);
-
-      if (userSnap.exists()) {
-        return userSnap.data()['role'];
-      }
-      return null;
-    } catch (error) {
-      console.error('❌ Error fetching user role:', error);
-      return null;
-    }
+      return getDoc(userRef).then((userSnap) => {
+        if (userSnap.exists()) {
+          return userSnap.data()['role'];
+        }
+        return null;
+      });
+    });
+  } catch (error) {
+    console.error('❌ Error fetching user role:', error);
+    return null;
   }
+}
 
-  /** ✅ Verify Email in Firestore */
-  async verifyEmail(uid: string) {
-    try {
+/** ✅ Verify Email in Firestore */
+async verifyEmail(uid: string) {
+  try {
+    this.zone.run(async () => {  // Ensures Angular change detection is aware
       const userRef = doc(this.firestore, 'users', uid);
       await updateDoc(userRef, { status: 'verified' });
       console.log('✅ Email verified in Firestore.');
-    } catch (error) {
-      console.error('❌ Error verifying email:', error);
-    }
+    });
+  } catch (error) {
+    console.error('❌ Error verifying email:', error);
   }
+}
+
 
   /** ✅ Log out user */
   async logout() {
