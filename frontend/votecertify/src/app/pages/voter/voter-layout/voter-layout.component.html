@@ -1,5 +1,4 @@
 <div class="voter-layout">
-  <!-- Modern Hamburger Toggle -->
   <button
     class="menu-toggle"
     (click)="toggleSidenav()"
@@ -11,16 +10,19 @@
     <span></span>
   </button>
 
-  <!-- Sidebar -->
   <div class="sidenav-container" [class.open]="isSidenavOpen">
     <app-voter-sidenav></app-voter-sidenav>
   </div>
 
-  <!-- Overlay -->
-  <div class="overlay" *ngIf="isSidenavOpen" (click)="toggleSidenav()"></div>
+  <div class="content-area">
+    <header class="top-header">
+      <div class="datetime">📅 {{ currentDateTime }}</div>
+    </header>
 
-  <!-- Content -->
-  <div class="content-container">
-    <router-outlet></router-outlet>
+    <div class="content-container">
+      <router-outlet></router-outlet>
+    </div>
   </div>
+
+  <div class="overlay" *ngIf="isSidenavOpen" (click)="toggleSidenav()"></div>
 </div>

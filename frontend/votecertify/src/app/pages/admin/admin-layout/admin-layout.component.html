@@ -1,20 +1,24 @@
 <div class="admin-layout">
-  <!-- Modern Hamburger Toggle -->
   <button class="menu-toggle" (click)="toggleSidenav()" [class.open]="isSidenavOpen" aria-label="Toggle Menu">
     <span></span>
     <span></span>
     <span></span>
   </button>
 
-  <!-- Sidebar -->
   <div class="sidenav-container" [class.open]="isSidenavOpen">
     <app-admin-sidenav></app-admin-sidenav>
   </div>
 
-  <!-- Overlay -->
-  <div class="overlay" *ngIf="isSidenavOpen" (click)="toggleSidenav()"></div>
+  <div class="content-area">
 
-  <div class="content-container">
-    <router-outlet></router-outlet>
+    <header class="top-header">
+      <div class="datetime">📅 {{ currentDateTime }}</div>
+    </header>
+
+    <div class="content-container">
+      <router-outlet></router-outlet>
+    </div>
   </div>
+
+  <div class="overlay" *ngIf="isSidenavOpen" (click)="toggleSidenav()"></div>
 </div>

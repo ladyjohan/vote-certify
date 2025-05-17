@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { VoterSidenavComponent } from '../voter-sidenav/voter-sidenav.component';
@@ -12,8 +12,28 @@ import { VoterSidenavComponent } from '../voter-sidenav/voter-sidenav.component'
 })
 export class VoterLayoutComponent {
   isSidenavOpen = false;
+  currentDateTime: string = '';
 
   toggleSidenav() {
     this.isSidenavOpen = !this.isSidenavOpen;
+  }
+
+  ngOnInit(): void {
+    this.updateDateTime();
+    setInterval(() => this.updateDateTime(), 1000);
+  }
+
+  updateDateTime(): void {
+    const now = new Date();
+    this.currentDateTime = now.toLocaleString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    });
   }
 }

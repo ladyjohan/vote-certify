@@ -67,3 +67,86 @@
     background-color: #f9f9f9;
   }
 }
+
+@media screen and (max-width: 1024px) {
+  .dashboard-cards {
+    flex-direction: column;
+    gap: 30px;
+
+    .card {
+      width: 95%;
+    }
+  }
+
+  .chart-container {
+    padding: 15px;
+
+    .chart-wrapper {
+      height: 400px;
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .dashboard-cards {
+    .card {
+      padding: 15px;
+
+      .icon {
+        font-size: 32px;
+      }
+
+      h3 {
+        font-size: 16px;
+      }
+
+      p {
+        font-size: 20px;
+      }
+    }
+  }
+
+  .chart-container {
+    h2 {
+      font-size: 18px;
+    }
+
+    .chart-wrapper {
+      height: 300px;
+    }
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .dashboard-cards {
+    gap: 20px;
+
+    .card {
+      padding: 12px;
+
+      .icon {
+        font-size: 28px;
+      }
+
+      h3 {
+        font-size: 14px;
+      }
+
+      p {
+        font-size: 18px;
+      }
+    }
+  }
+
+  .chart-container {
+    padding: 12px;
+
+    h2 {
+      font-size: 16px;
+    }
+
+    .chart-wrapper {
+      height: 250px;
+    }
+  }
+}

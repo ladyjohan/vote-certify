@@ -13,14 +13,22 @@
 
   <!-- Sidebar -->
   <div class="sidenav-container" [class.open]="isSidenavOpen">
-    <app-staff-sidenav></app-staff-sidenav> <!-- Staff Sidenav -->
+    <app-staff-sidenav></app-staff-sidenav>
+  </div>
+
+  <!-- Right Content Area -->
+  <div class="content-area">
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="datetime">📅 {{ currentDateTime }}</div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="content-container">
+      <router-outlet></router-outlet>
+    </div>
   </div>
 
   <!-- Overlay -->
   <div class="overlay" *ngIf="isSidenavOpen" (click)="toggleSidenav()"></div>
-
-  <!-- Content container where staff pages will render -->
-  <div class="content-container">
-    <router-outlet></router-outlet> <!-- Content will be rendered here -->
-  </div>
 </div>
