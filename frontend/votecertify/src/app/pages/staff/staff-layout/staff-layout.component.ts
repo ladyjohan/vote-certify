@@ -10,4 +10,11 @@ import { StaffSidenavComponent } from '../staff-sidenav/staff-sidenav.component'
   templateUrl: './staff-layout.component.html',
   styleUrls: ['./staff-layout.component.scss']
 })
-export class StaffLayoutComponent { }
+export class StaffLayoutComponent {
+  isSidenavOpen = false;
+
+  toggleSidenav() {
+    this.isSidenavOpen = !this.isSidenavOpen;
+  }
+}
+
