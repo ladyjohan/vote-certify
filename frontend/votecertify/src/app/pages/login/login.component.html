@@ -1,24 +1,22 @@
 <div class="auth-container">
+  <div class="background-circles">
+    <span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span>
+  </div>
+
   <div class="auth-box">
     <img src="assets/logo.png" alt="VoteCertify Logo" class="logo" />
-
-       <!-- Error Message -->
-       <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
-
     <form [formGroup]="loginForm" (ngSubmit)="login()">
       <div class="input-group">
         <i class="fas fa-user"></i>
-        <input type="text" placeholder="Email" formControlName="email" required />
+        <input type="email" placeholder="Email" formControlName="email" required />
       </div>
       <div class="input-group">
         <i class="fas fa-lock"></i>
         <input type="password" placeholder="Password" formControlName="password" required />
       </div>
-      <button type="submit" class="btn">
-        Log in
-      </button>
+      <button class="btn" type="submit">Log in</button>
     </form>
-
     <p class="signup-text">
       Don't have an account? <a routerLink="/register">Sign up</a>
     </p>

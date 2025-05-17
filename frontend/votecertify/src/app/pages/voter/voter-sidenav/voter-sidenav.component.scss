@@ -155,15 +155,6 @@
         transform: scaleY(1);
       }
     }
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.2);
-      color: #ffffff;
-      font-weight: 600;
-      transform: translateX(8px) scale(1.05);  // Add slide + subtle scale
-    }
-
-    transition: all 0.3s ease-in-out; // keep this for smooth transition
   }
 }
 
