@@ -10,4 +10,10 @@ import { AdminSidenavComponent } from '../admin-sidenav/admin-sidenav.component'
   templateUrl: './admin-layout.component.html',
   styleUrls: ['./admin-layout.component.scss']
 })
-export class AdminLayoutComponent { }
+export class AdminLayoutComponent {
+  isSidenavOpen = false;
+
+  toggleSidenav() {
+    this.isSidenavOpen = !this.isSidenavOpen;
+  }
+}

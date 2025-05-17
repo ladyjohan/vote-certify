@@ -1,11 +1,86 @@
 .admin-layout {
   display: flex;
   height: 100vh;
+  flex-direction: row;
+  position: relative;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    overflow-x: hidden; /* prevent horizontal scroll */
+  }
 }
 
+/* Modern Hamburger Menu */
+.menu-toggle {
+  display: none;
+  position: fixed;
+  top: 20px;
+  left: 15px;
+  z-index: 1101;
+  width: 24px;
+  height: 18px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+
+  span {
+    display: block;
+    height: 2px;
+    width: 100%;
+    background: #8d8d8d;
+    border-radius: 3px;
+    margin-bottom: 4px;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+
+
+  @media (max-width: 768px) {
+    display: block;
+  }
+}
+
+
+/* Sidebar */
 .sidenav-container {
-  width: 250px; /* Adjust width of the sidenav */
+  width: 250px;
   background-color: #333;
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 250px;  /* important */
+    z-index: 1100;
+    transform: translateX(-100%);
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.5);
+    overflow-y: auto; /* allow scrolling if content is tall */
+
+    &.open {
+      transform: translateX(0);
+    }
+  }
+}
+
+/* Overlay behind sidebar */
+.overlay {
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1050;
+  }
 }
 
 .content-container {
@@ -13,4 +88,10 @@
   padding: 20px;
   background-color: #f4f4f4;
   height: 100vh;
+  overflow-y: auto;
+
+  @media (max-width: 768px) {
+    height: auto;
+    margin-top: 50px; /* to avoid toggle button overlap */
+  }
 }

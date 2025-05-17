@@ -1,8 +1,20 @@
 <div class="admin-layout">
-  <div class="sidenav-container">
-    <app-admin-sidenav></app-admin-sidenav> <!-- Admin Sidenav -->
+  <!-- Modern Hamburger Toggle -->
+  <button class="menu-toggle" (click)="toggleSidenav()" [class.open]="isSidenavOpen" aria-label="Toggle Menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <!-- Sidebar -->
+  <div class="sidenav-container" [class.open]="isSidenavOpen">
+    <app-admin-sidenav></app-admin-sidenav>
   </div>
+
+  <!-- Overlay -->
+  <div class="overlay" *ngIf="isSidenavOpen" (click)="toggleSidenav()"></div>
+
   <div class="content-container">
-    <router-outlet></router-outlet> <!-- This is where the content will be loaded -->
+    <router-outlet></router-outlet>
   </div>
 </div>
