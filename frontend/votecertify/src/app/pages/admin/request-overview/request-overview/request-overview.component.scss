@@ -6,6 +6,14 @@
   font-family: 'Segoe UI', sans-serif;
 }
 
+.title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
 .top-row {
   display: flex;
   justify-content: space-between;
@@ -85,19 +93,24 @@
   align-items: center;
 }
 
+/* Responsive font sizes added here */
 .request-header {
   background-color: #f1f5f9;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: clamp(0.9rem, 1vw + 0.5rem, 1rem);
   color: #374151;
   border-bottom: 1px solid #e5e7eb;
 }
 
 .request-item {
   border-bottom: 1px solid #f1f5f9;
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 0.9vw + 0.4rem, 0.95rem);
   color: #111827;
   transition: background-color 0.2s;
+}
+
+.request-item span {
+  font-size: clamp(0.85rem, 0.9vw + 0.4rem, 0.95rem);
 }
 
 .request-item:hover {
@@ -187,6 +200,20 @@
     font-size: 0.85rem;
     padding: 0.4rem 0.8rem;
   }
+
+  .title {
+    font-size: 1.5rem;
+    margin-bottom: 0.8rem;
+  }
+
+  /* Adjust font size smaller on smaller screens */
+  .request-item {
+    font-size: clamp(0.8rem, 1vw + 0.2rem, 0.9rem);
+  }
+
+  .request-item span {
+    font-size: clamp(0.8rem, 1vw + 0.2rem, 0.9rem);
+  }
 }
 
 @media (max-width: 768px) {
@@ -229,6 +256,17 @@
     padding: 0.6rem 0;
   }
 
+  .title {
+    font-size: 1.3rem;
+    margin-bottom: 0.7rem;
+  }
+
+  @media (max-width: 480px) {
+    .title {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+  }
   /* Grid to block stack for request list */
   .request-header,
   .request-item {
@@ -317,5 +355,14 @@
   .export-btn {
     font-size: 0.85rem;
     padding: 0.5rem 0;
+  }
+
+  /* Further reduce font size for request items */
+  .request-item {
+    font-size: clamp(0.75rem, 1vw + 0.1rem, 0.85rem);
+  }
+
+  .request-item span {
+    font-size: clamp(0.75rem, 1vw + 0.1rem, 0.85rem);
   }
 }
