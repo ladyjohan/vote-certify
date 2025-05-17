@@ -6,8 +6,14 @@ import { VoterSidenavComponent } from '../voter-sidenav/voter-sidenav.component'
 @Component({
   selector: 'app-voter-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, VoterSidenavComponent], // ✅ Import necessary components
+  imports: [CommonModule, RouterOutlet, VoterSidenavComponent],
   templateUrl: './voter-layout.component.html',
   styleUrls: ['./voter-layout.component.scss']
 })
-export class VoterLayoutComponent { }
+export class VoterLayoutComponent {
+  isSidenavOpen = false;
+
+  toggleSidenav() {
+    this.isSidenavOpen = !this.isSidenavOpen;
+  }
+}

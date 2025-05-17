@@ -1,11 +1,26 @@
 <div class="voter-layout">
-  <!-- Sidenav -->
-  <div class="sidenav-container">
-    <app-voter-sidenav></app-voter-sidenav> <!-- Voter Sidenav -->
+  <!-- Modern Hamburger Toggle -->
+  <button
+    class="menu-toggle"
+    (click)="toggleSidenav()"
+    [class.open]="isSidenavOpen"
+    aria-label="Toggle Menu"
+  >
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <!-- Sidebar -->
+  <div class="sidenav-container" [class.open]="isSidenavOpen">
+    <app-voter-sidenav></app-voter-sidenav>
   </div>
 
-  <!-- Content container where voter pages will render -->
+  <!-- Overlay -->
+  <div class="overlay" *ngIf="isSidenavOpen" (click)="toggleSidenav()"></div>
+
+  <!-- Content -->
   <div class="content-container">
-    <router-outlet></router-outlet> <!-- Content will be rendered here -->
+    <router-outlet></router-outlet>
   </div>
 </div>
