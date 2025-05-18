@@ -1,48 +1,66 @@
-<div class="dashboard-cards">
-  <div class="card">
-    <div class="icon">
-      <i class="fas fa-spinner"></i>
+<div class="dashboard-container">
+  <div class="welcome-card">
+    <div class="icon-area">
+      <i class="fas fa-user-check"></i>
     </div>
-    <h3>For Approval</h3>
-    <p>{{ forApproval }}</p>
-  </div>
-  <div class="card">
-    <div class="icon">
-      <i class="fas fa-check-circle"></i>
-    </div>
-    <h3>Approved Requests</h3>
-    <p>{{ onProcess }}</p>
-  </div>
-  <div class="card">
-    <div class="icon">
-      <i class="fas fa-times-circle"></i>
-    </div>
-    <h3>Declined Requests</h3>
-    <p>{{ declinedRequests }}</p>
-  </div>
-  <div class="card">
-    <div class="icon">
-      <i class="fas fa-clipboard-check"></i>
-    </div>
-    <h3>Total Processed</h3>
-    <p>{{ totalProcessed }}</p>
-  </div>
-</div>
-
-<div class="charts-row">
-  <!-- Pie Chart -->
-  <div class="chart-container pie-chart">
-    <h2>Requests Overview</h2>
-    <div class="chart-wrapper">
-      <canvas #combinedPieChartCanvas></canvas>
+    <div class="welcome-content">
+      <h1>Welcome, COMELEC Staff!</h1>
+      <p>
+        This is your dashboard for managing voter's certificate requests. Review submissions, approve or decline requests, and track request statistics with ease.
+      </p>
+      <div class="staff-badge">
+        <span class="badge-icon">🗳️</span>
+        <span>COMELEC Staff Access</span>
+      </div>
     </div>
   </div>
 
-  <!-- Bar Chart -->
-  <div class="chart-container bar-chart">
-    <h2>Total Requests This Month</h2>
-    <div class="chart-wrapper">
-      <canvas #requestsChartCanvas></canvas>
+  <div class="dashboard-cards">
+    <div class="card">
+      <div class="icon">
+        <i class="fas fa-spinner"></i>
+      </div>
+      <h3>For Approval</h3>
+      <p>{{ forApproval }}</p>
+    </div>
+    <div class="card">
+      <div class="icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <h3>Approved Requests</h3>
+      <p>{{ onProcess }}</p>
+    </div>
+    <div class="card">
+      <div class="icon">
+        <i class="fas fa-times-circle"></i>
+      </div>
+      <h3>Declined Requests</h3>
+      <p>{{ declinedRequests }}</p>
+    </div>
+    <div class="card">
+      <div class="icon">
+        <i class="fas fa-clipboard-check"></i>
+      </div>
+      <h3>Total Processed</h3>
+      <p>{{ totalProcessed }}</p>
+    </div>
+  </div>
+
+  <div class="charts-row">
+    <!-- Pie Chart -->
+    <div class="chart-container pie-chart">
+      <h2>Requests Overview</h2>
+      <div class="chart-wrapper">
+        <canvas #combinedPieChartCanvas></canvas>
+      </div>
+    </div>
+
+    <!-- Bar Chart -->
+    <div class="chart-container bar-chart">
+      <h2>Total Requests This Month</h2>
+      <div class="chart-wrapper">
+        <canvas #requestsChartCanvas></canvas>
+      </div>
     </div>
   </div>
 </div>
