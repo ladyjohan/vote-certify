@@ -1,7 +1,7 @@
 .voter-layout {
   display: flex;
   flex-direction: row;
-  height: 100vh;
+  min-height: 100vh;
   position: relative;
 
   @media (max-width: 768px) {
