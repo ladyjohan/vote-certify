@@ -4,11 +4,7 @@
   <!-- Add Staff/Admin -->
   <div class="add-user-form">
     <input type="email" [(ngModel)]="staffEmail" placeholder="Enter staff/admin email">
-
-    <!-- Staff Name Input (Only visible when selecting "Staff") -->
     <input *ngIf="selectedRole === 'staff'" type="text" [(ngModel)]="staffName" placeholder="Enter staff name">
-
-    <!-- Password Input (Only visible for Admin) -->
     <input *ngIf="selectedRole === 'admin'" type="password" [(ngModel)]="staffPassword" placeholder="Enter password">
 
     <select [(ngModel)]="selectedRole">
@@ -19,8 +15,8 @@
     <button (click)="addStaff()">Create Account</button>
   </div>
 
-  <!-- User Table -->
-  <table class="table">
+  <!-- Desktop Table View -->
+  <table class="table desktop-view">
     <thead>
       <tr>
         <th>Name</th>
@@ -31,26 +27,17 @@
       </tr>
     </thead>
     <tbody>
-      <!-- Loop through the users array -->
       <tr *ngFor="let user of users">
         <td>{{ user.name }}</td>
         <td>{{ user.email }}</td>
         <td>{{ user.role }}</td>
         <td>{{ user.status }}</td>
         <td>
-          <!-- 🛡️ Only show actions if NOT my own account -->
           <ng-container *ngIf="user.id !== currentUserId">
-            <!-- Show Delete button for pending -->
             <button *ngIf="user.status === 'pending'" class="btn btn-danger" (click)="deleteAccount(user.id)">Delete</button>
-
-            <!-- Show Disable button for verified -->
             <button *ngIf="user.status === 'verified'" class="btn btn-warning" (click)="disableAccount(user.id)">Disable</button>
-
-            <!-- Show Enable button for disabled -->
             <button *ngIf="user.status === 'disabled'" class="btn btn-success" (click)="enableAccount(user.id)">Enable</button>
           </ng-container>
-
-          <!-- 🔒 If my own account -->
           <ng-container *ngIf="user.id === currentUserId">
             <span class="text-muted">Your account</span>
           </ng-container>
@@ -58,4 +45,24 @@
       </tr>
     </tbody>
   </table>
+
+  <!-- Mobile Card View -->
+  <div class="mobile-cards">
+    <div class="card" *ngFor="let user of users">
+      <p><strong>Name:</strong> {{ user.name }}</p>
+      <p><strong>Email:</strong> {{ user.email }}</p>
+      <p><strong>Role:</strong> {{ user.role }}</p>
+      <p><strong>Status:</strong> {{ user.status }}</p>
+      <div class="actions">
+        <ng-container *ngIf="user.id !== currentUserId">
+          <button *ngIf="user.status === 'pending'" class="btn btn-danger" (click)="deleteAccount(user.id)">Delete</button>
+          <button *ngIf="user.status === 'verified'" class="btn btn-warning" (click)="disableAccount(user.id)">Disable</button>
+          <button *ngIf="user.status === 'disabled'" class="btn btn-success" (click)="enableAccount(user.id)">Enable</button>
+        </ng-container>
+        <ng-container *ngIf="user.id === currentUserId">
+          <span class="text-muted">Your account</span>
+        </ng-container>
+      </div>
+    </div>
+  </div>
 </div>
