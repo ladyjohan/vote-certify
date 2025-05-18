@@ -13,7 +13,7 @@
 .menu-toggle {
   display: none;
   position: fixed;
-  top: 20px;
+  top: 22px;
   left: 16px;
   z-index: 1101;
   width: 24px;
@@ -27,7 +27,7 @@
     display: block;
     height: 2px;
     width: 100%;
-    background: #fff;
+    background: #aaaaaa;
     border-radius: 3px;
     margin-bottom: 4px;
     transition: all 0.3s ease;
@@ -74,8 +74,9 @@
 
 .top-header {
   height: 60px;
-  background: #003FCB;
-  color: white;
+  background: white;
+  color: #606060;
+  font-weight: 500;
   display: flex;
   justify-content: space-between;
   align-items: center;

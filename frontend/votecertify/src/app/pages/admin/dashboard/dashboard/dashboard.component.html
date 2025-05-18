@@ -1,17 +1,35 @@
-<div class="dashboard-cards">
-  <div class="card">
-    <div class="icon">
-      <i class="fas fa-users"></i>
+<div class="dashboard-container">
+  <div class="welcome-card">
+    <div class="icon-area">
+      <i class="fa-solid fa-user-shield"></i>
     </div>
-    <h3>Total COMELEC Staff</h3>
-    <p>{{ totalStaff }}</p>
+    <div class="welcome-content">
+      <h1>Welcome, Admin!</h1>
+      <p>
+        This is your control panel for managing the VoteCertify system. Oversee certificate requests, manage COMELEC staff accounts, and monitor system metrics with ease. Use the sidebar to navigate through your tools.
+      </p>
+      <div class="admin-badge">
+        <span class="badge-icon">👑</span>
+        <span>Administrator Access</span>
+      </div>
+    </div>
   </div>
-  <div class="card">
-    <div class="icon">
-      <i class="fas fa-clipboard-check"></i>
+
+  <div class="dashboard-cards">
+    <div class="card">
+      <div class="icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <h3>Total COMELEC Staff</h3>
+      <p>{{ totalStaff }}</p>
     </div>
-    <h3>Total Processed Certificates</h3>
-    <p>{{ totalProcessed }}</p>
+    <div class="card">
+      <div class="icon">
+        <i class="fas fa-clipboard-check"></i>
+      </div>
+      <h3>Total Processed Certificates</h3>
+      <p>{{ totalProcessed }}</p>
+    </div>
   </div>
 </div>
 

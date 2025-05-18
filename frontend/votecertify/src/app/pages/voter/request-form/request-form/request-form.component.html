@@ -1,32 +1,56 @@
-<form [formGroup]="requestForm" (ngSubmit)="submitRequest()">
+<form [formGroup]="requestForm" (ngSubmit)="submitRequest()" class="request-form">
   <div class="voter-info">
-    <div>
+    <div class="voter-info-item">
       <label>Voter ID:</label>
       <span>{{ voterId }}</span>
     </div>
-    <div>
+    <div class="voter-info-item">
       <label>Full Name:</label>
       <span>{{ fullName }}</span>
     </div>
-    <div>
+    <div class="voter-info-item">
       <label>Birthdate:</label>
       <span>{{ birthdate }}</span>
     </div>
   </div>
 
-  <label for="purpose">Purpose:</label>
-  <input type="text" id="purpose" formControlName="purpose" required />
+  <div class="form-group">
+    <label for="purpose">Purpose:</label>
+    <div class="custom-select-container">
+      <select id="purpose" formControlName="purpose" required>
+        <option value="" disabled selected>Select a purpose</option>
+        <option value="Employment Requirement">Employment Requirement</option>
+        <option value="Passport Application">Passport Application</option>
+        <option value="Government Application">Government Application</option>
+        <option value="Financial Transactions">Financial Transactions</option>
+        <option value="Court Requirements">Court Requirements</option>
+        <option value="Educational Application">Educational Application</option>
+        <option value="Proof of Residency">Proof of Residency</option>
+        <option value="Government Transactions">Government Transactions</option>
+        <option value="Precinct Verification">Precinct Verification</option>
+        <option value="General Identification Purposes">General Identification Purposes</option>
+      </select>
+    </div>
+  </div>
 
-  <label for="copiesRequested">No. of Original Copies:</label>
-  <select id="copiesRequested" formControlName="copiesRequested">
-    <option *ngFor="let num of [1, 2, 3]" [value]="num">{{ num }}</option>
-  </select>
+  <div class="form-group">
+    <label for="copiesRequested">No. of Original Copies:</label>
+    <div class="custom-select-container">
+      <select id="copiesRequested" formControlName="copiesRequested">
+        <option *ngFor="let num of [1, 2, 3]" [value]="num">{{ num }}</option>
+      </select>
+    </div>
+  </div>
 
-  <label for="govId">Government-Issued ID (JPG/PNG, max 5MB):</label>
-  <input type="file" id="govId" (change)="handleFileUpload($event, 'govId')" accept="image/jpeg, image/png" required />
+  <div class="form-group">
+    <label for="govId">Government-Issued ID (JPG/PNG, max 5MB):</label>
+    <input type="file" id="govId" (change)="handleFileUpload($event, 'govId')" accept="image/jpeg, image/png" required />
+  </div>
 
-  <label for="selfie">Selfie with ID (JPG/PNG, max 5MB):</label>
-  <input type="file" id="selfie" (change)="handleFileUpload($event, 'selfie')" accept="image/jpeg, image/png" required />
+  <div class="form-group">
+    <label for="selfie">Selfie with ID (JPG/PNG, max 5MB):</label>
+    <input type="file" id="selfie" (change)="handleFileUpload($event, 'selfie')" accept="image/jpeg, image/png" required />
+  </div>
 
   <button type="submit" [disabled]="isSubmitting || voterNotFound">
     {{ isSubmitting ? 'Submitting...' : 'Submit Request' }}

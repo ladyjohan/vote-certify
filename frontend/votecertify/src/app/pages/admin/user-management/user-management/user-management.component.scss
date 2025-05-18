@@ -2,6 +2,7 @@ h2 {
   text-align: center;
   color: #333;
   margin-bottom: 20px;
+  font-size: clamp(1.5rem, 2vw, 2rem);
 }
 
 .add-user-form {
@@ -18,7 +19,7 @@ h2 {
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
-    font-size: 14px;
+    font-size: clamp(0.9rem, 1.2vw, 1rem);
   }
 
   input {
@@ -51,6 +52,7 @@ h2 {
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  font-size: clamp(0.85rem, 1vw, 1rem);
 
   th, td {
     padding: 12px;
@@ -72,7 +74,7 @@ h2 {
   padding: 8px 12px;
   border: none;
   border-radius: 5px;
-  font-size: 14px;
+  font-size: clamp(0.85rem, 1vw, 1rem);
   cursor: pointer;
   transition: all 0.3s ease-in-out;
 
@@ -106,7 +108,7 @@ h2 {
 
 .text-muted {
   color: #888;
-  font-size: 14px;
+  font-size: clamp(0.75rem, 0.9vw, 0.875rem);
 }
 
 /* Mobile Card View */
@@ -120,6 +122,7 @@ h2 {
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
   padding: 16px;
   margin-bottom: 15px;
+  font-size: clamp(0.85rem, 1vw, 1rem);
 
   p {
     margin: 8px 0;
@@ -137,8 +140,9 @@ h2 {
 
 /* Responsive Styles */
 @media (max-width: 768px) {
-  .desktop-view {
-    display: none;
+  .desktop-view,
+  .request-header {
+    display: none !important;
   }
 
   .mobile-cards {
@@ -149,7 +153,9 @@ h2 {
     flex-direction: column;
     align-items: stretch;
 
-    input, select, button {
+    input,
+    select,
+    button {
       width: 95%;
     }
   }

@@ -39,6 +39,72 @@
   }
 }
 
+.welcome-card {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, #003fcb, #0056b3);
+  color: white;
+  border-radius: 12px;
+  padding: 16px 24px; /* reduced padding for shorter height */
+  margin-bottom: 30px;
+  box-shadow: 0 8px 20px rgba(0, 63, 203, 0.2);
+  overflow: hidden;
+  gap: 16px; /* smaller gap */
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .icon-area {
+    font-size: 40px; /* smaller icon */
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 14px; /* smaller padding */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    @media (max-width: 768px) {
+      margin-bottom: 12px;
+    }
+  }
+
+  .welcome-content {
+    flex: 1;
+
+    h1 {
+      font-size: clamp(18px, 3vw, 24px); /* smaller and responsive */
+      font-weight: 700;
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+
+    p {
+      font-size: clamp(12px, 2vw, 14px); /* smaller and responsive */
+      line-height: 1.4;
+      margin-bottom: 12px;
+      width: 100%;
+    }
+
+    .admin-badge {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 4px 12px; /* smaller padding */
+      border-radius: 30px;
+      font-size: 11px;
+
+      .badge-icon {
+        margin-right: 5px;
+        font-size: 14px;
+      }
+    }
+  }
+}
+
+
 .chart-container {
   display: flex;
   flex-direction: column;
