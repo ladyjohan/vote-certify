@@ -5,7 +5,7 @@ import { SupabaseService } from '../../../../services/supabase.service';
 import { v4 as uuidv4 } from 'uuid';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import Swal from 'sweetalert2';
+import Swal from 'sweetalert2/dist/sweetalert2.js';
 
 @Component({
   selector: 'app-request-form',
@@ -154,7 +154,7 @@ export class RequestFormComponent implements OnInit {
         copiesRequested,
         govIdUrl: `gov_ids/${govIdFileName}`,
         selfieUrl: `selfies/${selfieFileName}`,
-        email: this.currentUser?.email, 
+        email: this.currentUser?.email,
         status: 'Pending',
         submittedAt: new Date()
       };

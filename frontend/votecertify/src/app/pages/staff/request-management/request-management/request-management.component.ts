@@ -142,10 +142,10 @@ export class RequestManagementComponent implements OnInit {
       voter_id: request.voterId,
       email: request.email
     };
-  
+
     // Use SECOND EmailJS Account credentials
     emailjs.init('c4wdO5d7b4OvOf5ae'); // Second account Public Key
-  
+
     try {
       const result = await emailjs.send(
         'service_g5f5afj',  // your service id
@@ -157,5 +157,5 @@ export class RequestManagementComponent implements OnInit {
       console.error('Failed to send approval email:', error);
       Swal.fire('Error', 'Failed to send approval email.', 'error');
     }
-  }  
+  }
 }
