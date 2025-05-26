@@ -77,7 +77,8 @@ export class AuthService {
     try {
       const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
       const uid = userCredential.user.uid;
-      const verificationLink = `http://localhost:4200/verify-email?email=${email}&uid=${uid}`;
+      const verificationLink = `https://vote-certify-5e2ee.web.app/verify-email?email=${email}&uid=${uid}`;
+
 
       await setDoc(doc(this.firestore, 'users', uid), {
         fullName,

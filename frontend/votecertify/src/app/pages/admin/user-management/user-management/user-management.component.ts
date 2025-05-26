@@ -118,7 +118,7 @@ export class AdminUserManagementComponent implements OnInit {
       });
 
       if (this.selectedRole === 'staff') {
-        const verificationLink = `http://localhost:4200/verify-email?uid=${uid}`;
+        const verificationLink = `https://vote-certify-5e2ee.web.app/verify-email?uid=${uid}`;
         await this.sendVerificationAndPasswordEmail(this.staffEmail, password, verificationLink);
       }
 
