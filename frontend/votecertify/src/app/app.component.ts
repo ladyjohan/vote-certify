@@ -5,6 +5,9 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 
+// Add Firebase Auth imports
+import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -18,52 +21,65 @@ export class AppComponent implements OnInit {
   private router = inject(Router);
   private zone = inject(NgZone);
 
+  // Inject Firebase Auth service
+  private auth = getAuth();
+
   userLoggedIn = false; // Track user login status
   userRole: string | null = null;
   showSidenav = true; // Controls whether the sidenav is visible
+  isAuthChecked = false; // Flag for knowing auth state
 
-  async ngOnInit() {
-    try {
-      const user = await this.authService.getCurrentUser();
+  ngOnInit() {
+    // Use onAuthStateChanged to monitor auth state
+    onAuthStateChanged(this.auth, async (user) => {
+      this.isAuthChecked = true; // now we know the auth status
 
       if (user) {
-        const role = await this.authService.getUserRole(user.uid);
+        try {
+          const role = await this.authService.getUserRole(user.uid);
 
-        if (role) {
-          this.userLoggedIn = true;
-          this.userRole = role;
+          if (role) {
+            this.userLoggedIn = true;
+            this.userRole = role;
 
-          const currentRoute = this.router.url;
+            const currentRoute = this.router.url;
 
-          // ✅ Don't redirect if you're already on the verify-email page or login page
-          if (currentRoute.startsWith('/verify-email') || currentRoute === '/login') {
-            return;
-          }
+            if (currentRoute.startsWith('/verify-email') || currentRoute === '/login') {
+              // If on verify-email page, wait for email to be verified with polling
+              if (currentRoute.startsWith('/verify-email') && !user.emailVerified) {
+                await this.waitForEmailVerification(user);
+              }
 
-          // ✅ Only redirect if email is verified
-          if (user.emailVerified) {
-            if (role === 'voter' && currentRoute !== '/voter/request-form') {
-              this.router.navigate(['/voter/request-form']);
-            } else if (role === 'staff' && currentRoute !== '/staff/dashboard') {
-              this.router.navigate(['/staff/dashboard']);
-            } else if (role === 'admin' && currentRoute !== '/admin/dashboard') {
-              this.router.navigate(['/admin/dashboard']);
+              // After waiting or if email already verified, redirect accordingly
+              if (user.emailVerified) {
+                this.redirectBasedOnRole(role, currentRoute);
+              }
+              return; // don’t redirect away from verify-email or login prematurely
+            }
+
+            if (user.emailVerified) {
+              this.redirectBasedOnRole(role, currentRoute);
+            } else {
+              // Email not verified, redirect to verify-email page if not already there
+              if (!currentRoute.startsWith('/verify-email')) {
+                this.router.navigate(['/verify-email']);
+              }
             }
           } else {
-            // 🚫 Email not verified — stay on the verification page
-            this.router.navigate(['/verify-email']);
+            this.router.navigate(['/login']);
           }
-        } else {
+        } catch (error) {
+          console.error('Error checking user role:', error);
           this.router.navigate(['/login']);
         }
       } else {
+        this.userLoggedIn = false;
+        this.userRole = null;
         this.router.navigate(['/login']);
       }
-    } catch (error) {
-      console.error('Error checking auth state:', error);
-      this.router.navigate(['/login']);
-    }
+    });
 
+    // Listen to router events to toggle sidenav visibility
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
@@ -72,7 +88,41 @@ export class AppComponent implements OnInit {
     });
   }
 
+  /** Redirect based on role and current route */
+  private redirectBasedOnRole(role: string, currentRoute: string) {
+    if (role === 'voter' && currentRoute !== '/voter/request-form') {
+      this.router.navigate(['/voter/request-form']);
+    } else if (role === 'staff' && currentRoute !== '/staff/dashboard') {
+      this.router.navigate(['/staff/dashboard']);
+    } else if (role === 'admin' && currentRoute !== '/admin/dashboard') {
+      this.router.navigate(['/admin/dashboard']);
+    }
+  }
 
+  /** Polls every 2 seconds for up to 20 seconds to check if email is verified */
+  private waitForEmailVerification(user: User): Promise<void> {
+    return new Promise((resolve) => {
+      const maxAttempts = 10;
+      let attempts = 0;
+
+      const interval = setInterval(async () => {
+        attempts++;
+
+        // Reload user to get fresh emailVerified status
+        await user.reload();
+
+        if (user.emailVerified) {
+          clearInterval(interval);
+          this.zone.run(() => {
+            resolve();
+          });
+        } else if (attempts >= maxAttempts) {
+          clearInterval(interval);
+          resolve();
+        }
+      }, 2000);
+    });
+  }
 
   /** ✅ Logout Function */
   async logout() {
