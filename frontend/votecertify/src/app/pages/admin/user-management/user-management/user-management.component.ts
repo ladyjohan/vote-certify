@@ -5,6 +5,7 @@ import { FirebaseApp, provideFirebaseApp, initializeApp } from '@angular/fire/ap
 import { environment } from '../../../../../environments/environment'; // Adjust this path based on your setup
 import { Firestore, doc, setDoc, collection, getDocs, getDoc, updateDoc, deleteDoc } from '@angular/fire/firestore';
 import { FormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
 import emailjs from 'emailjs-com';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
@@ -23,7 +24,7 @@ interface User {
   templateUrl: './user-management.component.html',
   styleUrls: ['./user-management.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MatIconModule],
 })
 export class AdminUserManagementComponent implements OnInit {
   staffName: string = '';
@@ -35,6 +36,7 @@ export class AdminUserManagementComponent implements OnInit {
   searchQuery: string = '';
   isAdmin = false;
   currentUserId: string = ''; // 🆕 Add currentUserId
+  nameError: string = '';
 
   private EMAIL_JS_SERVICE_ID = 'service_rrb00wy';
   private EMAIL_JS_TEMPLATE_ID = 'template_8j29e0p';
@@ -89,8 +91,26 @@ export class AdminUserManagementComponent implements OnInit {
     }
   }
 
+  validateName(name: string): boolean {
+    if (/\d/.test(name)) {
+      this.nameError = 'Name cannot contain numbers';
+      return false;
+    }
+    if (!/^[a-zA-Z\s]+$/.test(name)) {
+      this.nameError = 'Name can only contain letters and spaces';
+      return false;
+    }
+    this.nameError = '';
+    return true;
+  }
+
   async addStaff() {
     if (!this.isAdmin) return;
+
+    if (this.selectedRole === 'staff' && !this.validateName(this.staffName)) {
+      this.toastr.error(this.nameError);
+      return;
+    }
 
     const password = this.selectedRole === 'staff' ? '123456' : this.staffPassword;
 
@@ -175,111 +195,5 @@ export class AdminUserManagementComponent implements OnInit {
 
   // Disable an account with SweetAlert2
   async disableAccount(userId: string) {
-    if (userId === this.currentUserId) {
-      this.toastr.error('You cannot disable your own account.');
-      return;
-    }
-
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: "You are about to disable this account.",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, disable it!',
-      cancelButtonText: 'Cancel'
-    });
-
-    if (result.isConfirmed) {
-      try {
-        const userDocRef = doc(this.firestore, 'users', userId);
-        const userDocSnap = await getDoc(userDocRef);
-
-        if (!userDocSnap.exists()) {
-          this.toastr.error('User does not exist.');
-          return;
-        }
-
-        await updateDoc(userDocRef, { status: 'disabled' });
-        this.toastr.warning('Account disabled successfully.');
-        await this.loadUsers();
-      } catch (error) {
-        this.toastr.error('Error disabling account.');
-        console.error('❌ Error:', error);
-      }
-    }
-  }
-
-  // Enable a disabled account
-  async enableAccount(userId: string) {
-    if (userId === this.currentUserId) {
-      this.toastr.error('You cannot enable your own account.');
-      return;
-    }
-
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: "You are about to enable this account.",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, enable it!',
-      cancelButtonText: 'Cancel'
-    });
-
-    if (result.isConfirmed) {
-      try {
-        const userDocRef = doc(this.firestore, 'users', userId);
-        const userDocSnap = await getDoc(userDocRef);
-
-        if (!userDocSnap.exists()) {
-          this.toastr.error('User does not exist.');
-          return;
-        }
-
-        await updateDoc(userDocRef, { status: 'verified' });
-        this.toastr.success('Account enabled successfully.');
-        await this.loadUsers();
-      } catch (error) {
-        this.toastr.error('Error enabling account.');
-        console.error('❌ Error:', error);
-      }
-    }
-  }
-
-  // Delete an account
-  async deleteAccount(userId: string) {
-    if (userId === this.currentUserId) {
-      this.toastr.error('You cannot delete your own account.');
-      return;
-    }
-
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: "You are about to permanently delete this account.",
-      icon: 'error',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel'
-    });
-
-    if (result.isConfirmed) {
-      try {
-        const userDocRef = doc(this.firestore, 'users', userId);
-        const userDocSnap = await getDoc(userDocRef);
-
-        if (!userDocSnap.exists()) {
-          this.toastr.error('User does not exist.');
-          return;
-        }
-
-        await deleteDoc(userDocRef);
-
-        this.toastr.success('Account deleted successfully.');
-        this.users = this.users.filter(user => user.id !== userId);
-        this.filteredUsers = this.filteredUsers.filter(user => user.id !== userId);
-      } catch (error) {
-        this.toastr.error('Error deleting account.');
-        console.error('❌ Error:', error);
-      }
-    }
   }
 }

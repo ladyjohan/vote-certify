@@ -1,67 +1,164 @@
-<div class="container">
-  <h2>User Management</h2>
-
-  <!-- Add Staff/Admin -->
-  <div class="add-user-form">
-    <input type="email" [(ngModel)]="staffEmail" placeholder="Enter staff/admin email">
-    <input *ngIf="selectedRole === 'staff'" type="text" [(ngModel)]="staffName" placeholder="Enter staff name">
-    <input *ngIf="selectedRole === 'admin'" type="password" [(ngModel)]="staffPassword" placeholder="Enter password">
-
-    <select [(ngModel)]="selectedRole">
-      <option value="staff">Staff</option>
-      <option value="admin">Admin</option>
-    </select>
-
-    <button (click)="addStaff()">Create Account</button>
+<div class="main-container">
+  <div class="content-header">
+    <h2>User Management</h2>
   </div>
 
-  <!-- Desktop Table View -->
-  <table class="table desktop-view">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Role</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let user of users">
-        <td>{{ user.name }}</td>
-        <td>{{ user.email }}</td>
-        <td>{{ user.role }}</td>
-        <td>{{ user.status }}</td>
-        <td>
-          <ng-container *ngIf="user.id !== currentUserId">
-            <button *ngIf="user.status === 'pending'" class="btn btn-danger" (click)="deleteAccount(user.id)">Delete</button>
-            <button *ngIf="user.status === 'verified'" class="btn btn-warning" (click)="disableAccount(user.id)">Disable</button>
-            <button *ngIf="user.status === 'disabled'" class="btn btn-success" (click)="enableAccount(user.id)">Enable</button>
-          </ng-container>
-          <ng-container *ngIf="user.id === currentUserId">
-            <span class="text-muted">Your account</span>
-          </ng-container>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <!-- Add Staff/Admin -->
+  <div class="content-section">
+    <div class="section-card add-user-form">
+      <div class="card-header">
+        <h3>Create New Account</h3>
+      </div>
+      
+      <div class="form-content">
+        <div class="form-row">
+          <label for="roleSelect">Select Role</label>
+          <select id="roleSelect" [(ngModel)]="selectedRole" class="form-control">
+            <option value="staff">Staff</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
 
-  <!-- Mobile Card View -->
-  <div class="mobile-cards">
-    <div class="card" *ngFor="let user of users">
-      <p><strong>Name:</strong> {{ user.name }}</p>
-      <p><strong>Email:</strong> {{ user.email }}</p>
-      <p><strong>Role:</strong> {{ user.role }}</p>
-      <p><strong>Status:</strong> {{ user.status }}</p>
-      <div class="actions">
-        <ng-container *ngIf="user.id !== currentUserId">
-          <button *ngIf="user.status === 'pending'" class="btn btn-danger" (click)="deleteAccount(user.id)">Delete</button>
-          <button *ngIf="user.status === 'verified'" class="btn btn-warning" (click)="disableAccount(user.id)">Disable</button>
-          <button *ngIf="user.status === 'disabled'" class="btn btn-success" (click)="enableAccount(user.id)">Enable</button>
-        </ng-container>
-        <ng-container *ngIf="user.id === currentUserId">
-          <span class="text-muted">Your account</span>
-        </ng-container>
+        <div class="form-row">      <label for="emailInput">Email Address</label>
+      <input id="emailInput" 
+             type="email" 
+             [(ngModel)]="staffEmail" 
+             placeholder="Enter email address"
+             class="form-control short-input">
+    </div>
+
+    <div *ngIf="selectedRole === 'staff'" class="form-row name-input-container">
+      <label for="nameInput">Full Name</label>
+      <input id="nameInput"
+             type="text" 
+             [(ngModel)]="staffName" 
+             placeholder="Enter full name"
+             (blur)="validateName(staffName)"
+             [class.error]="nameError"
+             class="form-control short-input">
+      <span class="error-message" *ngIf="nameError">{{ nameError }}</span>
+    </div>
+
+    <div *ngIf="selectedRole === 'admin'" class="form-row">
+      <label for="passwordInput">Password</label>
+      <input id="passwordInput"
+             type="password" 
+             [(ngModel)]="staffPassword" 
+             placeholder="Enter password"
+             class="form-control short-input">
+        </div>
+
+        <div class="form-row">
+          <button class="btn-primary" (click)="addStaff()">
+            <mat-icon>person_add</mat-icon>
+            <span>Create Account</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- User List Section -->
+  <div class="content-section">
+    <div class="section-card user-list">
+      <div class="card-header">
+        <h3>User Accounts</h3>
+      </div>
+      
+      <!-- Desktop Table View -->
+      <div class="table-responsive">
+        <table class="table desktop-view">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of users">
+              <td>{{ user.name }}</td>
+              <td>{{ user.email }}</td>
+              <td>
+                <span class="badge role-badge" [ngClass]="user.role">
+                  {{ user.role | titlecase }}
+                </span>
+              </td>
+              <td>
+                <span class="badge status-badge" [ngClass]="user.status">
+                  {{ user.status | titlecase }}
+                </span>
+              </td>
+              <td class="actions-cell">
+                <ng-container *ngIf="user.id !== currentUserId">
+                  <button *ngIf="user.status === 'pending'" class="btn-action delete" (click)="disableAccount(user.id)">
+                    <mat-icon>delete</mat-icon>
+                    <span>Delete</span>
+                  </button>
+                  <button *ngIf="user.status === 'verified'" class="btn-action disable" (click)="disableAccount(user.id)">
+                    <mat-icon>block</mat-icon>
+                    <span>Disable</span>
+                  </button>
+                  <button *ngIf="user.status === 'disabled'" class="btn-action enable" (click)="disableAccount(user.id)">
+                    <mat-icon>check_circle</mat-icon>
+                    <span>Enable</span>
+                  </button>
+                </ng-container>
+                <ng-container *ngIf="user.id === currentUserId">
+                  <span class="current-user">Your account</span>
+                </ng-container>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mobile Card View -->
+      <div class="mobile-cards">
+        <div class="user-card" *ngFor="let user of users">
+          <div class="user-info">
+            <div class="info-row">
+              <strong>Name:</strong>
+              <span>{{ user.name }}</span>
+            </div>
+            <div class="info-row">
+              <strong>Email:</strong>
+              <span>{{ user.email }}</span>
+            </div>
+            <div class="info-row">
+              <strong>Role:</strong>
+              <span class="badge role-badge" [ngClass]="user.role">
+                {{ user.role | titlecase }}
+              </span>
+            </div>
+            <div class="info-row">
+              <strong>Status:</strong>
+              <span class="badge status-badge" [ngClass]="user.status">
+                {{ user.status | titlecase }}
+              </span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <ng-container *ngIf="user.id !== currentUserId">
+              <button *ngIf="user.status === 'pending'" class="btn-action delete" (click)="disableAccount(user.id)">
+                <mat-icon>delete</mat-icon>
+                <span>Delete</span>
+              </button>
+              <button *ngIf="user.status === 'verified'" class="btn-action disable" (click)="disableAccount(user.id)">
+                <mat-icon>block</mat-icon>
+                <span>Disable</span>
+              </button>
+              <button *ngIf="user.status === 'disabled'" class="btn-action enable" (click)="disableAccount(user.id)">
+                <mat-icon>check_circle</mat-icon>
+                <span>Enable</span>
+              </button>
+            </ng-container>
+            <ng-container *ngIf="user.id === currentUserId">
+              <span class="current-user">Your account</span>
+            </ng-container>
+          </div>
+        </div>
       </div>
     </div>
   </div>
