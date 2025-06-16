@@ -5,9 +5,8 @@
   </div>
 
   <nav>
-    <ul>
-      <li *ngFor="let link of adminNavLinks">
-        <a [routerLink]="link.route">
+    <ul>      <li *ngFor="let link of adminNavLinks" routerLinkActive="active">
+        <a [routerLink]="link.route" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
           <mat-icon>{{ link.icon }}</mat-icon>
           <span>{{ link.label }}</span>
         </a>
