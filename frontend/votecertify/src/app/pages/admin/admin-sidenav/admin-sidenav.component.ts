@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { RouterModule } from '@angular/router';
 import { getAuth, signOut } from '@angular/fire/auth';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-admin-sidenav',
@@ -24,13 +25,26 @@ export class AdminSidenavComponent {
   ];
 
 
-  logout() {
-    const auth = getAuth();
-    signOut(auth)
-      .then(() => {
-        console.log('✅ Admin logged out');
-        this.router.navigate(['/login']);
-      })
-      .catch(error => console.error('❌ Logout error:', error));
+  async logout() {
+    const result = await Swal.fire({
+      title: 'Logout Confirmation',
+      text: 'Are you sure you want to logout?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, logout',
+      cancelButtonText: 'Cancel'
+    });
+
+    if (result.isConfirmed) {
+      const auth = getAuth();
+      signOut(auth)
+        .then(() => {
+          console.log('✅ Admin logged out');
+          this.router.navigate(['/login']);
+        })
+        .catch(error => console.error('❌ Logout error:', error));
+    }
   }
 }
