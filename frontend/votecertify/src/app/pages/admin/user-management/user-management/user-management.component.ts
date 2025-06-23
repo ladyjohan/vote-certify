@@ -145,6 +145,7 @@ export class AdminUserManagementComponent implements OnInit {
       this.toastr.success(`${this.selectedRole} account created successfully.`);
       this.staffEmail = '';
       this.staffPassword = '';
+      this.staffName = '';
       await this.loadUsers();
     } catch (error) {
       this.toastr.error('Error creating staff/admin account.');
