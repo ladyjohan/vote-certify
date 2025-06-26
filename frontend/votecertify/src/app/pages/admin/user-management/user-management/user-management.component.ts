@@ -195,6 +195,52 @@ export class AdminUserManagementComponent implements OnInit {
   }
 
   // Disable an account with SweetAlert2
-  async disableAccount(userId: string) {
+async disableAccount(userId: string) {
+  const user = this.users.find(u => u.id === userId);
+  if (!user) return;
+
+  if (user.status === 'pending') {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'This pending account will be permanently deleted!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await deleteDoc(doc(this.firestore, 'users', userId));
+        this.toastr.success('Account deleted successfully.');
+        await this.loadUsers();
+      } catch (error) {
+        console.error('Error deleting account:', error);
+        this.toastr.error('Failed to delete account.');
+      }
+    }
+  } else {
+    const newStatus = user.status === 'disabled' ? 'verified' : 'disabled';
+    const action = newStatus === 'disabled' ? 'disable' : 'enable';
+
+    const result = await Swal.fire({
+      title: `Are you sure you want to ${action} this account?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: `Yes, ${action} it!`,
+      cancelButtonText: 'Cancel'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await updateDoc(doc(this.firestore, 'users', userId), { status: newStatus });
+        this.toastr.success(`Account ${action}d successfully.`);
+        await this.loadUsers();
+      } catch (error) {
+        console.error(`Error updating account status:`, error);
+        this.toastr.error('Failed to update account status.');
+      }
+    }
   }
+}
 }
