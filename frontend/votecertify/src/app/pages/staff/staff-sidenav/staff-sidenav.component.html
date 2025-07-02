@@ -17,9 +17,13 @@
   </nav>
 
   <div class="logout-container">
-    <button (click)="logout()">
-      <mat-icon>logout</mat-icon>
-      <span>Logout</span>
-    </button>
-  </div>
+  <ul>
+    <li>
+      <a (click)="logout()" class="logout-link">
+        <mat-icon>logout</mat-icon>
+        <span>Logout</span>
+      </a>
+    </li>
+  </ul>
+</div>
 </aside>
