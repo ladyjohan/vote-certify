@@ -28,7 +28,7 @@ export class RegisterComponent {
   ) {
     this.registerForm = this.fb.group({
       fullName: ['', [Validators.required]],
-      voterId: ['', [Validators.required, Validators.pattern(/^\d{4}-\d{6}-\d{4}$/)]],
+      precinctId: ['', [Validators.required, Validators.pattern(/^[0-9]{4}[A-Z]$/)]],
       birthdate: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
@@ -43,43 +43,10 @@ export class RegisterComponent {
 
     this.errorMessage = '';
 
-    const { fullName, voterId, birthdate, email, password } = this.registerForm.value;
-
-    const selectedDate = new Date(birthdate);
-    selectedDate.setHours(0, 0, 0, 0);
-    const birthdateTimestamp = Timestamp.fromDate(selectedDate);
-
-    const voterPoolRef = collection(this.firestore, 'voter_pool');
-    const q = query(voterPoolRef, where('fullName', '==', fullName), where('voterId', '==', voterId));
+    const { fullName, precinctId, birthdate, email, password } = this.registerForm.value;
 
     try {
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        this.toastr.error('You are not an official voter. Registration denied.', 'Verification Failed');
-        return;
-      }
-
-      let voterFound = false;
-
-      querySnapshot.forEach((doc) => {
-        const voterData = doc.data();
-        const storedTimestamp: Timestamp = voterData['birthdate'];
-
-        const storedDate = storedTimestamp.toDate();
-        storedDate.setHours(0, 0, 0, 0);
-
-        if (selectedDate.getTime() === storedDate.getTime()) {
-          voterFound = true;
-        }
-      });
-
-      if (!voterFound) {
-        this.toastr.error('You are not an official voter. Registration denied.', 'Verification Failed');
-        return;
-      }
-
-      await this.authService.register(fullName, voterId, birthdate, email, password);
+      await this.authService.register(fullName, precinctId, birthdate, email, password);
 
       this.toastr.success('Registration successful! Please check your email for verification.', 'Success');
       this.router.navigate(['/login']);

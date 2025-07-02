@@ -73,7 +73,7 @@ export class AuthService {
   }
 
   /** ✅ Register & Send Verification + Password via EmailJS */
-  async register(fullName: string, voterId: string, birthdate: string, email: string, password: string) {
+  async register(fullName: string, precinctId: string, birthdate: string, email: string, password: string) {
     try {
       const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
       const uid = userCredential.user.uid;
@@ -82,7 +82,7 @@ export class AuthService {
 
       await setDoc(doc(this.firestore, 'users', uid), {
         fullName,
-        voterId,
+        precinctId,
         birthdate,
         email,
         role: 'voter',
