@@ -21,6 +21,7 @@ export class RequestFormComponent implements OnInit {
   voterNotFound: boolean = false;
   currentUser: User | null = null;
   voterId: string = '';
+  precinctId: string = '';
   fullName: string = '';
   birthdate: string = '';
   hasPendingRequest: boolean = false;  // Flag to track if the user has a pending request
@@ -59,24 +60,17 @@ export class RequestFormComponent implements OnInit {
       const usersRef = collection(this.firestore, 'users');
       const q = query(usersRef, where('email', '==', email));
       const querySnapshot = await getDocs(q);
-
       if (!querySnapshot.empty) {
         const userData = querySnapshot.docs[0].data();
-
-        if (!userData['fullName'] || !userData['voterId'] || !userData['birthdate']) {
-          this.voterNotFound = true;
-          return;
-        }
-
-        this.voterId = userData['voterId'];
-        this.fullName = userData['fullName'];
-        this.birthdate = userData['birthdate'];
+        this.voterId = userData['voterId'] || '';
+        this.precinctId = userData['precinctId'] || '';
+        this.fullName = userData['fullName'] || '';
+        this.birthdate = userData['birthdate'] || '';
       } else {
         this.voterNotFound = true;
       }
     } catch (error) {
-      console.error('Error fetching voter data:', error);
-      Swal.fire('Error', 'Error fetching voter details.', 'error');
+      this.voterNotFound = true;
     } finally {
       this.isLoadingVoter = false;
     }
