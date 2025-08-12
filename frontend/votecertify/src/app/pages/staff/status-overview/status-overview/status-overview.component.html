@@ -6,14 +6,14 @@
     <input
       [formControl]="searchControl"
       type="text"
-      placeholder="Search by Voter Name or Voter ID"
+      placeholder="Search by Voter Name or Precinct Number"
     />
   </div>
 
   <div class="request-list">
     <div class="request-header">
       <span>Full Name</span>
-      <span>Voter ID</span>
+      <span>Precinct Number</span>
       <span>Pickup Date</span>
       <span>Status</span>
       <span>Actions</span>
@@ -25,7 +25,7 @@
     <span class="value">{{ request.fullName }}</span>
   </div>
   <div class="field">
-    <span class="label mobile-only">Voter ID: </span>
+    <span class="label mobile-only">Precinct Number: </span>
     <span class="value">{{ request.voterId }}</span>
   </div>
   <div class="field">
