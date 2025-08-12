@@ -18,8 +18,8 @@
       </div>
       <div class="input-group">
         <i class="fas fa-id-card"></i>
-        <input type="text" placeholder="Precinct Number" formControlName="voterId"
-               pattern="\d{4}-\d{6}-\d{4}" required />
+        <input type="text" placeholder="Precinct Number (e.g., 123A)" formControlName="voterId"
+               pattern="^[0-9]{3}[A-Z]{1}$" required />
       </div>
       <div class="input-group">
         <i class="fas fa-calendar-alt"></i>
