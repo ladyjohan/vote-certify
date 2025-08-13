@@ -27,3 +27,7 @@ html, body {
 }
 
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.logout-swal-top {
+  z-index: 10000 !important;
+}

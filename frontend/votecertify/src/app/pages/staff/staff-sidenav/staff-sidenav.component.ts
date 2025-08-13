@@ -53,14 +53,17 @@ export class StaffSidenavComponent implements OnInit {
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
       confirmButtonText: 'Yes, logout',
-      cancelButtonText: 'Cancel'
+      cancelButtonText: 'Cancel',
+      customClass: {
+        container: 'logout-swal-top'
+      }
     });
 
     if (result.isConfirmed) {
       const auth = getAuth();
       signOut(auth)
         .then(() => {
-          console.log('✅ Staff logged out');
+          console.log('✅ Admin logged out');
           this.router.navigate(['/login']);
         })
         .catch(error => console.error('❌ Logout error:', error));

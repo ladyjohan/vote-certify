@@ -25,26 +25,29 @@ export class AdminSidenavComponent {
   ];
 
 
-  async logout() {
-    const result = await Swal.fire({
-      title: 'Logout Confirmation',
-      text: 'Are you sure you want to logout?',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, logout',
-      cancelButtonText: 'Cancel'
-    });
-
-    if (result.isConfirmed) {
-      const auth = getAuth();
-      signOut(auth)
-        .then(() => {
-          console.log('✅ Admin logged out');
-          this.router.navigate(['/login']);
-        })
-        .catch(error => console.error('❌ Logout error:', error));
+async logout() {
+  const result = await Swal.fire({
+    title: 'Logout Confirmation',
+    text: 'Are you sure you want to logout?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Yes, logout',
+    cancelButtonText: 'Cancel',
+    customClass: {
+      container: 'logout-swal-top'
     }
+  });
+
+  if (result.isConfirmed) {
+    const auth = getAuth();
+    signOut(auth)
+      .then(() => {
+        console.log('✅ Admin logged out');
+        this.router.navigate(['/login']);
+      })
+      .catch(error => console.error('❌ Logout error:', error));
   }
+}
 }
