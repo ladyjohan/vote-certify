@@ -5,7 +5,7 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 
-// Add Firebase Auth imports
+// Firebase Auth imports
 import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
 
 @Component({
@@ -21,18 +21,16 @@ export class AppComponent implements OnInit {
   private router = inject(Router);
   private zone = inject(NgZone);
 
-  // Inject Firebase Auth service
   private auth = getAuth();
 
-  userLoggedIn = false; // Track user login status
+  userLoggedIn = false;
   userRole: string | null = null;
-  showSidenav = true; // Controls whether the sidenav is visible
-  isAuthChecked = false; // Flag for knowing auth state
+  showSidenav = true;
+  isAuthChecked = false;
 
   ngOnInit() {
-    // Use onAuthStateChanged to monitor auth state
     onAuthStateChanged(this.auth, async (user) => {
-      this.isAuthChecked = true; // now we know the auth status
+      this.isAuthChecked = true;
 
       if (user) {
         try {
@@ -45,25 +43,22 @@ export class AppComponent implements OnInit {
             const currentRoute = this.router.url;
 
             if (currentRoute.startsWith('/verify-email') || currentRoute === '/login') {
-              // If on verify-email page, wait for email to be verified with polling
               if (currentRoute.startsWith('/verify-email') && !user.emailVerified) {
                 await this.waitForEmailVerification(user);
               }
 
-              // After waiting or if email already verified, redirect accordingly
               if (user.emailVerified) {
                 this.redirectBasedOnRole(role, currentRoute);
               }
-              return; // don’t redirect away from verify-email or login prematurely
+              return; // Prevent premature redirect
             }
 
             if (user.emailVerified) {
               this.redirectBasedOnRole(role, currentRoute);
             } else {
-              // Email not verified, redirect to verify-email page if not already there
-              if (!currentRoute.startsWith('/verify-email')) {
-                this.router.navigate(['/verify-email']);
-              }
+              // Email not verified — do NOT redirect to /verify-email automatically
+              console.log('Email not verified yet. Please verify your email.');
+              // You can show a notification here instead if you want
             }
           } else {
             this.router.navigate(['/login']);
@@ -79,7 +74,6 @@ export class AppComponent implements OnInit {
       }
     });
 
-    // Listen to router events to toggle sidenav visibility
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
@@ -88,7 +82,6 @@ export class AppComponent implements OnInit {
     });
   }
 
-  /** Redirect based on role and current route */
   private redirectBasedOnRole(role: string, currentRoute: string) {
     if (role === 'voter' && currentRoute !== '/voter/request-form') {
       this.router.navigate(['/voter/request-form']);
@@ -99,7 +92,6 @@ export class AppComponent implements OnInit {
     }
   }
 
-  /** Polls every 2 seconds for up to 20 seconds to check if email is verified */
   private waitForEmailVerification(user: User): Promise<void> {
     return new Promise((resolve) => {
       const maxAttempts = 10;
@@ -108,7 +100,6 @@ export class AppComponent implements OnInit {
       const interval = setInterval(async () => {
         attempts++;
 
-        // Reload user to get fresh emailVerified status
         await user.reload();
 
         if (user.emailVerified) {
@@ -124,7 +115,6 @@ export class AppComponent implements OnInit {
     });
   }
 
-  /** ✅ Logout Function */
   async logout() {
     try {
       await this.authService.logout();

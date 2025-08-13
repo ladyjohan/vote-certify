@@ -1,20 +1,25 @@
-<div class="verify-container" *ngIf="isVerified === true">
-  <div class="verify-card">
-    <h2>✅ Email Verified Successfully!</h2>
-    <p>Your email has been successfully verified. You can now log in to your VoteCertify account.</p>
-  </div>
-</div>
-
-<div class="verify-container" *ngIf="isVerified === false">
-  <div class="verify-card">
-    <h2>❌ Verification Failed</h2>
-    <p>We couldn't verify your email. Please try again or contact support.</p>
-  </div>
-</div>
-
-<div class="verify-container" *ngIf="isVerified === null">
+<div class="verify-container" *ngIf="loading">
   <div class="verify-card">
     <h2>⏳ Verifying...</h2>
     <p>Please wait while we confirm your email verification.</p>
+    <!-- Optional spinner -->
+    <div class="spinner"></div>
+  </div>
+</div>
+
+<div class="verify-container" *ngIf="!loading && isVerified === true">
+  <div class="verify-card success">
+    <h2>✅ Email Verified Successfully!</h2>
+    <p>Your email has been successfully verified. You can now log in to your VoteCertify account.</p>
+    <p>You will be redirected shortly...</p>
+    <button (click)="router.navigate(['/login'])">Go to Login Now</button>
+  </div>
+</div>
+
+<div class="verify-container" *ngIf="!loading && isVerified === false">
+  <div class="verify-card error">
+    <h2>❌ Verification Failed</h2>
+    <p>We couldn't verify your email. Please try again or contact support.</p>
+    <button (click)="router.navigate(['/register'])">Back to Register</button>
   </div>
 </div>

@@ -1,11 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
-import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
-import { Firestore, collection, query, where, getDocs, Timestamp } from '@angular/fire/firestore';
+import { Timestamp } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-register',
@@ -18,12 +17,9 @@ export class RegisterComponent {
   registerForm: FormGroup;
   errorMessage = '';
 
-  private firestore: Firestore = inject(Firestore);
-
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router,
     private toastr: ToastrService
   ) {
     this.registerForm = this.fb.group({
@@ -42,47 +38,28 @@ export class RegisterComponent {
     }
 
     this.errorMessage = '';
-
     const { fullName, voterId, birthdate, email, password } = this.registerForm.value;
 
-    const selectedDate = new Date(birthdate);
-    selectedDate.setHours(0, 0, 0, 0);
-    const birthdateTimestamp = Timestamp.fromDate(selectedDate);
-
-    const voterPoolRef = collection(this.firestore, 'voter_pool');
-    const q = query(voterPoolRef, where('fullName', '==', fullName), where('voterId', '==', voterId));
-
     try {
-      const querySnapshot = await getDocs(q);
+      // Convert birthdate to Firestore Timestamp (for future use if needed)
+      const selectedDate = new Date(birthdate);
+      selectedDate.setHours(0, 0, 0, 0);
+      const birthdateTimestamp = Timestamp.fromDate(selectedDate);
 
-      if (querySnapshot.empty) {
-        this.toastr.error('You are not an official voter. Registration denied.', 'Verification Failed');
-        return;
-      }
-
-      let voterFound = false;
-
-      querySnapshot.forEach((doc) => {
-        const voterData = doc.data();
-        const storedTimestamp: Timestamp = voterData['birthdate'];
-
-        const storedDate = storedTimestamp.toDate();
-        storedDate.setHours(0, 0, 0, 0);
-
-        if (selectedDate.getTime() === storedDate.getTime()) {
-          voterFound = true;
-        }
-      });
-
-      if (!voterFound) {
-        this.toastr.error('You are not an official voter. Registration denied.', 'Verification Failed');
-        return;
-      }
-
+      // Call AuthService to handle registration
       await this.authService.register(fullName, voterId, birthdate, email, password);
 
-      this.toastr.success('Registration successful! Please check your email for verification.', 'Success');
-      this.router.navigate(['/login']);
+      // Show success toast
+      this.toastr.success(
+        'Registration successful! Please check your email for the verification link.',
+        'Success'
+      );
+
+      // Logout silently to clear auth state but DO NOT redirect
+      await this.authService.logout(false);
+
+      // Reset form after successful registration
+      this.registerForm.reset();
     } catch (error: any) {
       console.error('Registration error:', error);
 

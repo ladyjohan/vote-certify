@@ -1,10 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { CommonModule } from '@angular/common';
 import { Auth, signInWithEmailAndPassword, signOut } from '@angular/fire/auth';
 import { Firestore, doc, getDoc, setDoc } from '@angular/fire/firestore';
+import { AuthService } from '../../services/auth.service';  // Make sure path is correct
 
 @Component({
   selector: 'app-login',
@@ -13,13 +14,15 @@ import { Firestore, doc, getDoc, setDoc } from '@angular/fire/firestore';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   errorMessage: string = '';
   loading = false;
 
   private auth: Auth = inject(Auth);
   private firestore: Firestore = inject(Firestore);
+  private activatedRoute: ActivatedRoute = inject(ActivatedRoute);
+  private authService: AuthService = inject(AuthService);
 
   constructor(
     private fb: FormBuilder,
@@ -32,14 +35,24 @@ export class LoginComponent {
     });
   }
 
-  async updateStaffStatus(userId: string) {
-    try {
-      const userDocRef = doc(this.firestore, 'users', userId);
-      await setDoc(userDocRef, { status: 'verified' }, { merge: true });
-      console.log('✅ Staff status updated to "verified" in Firestore.');
-    } catch (error) {
-      console.error('❌ Error updating staff status:', error);
-    }
+  ngOnInit() {
+    // Check for verification query param when component loads
+    this.activatedRoute.queryParams.subscribe(async (params) => {
+      const verifyUid = params['verifyUid'];
+      if (verifyUid) {
+        try {
+          await this.authService.verifyEmail(verifyUid);
+          this.toastr.success('✅ Email verification successful! You may now log in.');
+          // Optional: Remove verifyUid from URL (simplify URL)
+          this.router.navigate([], {
+            replaceUrl: true,
+            queryParams: {},
+          });
+        } catch (error) {
+          this.toastr.error('❌ Email verification failed or link expired.');
+        }
+      }
+    });
   }
 
   async login() {
@@ -68,14 +81,12 @@ export class LoginComponent {
 
         console.log(`🔍 Firestore User Status: ${userStatus}`);
 
-        // ❌ Block login if status is "disabled"
         if (userStatus === 'disabled') {
           this.toastr.error('Your account has been disabled. Please contact the administrator.', 'Access Denied');
           await signOut(this.auth);
           return;
         }
 
-        // ✅ Admin skips email verification
         if (userRole === 'admin') {
           console.log('✅ Admin detected. Skipping email verification check.');
         } else if (userRole === 'staff' || userRole === 'voter') {
@@ -94,7 +105,6 @@ export class LoginComponent {
 
         this.toastr.success('Welcome back!', 'Login Successful');
 
-        // ✅ Route based on role
         if (userRole === 'admin') {
           this.router.navigate(['/admin/dashboard']);
         } else if (userRole === 'staff') {
