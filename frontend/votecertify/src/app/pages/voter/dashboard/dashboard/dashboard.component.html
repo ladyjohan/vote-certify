@@ -1,2 +1,30 @@
+<div class="video-card" role="region" aria-label="Tutorial video">
+  <div class="video-wrapper">
+    <video
+      #videoPlayer
+      controls
+      preload="metadata"
+      autoplay
+      muted
+      loop
+      poster="assets/videos/poster.jpg"
+    >
+      <source [src]="videoSrc" type="video/mp4" />
+    </video>
+  </div>
 
-<p>voter dashboard works!</p>
+  <div class="controls">
+    <button (click)="playPause()" aria-label="Play or pause video">
+      {{ isPlaying ? 'Pause' : 'Play' }}
+    </button>
+
+    <button (click)="muteToggle()" aria-label="Mute or unmute video">
+      {{ isMuted ? 'Unmute' : 'Mute' }}
+    </button>
+
+    <button (click)="enterFullscreen()" aria-label="Enter fullscreen">Fullscreen</button>
+
+  </div>
+
+  <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+</div>
