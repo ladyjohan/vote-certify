@@ -83,8 +83,8 @@ export class AppComponent implements OnInit {
   }
 
   private redirectBasedOnRole(role: string, currentRoute: string) {
-    if (role === 'voter' && currentRoute !== '/voter/request-form') {
-      this.router.navigate(['/voter/request-form']);
+    if (role === 'voter' && currentRoute !== '/voter/dashboard') {
+      this.router.navigate(['/voter/dashboard']);
     } else if (role === 'staff' && currentRoute !== '/staff/dashboard') {
       this.router.navigate(['/staff/dashboard']);
     } else if (role === 'admin' && currentRoute !== '/admin/dashboard') {

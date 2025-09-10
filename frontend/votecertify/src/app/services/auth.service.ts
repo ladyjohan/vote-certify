@@ -160,7 +160,7 @@ export class AuthService {
     const roleRoutes: { [key: string]: string } = {
       admin: '/admin/dashboard',
       staff: '/staff/dashboard',
-      voter: '/voter/request-form',
+      voter: '/voter/dashboard',
     };
     const route = roleRoutes[role];
     if (route) {
