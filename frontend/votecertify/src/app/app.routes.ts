@@ -50,13 +50,16 @@ export const routes: Routes = [
   },
 
   // Voter Routes (with VoterLayout)
-  {
-    path: 'voter',
-    component: VoterLayoutComponent,
-    children: [
-      { path: 'dashboard', component: VoterDashboardComponent },
-      { path: 'request-form', component: RequestFormComponent },
-      { path: 'certificate-status', component: CertificateStatusComponent },
-    ],
-  }
+{
+  path: 'voter/dashboard',
+  component: VoterDashboardComponent, // no sidenav, no header
+},
+{
+  path: 'voter',
+  component: VoterLayoutComponent, // layout with sidenav + header
+  children: [
+    { path: 'request-form', component: RequestFormComponent },
+    { path: 'certificate-status', component: CertificateStatusComponent },
+  ],
+}
 ];

@@ -1,5 +1,7 @@
-<div class="voter-layout">
+<div class="voter-layout" [class.no-sidenav]="!showSidenav">
+  <!-- Toggle button only if sidenav is visible -->
   <button
+    *ngIf="showSidenav"
     class="menu-toggle"
     (click)="toggleSidenav()"
     [class.open]="isSidenavOpen"
@@ -10,7 +12,7 @@
     <span></span>
   </button>
 
-  <div class="sidenav-container" [class.open]="isSidenavOpen">
+  <div *ngIf="showSidenav" class="sidenav-container" [class.open]="isSidenavOpen">
     <app-voter-sidenav></app-voter-sidenav>
   </div>
 
@@ -24,5 +26,10 @@
     </div>
   </div>
 
-  <div class="overlay" *ngIf="isSidenavOpen" (click)="toggleSidenav()"></div>
+
+  <div
+    *ngIf="showSidenav && isSidenavOpen"
+    class="overlay"
+    (click)="toggleSidenav()"
+  ></div>
 </div>

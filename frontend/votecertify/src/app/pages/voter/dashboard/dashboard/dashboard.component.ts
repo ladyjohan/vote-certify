@@ -1,10 +1,11 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard-video',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
@@ -49,5 +50,12 @@ export class VoterDashboardComponent {
 
   onError(): void {
     this.errorMessage = `Video failed to load. Check that "${this.videoSrc}" exists in src/assets/videos/`;
+  }
+
+  scrollToVideo() {
+    const element = document.getElementById('video');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 }

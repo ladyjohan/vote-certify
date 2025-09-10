@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
+import { Router, ActivatedRoute, RouterOutlet, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { VoterSidenavComponent } from '../voter-sidenav/voter-sidenav.component';
 
 @Component({
@@ -10,17 +11,30 @@ import { VoterSidenavComponent } from '../voter-sidenav/voter-sidenav.component'
   templateUrl: './voter-layout.component.html',
   styleUrls: ['./voter-layout.component.scss']
 })
-export class VoterLayoutComponent {
+export class VoterLayoutComponent implements OnInit {
   isSidenavOpen = false;
   currentDateTime: string = '';
+  showSidenav = true; // 👈 new flag
 
-  toggleSidenav() {
-    this.isSidenavOpen = !this.isSidenavOpen;
-  }
+  constructor(private router: Router, private activatedRoute: ActivatedRoute) {}
 
   ngOnInit(): void {
     this.updateDateTime();
     setInterval(() => this.updateDateTime(), 1000);
+
+    // check immediately
+    this.updateSidenavVisibility();
+
+    // update on route changes
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.updateSidenavVisibility();
+    });
+  }
+
+  toggleSidenav() {
+    this.isSidenavOpen = !this.isSidenavOpen;
   }
 
   updateDateTime(): void {
@@ -35,5 +49,14 @@ export class VoterLayoutComponent {
       second: '2-digit',
       hour12: true
     });
+  }
+
+  private updateSidenavVisibility() {
+    let current = this.activatedRoute;
+    while (current.firstChild) {
+      current = current.firstChild;
+    }
+    const hide = current.snapshot.data?.['hideSidenav'] === true;
+    this.showSidenav = !hide;
   }
 }

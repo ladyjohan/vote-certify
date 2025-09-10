@@ -1,30 +1,79 @@
-<div class="video-card" role="region" aria-label="Tutorial video">
-  <div class="video-wrapper">
-    <video
-      #videoPlayer
-      controls
-      preload="metadata"
-      autoplay
-      muted
-      loop
-      poster="assets/videos/poster.jpg"
-    >
-      <source [src]="videoSrc" type="video/mp4" />
-    </video>
-  </div>
-
-  <div class="controls">
-    <button (click)="playPause()" aria-label="Play or pause video">
-      {{ isPlaying ? 'Pause' : 'Play' }}
+<div class="landing-page">
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <div class="overlay"></div>
+    <div class="hero-content">
+      <img
+        src="assets/icons/icon-512x512.png"
+        alt="VoteCertify Logo"
+        class="hero-logo"
+      />
+      <h1>Request Your Voter’s Certificate Online</h1>
+      <p>Fast. Secure. Anytime. Anywhere.</p>
+    <button class="hero-btn" (click)="scrollToVideo()">
+      Get Started →
     </button>
+    </div>
+  </section>
 
-    <button (click)="muteToggle()" aria-label="Mute or unmute video">
-      {{ isMuted ? 'Unmute' : 'Mute' }}
-    </button>
+  <!-- VIDEO SECTION -->
+  <section class="video-section" id="video">
+    <h2>Step-by-Step Guide: Requesting a Voter’s Certificate</h2>
+    <div class="video-wrapper">
+      <video
+        #videoPlayer
+        controls
+        preload="metadata"
+        muted
+        loop
+        poster="assets/videos/poster.jpg"
+      >
+        <source [src]="videoSrc" type="video/mp4" />
+      </video>
+    </div>
+  </section>
 
-    <button (click)="enterFullscreen()" aria-label="Enter fullscreen">Fullscreen</button>
 
+  <!-- PROCESS SECTION -->
+<section class="process">
+  <h2>Request Your Voter’s Certificate in 5 Easy Steps</h2>
+  <div class="steps">
+    <div class="step">
+      <img src="assets/steps/step1.png" alt="Register" />
+      <h3>1. Register & Login</h3>
+      <p>Create your account and log in securely.</p>
+    </div>
+
+    <div class="step">
+      <img src="assets/steps/step2.png" alt="Request Form" />
+      <h3>2. Fill Out Request Form</h3>
+      <p>Provide your details and upload required files.</p>
+    </div>
+
+    <div class="step">
+      <img src="assets/steps/step3.png" alt="Approval" />
+      <h3>3. Submit & Wait</h3>
+      <p>Our staff will review your request.</p>
+    </div>
+
+    <div class="step">
+      <img src="assets/steps/step4.png" alt="Notification" />
+      <h3>4. Get Email Notification</h3>
+      <p>Receive your scheduled pickup date.</p>
+    </div>
+
+    <div class="step">
+      <img src="assets/steps/step5.png" alt="Claim Certificate" />
+      <h3>5. Claim Your Certificate</h3>
+      <p>Visit COMELEC and pay the required fee.</p>
+    </div>
   </div>
+</section>
 
-  <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+  <section class="cta">
+    <h2>Ready to Request Your Certificate?</h2>
+    <button class="cta-btn" routerLink="/voter/request-form">
+      Request Now
+    </button>
+  </section>
 </div>
