@@ -138,8 +138,14 @@ export class AdminUserManagementComponent implements OnInit {
       });
 
       if (this.selectedRole === 'staff') {
-        const verificationLink = `https://vote-certify-5e2ee.web.app/verify-email?uid=${uid}`;
-        await this.sendVerificationAndPasswordEmail(this.staffEmail, password, verificationLink);
+        // Send Firebase verification email (official link with oobCode)
+        if (user) {
+          await import('firebase/auth').then(async (firebaseAuth) => {
+            await firebaseAuth.sendEmailVerification(user);
+          });
+        }
+        // Send password notification via EmailJS (no verification link)
+        await this.sendPasswordEmail(this.staffEmail, password);
       }
 
       this.toastr.success(`${this.selectedRole} account created successfully.`);
@@ -153,11 +159,10 @@ export class AdminUserManagementComponent implements OnInit {
     }
   }
 
-  private async sendVerificationAndPasswordEmail(email: string, password: string, verificationLink: string) {
+  private async sendPasswordEmail(email: string, password: string) {
     const emailParams = {
       email: email,
-      user_password: password,
-      verification_link: verificationLink
+      user_password: password
     };
 
     try {
@@ -168,9 +173,9 @@ export class AdminUserManagementComponent implements OnInit {
         this.EMAIL_JS_PUBLIC_KEY
       );
 
-      console.log('✅ Verification & Password Email sent successfully to:', email);
+      console.log('✅ Password Email sent successfully to:', email);
     } catch (error) {
-      console.error('❌ Error sending email:', error);
+      console.error('❌ Error sending password email:', error);
     }
   }
 

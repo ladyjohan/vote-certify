@@ -62,7 +62,6 @@ export class AuthService {
     try {
       const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
       const uid = userCredential.user.uid;
-      const verificationLink = `https://vote-certify-5e2ee.web.app/verify-email?email=${email}&uid=${uid}`;
 
       await setDoc(doc(this.firestore, 'users', uid), {
         fullName,
@@ -73,8 +72,17 @@ export class AuthService {
         status: 'pending', // Pending until email verification
       });
 
-      console.log('✅ User registered successfully. Sending verification link & password...');
-      await this.sendVerificationAndPasswordEmail(fullName, email, password, verificationLink);
+      // Send Firebase verification email (official link with oobCode)
+      if (userCredential.user) {
+        await import('firebase/auth').then(async (firebaseAuth) => {
+          await firebaseAuth.sendEmailVerification(userCredential.user!);
+        });
+      }
+
+      // Send password notification via EmailJS (no verification link)
+      await this.sendPasswordEmail(fullName, email, password);
+
+      console.log('✅ User registered successfully. Sent Firebase verification email and password notification.');
 
       // Immediately log the user out silently after registration (no navigation)
       await this.logout(false);
@@ -87,13 +95,12 @@ export class AuthService {
     }
   }
 
-  /** Send Verification Link & Password via EmailJS */
-  private async sendVerificationAndPasswordEmail(name: string, email: string, password: string, verificationLink: string) {
+  /** Send Password via EmailJS (no verification link) */
+  private async sendPasswordEmail(name: string, email: string, password: string) {
     const emailParams = {
       name,
       email,
-      user_password: password,
-      verification_link: verificationLink,
+      user_password: password
     };
 
     try {
@@ -104,9 +111,9 @@ export class AuthService {
         this.EMAIL_JS_PUBLIC_KEY
       );
 
-      console.log('✅ Verification & Password Email sent successfully to:', email);
+      console.log('✅ Password Email sent successfully to:', email);
     } catch (error) {
-      console.error('❌ Error sending email:', error);
+      console.error('❌ Error sending password email:', error);
     }
   }
 
