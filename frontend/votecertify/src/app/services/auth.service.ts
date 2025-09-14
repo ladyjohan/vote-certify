@@ -47,8 +47,8 @@ export class AuthService {
             const userRole = await this.getUserRole(user.uid);
             console.log('🔄 User role:', userRole);
           } else {
-            console.warn('⚠️ No user found. Redirecting to login.');
-            this.router.navigate(['/login']);
+            console.warn('⚠️ No user found.');
+            // Do not redirect to login; let the app handle navigation
           }
         });
       });

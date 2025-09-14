@@ -1,79 +1,68 @@
-<div class="landing-page">
-  <!-- HERO SECTION -->
-  <section class="hero">
-    <div class="overlay"></div>
-    <div class="hero-content">
-      <img
-        src="assets/icons/icon-512x512.png"
-        alt="VoteCertify Logo"
-        class="hero-logo"
-      />
-      <h1>Request Your Voter’s Certificate Online</h1>
-      <p>Fast. Secure. Anytime. Anywhere.</p>
-    <button class="hero-btn" (click)="scrollToVideo()">
-      Get Started →
-    </button>
+<div class="dashboard-wrapper">
+  <header class="dashboard-header">
+    <h1 style="margin-bottom: 0;">Welcome, {{ displayName || 'Voter' }}! <span aria-label="wave" title="wave">👋</span></h1>
+    <p style="margin-top: 0.2em;">
+      This is your personal dashboard for requesting and tracking your voter's certificate. Easily start a new request, monitor your status, and stay updated every step of the way.
+    </p>
+  </header>
+
+  <main class="dashboard-main dashboard-row">
+    <div class="dashboard-row-card dashboard-card status-card">
+      <h2>Status</h2>
+      <p>Your latest request status:</p>
+      <ng-container *ngIf="currentRequest; else noRequest">
+        <div class="status-card-inner" [ngClass]="{
+          'pending': currentRequest.status === 'Pending',
+          'approved': currentRequest.status === 'Approved',
+          'completed': currentRequest.status === 'Completed',
+          'declined': currentRequest.status === 'Declined'
+        }">
+          <p><strong>Precinct Number:</strong> {{ currentRequest.voterId }}</p>
+          <p><strong>Full Name:</strong> {{ currentRequest.fullName }}</p>
+          <p><strong>Birthdate:</strong> {{ currentRequest.birthdate }}</p>
+          <p><strong>Purpose:</strong> {{ currentRequest.purpose }}</p>
+          <p><strong>Copies Requested:</strong> {{ currentRequest.copiesRequested }}</p>
+          <p><strong>Status: </strong>
+            <span [ngClass]="{
+              'text-yellow-500': currentRequest.status === 'Pending',
+              'text-green-600': currentRequest.status === 'Approved' || currentRequest.status === 'Ready for Pickup',
+              'text-red-600': currentRequest.status === 'Declined',
+              'text-grey-600': currentRequest.status === 'Completed'
+            }">{{ currentRequest.status }}</span>
+          </p>
+          <p><strong>Submitted At:</strong> {{ currentRequest.submittedAt ? (currentRequest.submittedAt.toDate() | date:'medium') : 'N/A' }}</p>
+
+          <ng-container *ngIf="currentRequest.status === 'Approved' || currentRequest.status === 'Ready for Pickup'">
+            <p><strong>Pick-up Date:</strong> {{ currentRequest.pickupDate || 'To be scheduled' }}</p>
+          </ng-container>
+
+          <ng-container *ngIf="currentRequest.status === 'Declined'">
+            <p><strong>Remarks:</strong> {{ currentRequest.remarks || 'No remarks provided.' }}</p>
+          </ng-container>
+        </div>
+      </ng-container>
+      <ng-template #noRequest>
+        <div class="status-value">No requests found</div>
+      </ng-template>
+      <div class="status-actions-row">
+        <button routerLink="/voter/certificate-status">View Status</button>
+        <button
+          routerLink="/voter/request-form"
+          [disabled]="currentRequest && currentRequest.status === 'Pending'"
+          [ngClass]="{'disabled-btn': currentRequest && currentRequest.status === 'Pending'}"
+        >Request New Certificate</button>
+      </div>
+      <div *ngIf="currentRequest && currentRequest.status === 'Pending'" class="pending-msg">
+       *You can't request a new one because your request is still <b class="pending-orange">Pending</b>. Please wait until it is Approved or Declined.*
+      </div>
     </div>
-  </section>
-
-  <!-- VIDEO SECTION -->
-  <section class="video-section" id="video">
-    <h2>Step-by-Step Guide: Requesting a Voter’s Certificate</h2>
-    <div class="video-wrapper">
-      <video
-        #videoPlayer
-        controls
-        preload="metadata"
-        muted
-        loop
-        poster="assets/videos/poster.jpg"
-      >
-        <source [src]="videoSrc" type="video/mp4" />
-      </video>
+    <div class="dashboard-row-card dashboard-info">
+      <h2>How to Use the Dashboard</h2>
+      <ul>
+        <li>Start a new request for a voter’s certificate.</li>
+        <li>Track the progress and status of your requests.</li>
+        <li>Get notified when your certificate is ready for pickup.</li>
+      </ul>
     </div>
-  </section>
-
-
-  <!-- PROCESS SECTION -->
-<section class="process">
-  <h2>Request Your Voter’s Certificate in 5 Easy Steps</h2>
-  <div class="steps">
-    <div class="step">
-      <img src="assets/steps/step1.png" alt="Register" />
-      <h3>1. Register & Login</h3>
-      <p>Create your account and log in securely.</p>
-    </div>
-
-    <div class="step">
-      <img src="assets/steps/step2.png" alt="Request Form" />
-      <h3>2. Fill Out Request Form</h3>
-      <p>Provide your details and upload required files.</p>
-    </div>
-
-    <div class="step">
-      <img src="assets/steps/step3.png" alt="Approval" />
-      <h3>3. Submit & Wait</h3>
-      <p>Our staff will review your request.</p>
-    </div>
-
-    <div class="step">
-      <img src="assets/steps/step4.png" alt="Notification" />
-      <h3>4. Get Email Notification</h3>
-      <p>Receive your scheduled pickup date.</p>
-    </div>
-
-    <div class="step">
-      <img src="assets/steps/step5.png" alt="Claim Certificate" />
-      <h3>5. Claim Your Certificate</h3>
-      <p>Visit COMELEC and pay the required fee.</p>
-    </div>
-  </div>
-</section>
-
-  <section class="cta">
-    <h2>Ready to Request Your Certificate?</h2>
-    <button class="cta-btn" routerLink="/voter/request-form">
-      Request Now
-    </button>
-  </section>
+  </main>
 </div>

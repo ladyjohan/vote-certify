@@ -10,6 +10,7 @@ import { VoterLayoutComponent } from './pages/voter/voter-layout/voter-layout.co
 
 // Page Components
 import { VoterDashboardComponent } from './pages/voter/dashboard/dashboard/dashboard.component';
+import { LandingComponent } from './pages/landing/landing/landing.component';
 import { AdminDashboardComponent } from './pages/admin/dashboard/dashboard/dashboard.component';
 import { StaffDashboardComponent } from './pages/staff/dashboard/dashboard/dashboard.component';
 import { RequestFormComponent } from './pages/voter/request-form/request-form/request-form.component';
@@ -21,7 +22,7 @@ import { AdminUserManagementComponent } from './pages/admin/user-management/user
 import { StaffProfileComponent } from './pages/staff/staff-profile/staff-profile.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: '', component: LandingComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'login', component: LoginComponent },
   { path: 'verify-email', component: VerifyEmailComponent },
@@ -51,13 +52,10 @@ export const routes: Routes = [
 
   // Voter Routes (with VoterLayout)
 {
-  path: 'voter/dashboard',
-  component: VoterDashboardComponent, // no sidenav, no header
-},
-{
   path: 'voter',
   component: VoterLayoutComponent, // layout with sidenav + header
   children: [
+    { path: 'dashboard', component: VoterDashboardComponent },
     { path: 'request-form', component: RequestFormComponent },
     { path: 'certificate-status', component: CertificateStatusComponent },
   ],

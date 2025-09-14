@@ -1,6 +1,8 @@
-import { Component, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { Firestore, collection, getDocs, query, where, orderBy, limit, doc, getDoc } from '@angular/fire/firestore';
+import { Auth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-dashboard-video',
@@ -9,53 +11,92 @@ import { RouterLink } from '@angular/router';
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
-export class VoterDashboardComponent {
-  @ViewChild('videoPlayer', { static: true }) videoPlayer!: ElementRef<HTMLVideoElement>;
 
-  videoSrc = 'assets/videos/votecertify_process.mp4';
+export class VoterDashboardComponent implements OnInit {
+  displayName: string = '';
+  currentDateTime: string = '';
+  currentRequest: any = null;
+  allRequests: any[] = [];
+  private intervalId: any;
 
+  constructor(private firestore: Firestore, private auth: Auth) {}
 
-  isPlaying = false;
-  isMuted = false;
-  errorMessage = '';
+  ngOnInit() {
+    this.displayName = localStorage.getItem('displayName') || '';
+    this.updateDateTime();
+    this.intervalId = setInterval(() => this.updateDateTime(), 1000);
+    this.fetchCurrentRequest();
+  }
 
-  playPause(): void {
-    const v = this.videoPlayer.nativeElement;
-    if (v.paused) {
-      v.play().then(() => this.isPlaying = true).catch(err => {
-        this.errorMessage = 'Unable to play video (autoplay blocked / file missing).';
-        console.error(err);
-      });
-    } else {
-      v.pause();
-      this.isPlaying = false;
+  ngOnDestroy() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
     }
   }
 
-  muteToggle(): void {
-    const v = this.videoPlayer.nativeElement;
-    v.muted = !v.muted;
-    this.isMuted = v.muted;
+  updateDateTime() {
+    const now = new Date();
+    this.currentDateTime = now.toLocaleString();
   }
 
-  enterFullscreen(): void {
-    const v = this.videoPlayer.nativeElement as any;
-    if (v.requestFullscreen) v.requestFullscreen();
-    else if (v.webkitEnterFullscreen) v.webkitEnterFullscreen(); // iOS fallback
+  // fetchCurrentStatus removed
+  async fetchCurrentRequest() {
+    this.auth.onAuthStateChanged(async (user: any) => {
+      if (!user) {
+        this.currentRequest = null;
+        this.allRequests = [];
+        return;
+      }
+      const userRef = doc(this.firestore, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) {
+        this.currentRequest = null;
+        this.allRequests = [];
+        return;
+      }
+      const voterId = userSnap.data()['voterId'];
+      const requestsRef = collection(this.firestore, 'requests');
+      // Get all requests for timeline
+      const qAll = query(
+        requestsRef,
+        where('voterId', '==', voterId),
+        orderBy('submittedAt', 'desc')
+      );
+      const allSnapshot = await getDocs(qAll);
+      this.allRequests = allSnapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+
+      // Get latest request for status card
+      const q = query(
+        requestsRef,
+        where('voterId', '==', voterId),
+        orderBy('submittedAt', 'desc'),
+        limit(1)
+      );
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        this.currentRequest = { id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() };
+      } else {
+        this.currentRequest = null;
+      }
+    });
   }
 
-  onLoadedMetadata(): void {
-    this.errorMessage = '';
+  filteredRequests() {
+    // Optionally filter or just return all requests
+    return this.allRequests;
   }
 
-  onError(): void {
-    this.errorMessage = `Video failed to load. Check that "${this.videoSrc}" exists in src/assets/videos/`;
-  }
-
-  scrollToVideo() {
-    const element = document.getElementById('video');
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  formatDate(date: any): string {
+    if (!date) return 'N/A';
+    // Firestore Timestamp object
+    if (typeof date.toDate === 'function') {
+      return date.toDate().toLocaleString();
     }
+    // JS Date
+    if (date instanceof Date) {
+      return date.toLocaleString();
+    }
+    // ISO string or other
+    return new Date(date).toLocaleString();
   }
 }

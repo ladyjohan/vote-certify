@@ -65,12 +65,18 @@ export class AppComponent implements OnInit {
           }
         } catch (error) {
           console.error('Error checking user role:', error);
-          this.router.navigate(['/login']);
+          // Only redirect to /login if not on landing page
+          if (this.router.url !== '/' && this.router.url !== '') {
+            this.router.navigate(['/login']);
+          }
         }
       } else {
         this.userLoggedIn = false;
         this.userRole = null;
-        this.router.navigate(['/login']);
+        // Only redirect to /login if not on landing page
+        if (this.router.url !== '/' && this.router.url !== '') {
+          this.router.navigate(['/login']);
+        }
       }
     });
 
