@@ -1,56 +1,110 @@
-// Responsive font sizes for all main elements
-.auth-box,
-.auth-box h2,
-.auth-box form,
-.input-group,
-.input-group input,
-.input-group i,
-.terms-label,
-.terms-text-link,
-.modal-content.scrollable-terms,
-.btn,
-.login-text,
-.password-checklist-card,
-.modal-title,
-.modal-date {
-  font-size: clamp(0.95rem, 1.5vw, 1.08rem);
+// Make only the eye icon clickable, smaller, and precisely aligned
+.eye-btn {
+  position: absolute;
+  right: 1.5em;
+  top: 45%;
+  transform: translateY(-50%);
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: #111 !important;
+  font-size: 1.2em;
+  width: 1.2em;
+  height: 1.2em;
+  padding: 0 !important;
+  margin: 0 !important;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+}
+.eye-btn i {
+  pointer-events: auto;
+  cursor: pointer;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #111 !important;
 }
 
+// Move calendar icon in date field further left
+.input-group i.fa-calendar-alt {
+  margin-left: 0 !important;
+  margin-right: 2px !important;
+}
+
+// Responsive styles for mobile devices
 @media screen and (max-width: 600px) {
-  .auth-box,
-  .auth-box h2,
-  .auth-box form,
-  .input-group,
-  .input-group input,
-  .input-group i,
-  .terms-label,
-  .terms-text-link,
-  .modal-content.scrollable-terms,
-  .btn,
-  .login-text,
-  .password-checklist-card,
-  .modal-title,
-  .modal-date {
-    font-size: clamp(0.85rem, 1.2vw, 0.98rem) !important;
+  .auth-box {
+    padding: 18px 4px;
+    max-width: 100vw;
+    border-radius: 0;
+  }
+  .input-group {
+    width: 100% !important;
+    padding: 6px !important;
+    font-size: 13px;
+  }
+  .input-group i {
+    font-size: 13px !important;
+    margin-left: 6px !important;
+    margin-right: 6px !important;
+  }
+  .input-group input {
+    font-size: 13px !important;
+    margin-left: 6px !important;
+  }
+  .terms-container {
+    width: 100% !important;
+    padding: 0 2px !important;
+  }
+  .terms-label {
+    font-size: 0.93em !important;
+    padding: 0 2px !important;
+  }
+  .modal-content.scrollable-terms {
+    padding: 0.5em 0.2em 0.5em 0.2em !important;
+    max-height: 40vh !important;
+    font-size: 0.85rem !important;
+  }
+  .eye-btn {
+    right: 0.7em !important;
+    width: 1.1em !important;
+    height: 1.1em !important;
+    font-size: 1.1em !important;
   }
 }
 
 @media screen and (max-width: 400px) {
-  .auth-box,
-  .auth-box h2,
-  .auth-box form,
-  .input-group,
-  .input-group input,
-  .input-group i,
-  .terms-label,
-  .terms-text-link,
-  .modal-content.scrollable-terms,
-  .btn,
-  .login-text,
-  .password-checklist-card,
-  .modal-title,
-  .modal-date {
-    font-size: clamp(0.75rem, 1vw, 0.93rem) !important;
+  .auth-box {
+    padding: 8px 0 !important;
+    max-width: 100vw !important;
+  }
+  .input-group {
+    width: 100% !important;
+    padding: 3px !important;
+    font-size: 12px !important;
+  }
+  .input-group i {
+    font-size: 12px !important;
+    margin-left: 3px !important;
+    margin-right: 3px !important;
+  }
+  .input-group input {
+    font-size: 12px !important;
+    margin-left: 3px !important;
+  }
+  .terms-label {
+    font-size: 0.89em !important;
+    padding: 0 1px !important;
+  }
+  .eye-btn {
+    right: 0.4em !important;
+    width: 1em !important;
+    height: 1em !important;
+    font-size: 1em !important;
   }
 }
 .modal-x-btn {
@@ -320,7 +374,7 @@
 }
 .eye-btn {
   position: absolute;
-  right: 0.3em;
+  right: 1.2em;
   top: 50%;
   transform: translateY(-50%);
   background: none;
