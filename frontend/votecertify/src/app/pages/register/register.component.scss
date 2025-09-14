@@ -1,3 +1,364 @@
+// Responsive font sizes for all main elements
+.auth-box,
+.auth-box h2,
+.auth-box form,
+.input-group,
+.input-group input,
+.input-group i,
+.terms-label,
+.terms-text-link,
+.modal-content.scrollable-terms,
+.btn,
+.login-text,
+.password-checklist-card,
+.modal-title,
+.modal-date {
+  font-size: clamp(0.95rem, 1.5vw, 1.08rem);
+}
+
+@media screen and (max-width: 600px) {
+  .auth-box,
+  .auth-box h2,
+  .auth-box form,
+  .input-group,
+  .input-group input,
+  .input-group i,
+  .terms-label,
+  .terms-text-link,
+  .modal-content.scrollable-terms,
+  .btn,
+  .login-text,
+  .password-checklist-card,
+  .modal-title,
+  .modal-date {
+    font-size: clamp(0.85rem, 1.2vw, 0.98rem) !important;
+  }
+}
+
+@media screen and (max-width: 400px) {
+  .auth-box,
+  .auth-box h2,
+  .auth-box form,
+  .input-group,
+  .input-group input,
+  .input-group i,
+  .terms-label,
+  .terms-text-link,
+  .modal-content.scrollable-terms,
+  .btn,
+  .login-text,
+  .password-checklist-card,
+  .modal-title,
+  .modal-date {
+    font-size: clamp(0.75rem, 1vw, 0.93rem) !important;
+  }
+}
+.modal-x-btn {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  color: #888;
+  cursor: pointer;
+  padding: 0.1em 0.5em;
+  z-index: 10;
+  transition: color 0.2s;
+}
+.modal-x-btn:hover {
+  color: #d32f2f;
+}
+
+@media (max-width: 900px) {
+  .terms-popup {
+    max-width: 98vw;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+  }
+  .modal-content.scrollable-terms {
+    padding: 1.1em 1em 1.1em 1em;
+    max-height: 55vh;
+    font-size: 0.93rem;
+  }
+  .modal-header {
+    padding: 1.2em 1em 1em 1em;
+  }
+}
+
+@media (max-width: 600px) {
+  .terms-popup {
+    max-width: 100vw;
+    border-radius: 0;
+  }
+  .modal-content.scrollable-terms {
+    padding: 0.7em 0.5em 0.7em 0.5em;
+    max-height: 45vh;
+    font-size: 0.89rem;
+  }
+  .modal-header {
+    padding: 0.8em 0.5em 0.7em 0.5em;
+  }
+}
+.password-checklist-card {
+  text-align: left;
+  font-size: 0.93em;
+}
+// Terms and Conditions Modal Popup (Card Style)
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.18);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.terms-popup {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  max-width: 700px;
+  width: 98vw;
+  min-width: 350px;
+  min-height: 650px;
+  max-height: 95vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: 'Poppins', Arial, sans-serif;
+  border: none;
+}
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.1em;
+  background: #fff;
+  padding: 2.1em 2em 1.1em 2em;
+  border-bottom: 1px solid #f0f0f0;
+}
+.modal-icon {
+  background: #f4f8ff;
+  color: #3a7bfd;
+  border-radius: 10px;
+  width: 2.5em;
+  height: 2.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4em;
+}
+.modal-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+}
+.modal-title {
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 0.1em;
+}
+.modal-date {
+  font-size: 0.85rem;
+  color: #8a8a8a;
+  margin-bottom: 0.2em;
+}
+.modal-content.scrollable-terms {
+  padding: 1.2em 1.5em 1.2em 1.5em;
+  overflow-y: auto;
+  font-size: 0.85rem;
+  color: #222;
+  line-height: 1.6;
+  max-height: 600px;
+  border-bottom: 1px solid #f0f0f0;
+  text-align: justify;
+}
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1.1em;
+  padding: 1.2em 2em 1.5em 2em;
+  background: #fff;
+}
+.btn.decline-btn {
+  background: #fff;
+  color: #3a7bfd;
+  border: 2px solid #3a7bfd;
+  border-radius: 8px;
+  padding: 0.7em 2.2em;
+  font-size: 1.08rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.btn.decline-btn:hover {
+  background: #f4f8ff;
+}
+.btn.accept-btn {
+  background: #3a7bfd;
+  color: #fff;
+  border: 2px solid #3a7bfd;
+  border-radius: 8px;
+  padding: 0.7em 2.2em;
+  font-size: 1.08rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.btn.accept-btn:hover {
+  background: #2563d6;
+  border-color: #2563d6;
+}
+// Modal popup overlay styles
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.35);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal.terms-modal.card-style-modal {
+  z-index: 2100;
+  max-width: 480px;
+  width: 96vw;
+  max-height: 90vh;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.13);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: 'Poppins', Arial, sans-serif;
+  border: 1px solid #f2f2f2;
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 1.1em;
+  background: #f8fafb;
+  padding: 1.2em 1.5em 1em 1.5em;
+  border-bottom: 1px solid #e0e0e0;
+  justify-content: space-between;
+}
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #888;
+  cursor: pointer;
+  padding: 0 0.5rem;
+  transition: color 0.2s;
+}
+.close-btn:hover {
+  color: #d32f2f;
+}
+
+// Password checklist floating tooltip (does not affect layout)
+.password-group {
+  position: relative;
+}
+.password-checklist-tooltip {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  margin-top: 12px;
+  width: 320px;
+  background: #fff;
+  border: 1px solid #e6e6e6;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+  padding: 0.7em 1em 0.7em 1em;
+  z-index: 100;
+  font-size: 0.88em;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.2s;
+  text-align: left;
+}
+.password-checklist-tooltip::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 10px;
+  background: transparent;
+  display: block;
+  z-index: 101;
+  pointer-events: none;
+}
+.password-checklist-tooltip::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 10px solid #fff;
+  width: 0;
+  height: 0;
+  z-index: 102;
+  pointer-events: none;
+  filter: drop-shadow(0 -1px 1px #e6e6e6);
+}
+.password-checklist-tooltip[hidden] {
+  opacity: 0;
+  pointer-events: none;
+}
+.eye-btn {
+  position: absolute;
+  right: 0.3em;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  font-size: 1.15em;
+  padding: 0 0.3em;
+  z-index: 2;
+  transition: color 0.2s;
+}
+.eye-btn:hover {
+  color: #0b5ed7;
+}
+.terms-container {
+  margin: 0.5em 0 0.5em 0;
+  text-align: center;
+  width: 80%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.terms-label {
+  font-size: 0.98em;
+  color: #222;
+  display: block;
+  width: 100%;
+  line-height: 1.3;
+  text-align: center;
+  .terms-text-link {
+    display: inline;
+    white-space: normal;
+    word-break: break-word;
+  }
+}
+.terms-label input[type='checkbox'] {
+  margin-right: 0.4em;
+}
 .auth-container {
   position: relative;
   display: flex;

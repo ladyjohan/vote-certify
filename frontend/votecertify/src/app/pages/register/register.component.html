@@ -29,16 +29,167 @@
         <i class="fas fa-envelope"></i>
         <input type="email" placeholder="Email Address" formControlName="email" required />
       </div>
-      <div class="input-group">
+      <div class="input-group password-group">
         <i class="fas fa-lock"></i>
-        <input type="password" placeholder="Password" formControlName="password" minlength="6" required />
+        <input [type]="showPassword ? 'text' : 'password'" placeholder="Password" formControlName="password" minlength="8" required (input)="onPasswordInput($event)" (focus)="showPasswordChecklist()" (blur)="hidePasswordChecklist()" style="padding-right:2.2em;" />
+        <span class="eye-btn" tabindex="-1">
+          <i class="fas" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'" (click)="togglePasswordVisibility()" aria-label="Toggle password visibility"></i>
+        </span>
+        <div class="password-checklist-tooltip" *ngIf="passwordChecklistVisible">
+          <div class="password-checklist-card">
+            <div class="checklist-title">Your password must have:</div>
+            <div class="check-item" [class.valid]="checklist.length">
+              <i class="fas" [ngClass]="checklist.length ? 'fa-check-circle' : 'fa-circle'" aria-hidden="true"></i>
+              At least 8 characters
+            </div>
+            <div class="check-item" [class.valid]="checklist.lowerUpper">
+              <i class="fas" [ngClass]="checklist.lowerUpper ? 'fa-check-circle' : 'fa-circle'" aria-hidden="true"></i>
+              Upper and lowercase characters
+            </div>
+            <div class="check-item" [class.valid]="checklist.number">
+              <i class="fas" [ngClass]="checklist.number ? 'fa-check-circle' : 'fa-circle'" aria-hidden="true"></i>
+              At least one number
+            </div>
+          </div>
+        </div>
       </div>
-      <button type="submit" class="btn">
+      <div class="terms-container">
+        <label class="terms-label">
+          <input type="checkbox" formControlName="agreedToTerms" required />
+          <span class="terms-text-link">I have read and agree to the <a href="#" (click)="showTermsModal($event)">Terms and Conditions and Privacy Policy.</a></span>
+        </label>
+      </div>
+      <button type="submit" class="btn" [disabled]="!checklist.lowerUpper || !checklist.number || !checklist.length || !registerForm.get('agreedToTerms')?.value">
         Register
       </button>
     </form>
     <p class="login-text">
       Already have an account? <a routerLink="/login">Log in</a>
     </p>
+    <div class="modal-backdrop" *ngIf="showTerms">
+      <div class="modal terms-modal card-style-modal terms-popup" tabindex="-1" role="dialog" aria-modal="true">
+        <div class="modal-header">
+          <div class="modal-icon"><i class="fas fa-file-contract"></i></div>
+          <div class="modal-title-group" style="display: flex; flex-direction: column; align-items: flex-start; width: 100%; position: relative;">
+            <div class="modal-title">VoteCertify – Terms and Conditions</div>
+            <div style="display: flex; align-items: center; width: 100%;">
+              <div class="modal-date" style="flex: 1 1 auto;">Last Updated: September 15, 2025</div>
+            </div>
+          </div>
+        </div>
+  <div class="modal-content scrollable-terms">
+<p>These Terms and Conditions govern your access and use of VoteCertify, an online system developed for the Commission on Elections (COMELEC) Olongapo City for the purpose of facilitating the electronic submission and processing of requests for Voter’s Certificates. By creating an account, accessing, or using the system, you expressly acknowledge that you have read, understood, and agreed to be bound by these Terms.</p>
+<b>1. Eligibility</b>
+<ul>
+<li>1.1. This system is available exclusively to registered voters of Olongapo City.</li>
+<li>1.2. Users must provide accurate and truthful personal information including their full name, date of birth, precinct number, email address, and password during account registration.</li>
+<li>1.3. Only individuals with a valid voter record in the official database of COMELEC Olongapo City may access and utilize this service.</li>
+</ul>
+<b>2. User Accounts</b>
+<ul>
+<li>2.1. Users are solely responsible for maintaining the confidentiality of their account credentials.</li>
+<li>2.2. Any activity performed under a registered account shall be deemed to have been performed by the account holder.</li>
+<li>2.3. COMELEC Olongapo City reserves the right to suspend, restrict, or terminate accounts found to have submitted fraudulent, misleading, or inaccurate information.</li>
+</ul>
+<b>3. Voter’s Certificate Requests</b>
+<ul>
+<li>3.1. Users may submit requests for Voter’s Certificates by providing the following:
+  <ul>
+    <li>Purpose of request;</li>
+    <li>Number of original copies required;</li>
+    <li>Government-issued identification card (uploaded);</li>
+    <li>Self-photograph holding the government-issued identification card (uploaded).</li>
+  </ul>
+</li>
+<li>3.2. All requests are subject to review and verification by COMELEC staff.</li>
+<li>3.3. Requests may be approved (with an assigned pickup date) or declined (with remarks provided to the applicant).</li>
+</ul>
+<b>4. Verification Process</b>
+<ul>
+<li>4.1. Uploaded government-issued identification and selfie images shall be used solely for identity verification.</li>
+<li>4.2. COMELEC staff reserve the right to decline requests where the provided documents or information do not correspond with official records.</li>
+<li>4.3. The applicant shall be notified of the result of their request through the system.</li>
+</ul>
+<b>5. Acceptable Use</b>
+<ul>
+<li>5.1. Users agree to:
+  <ul>
+    <li>Submit truthful and accurate information;</li>
+    <li>Use the system only for lawful purposes connected to Voter’s Certificate requests.</li>
+  </ul>
+</li>
+<li>5.2. Users shall not:
+  <ul>
+    <li>Attempt to gain unauthorized access to the system;</li>
+    <li>Submit fraudulent documents or impersonate another individual;</li>
+    <li>Misuse the system for purposes unrelated to its intended function.</li>
+  </ul>
+</li>
+<li>Violation of this section may result in suspension of access, cancellation of requests, and possible legal action.</li>
+</ul>
+<b>6. System Availability and Limitations</b>
+<ul>
+<li>6.1. VoteCertify is provided on an “as is” and “as available” basis.</li>
+<li>6.2. COMELEC Olongapo City does not warrant uninterrupted service and shall not be liable for any delays, errors, or downtime due to system or technical limitations.</li>
+</ul>
+<b>7. Amendments</b>
+<ul>
+<li>7.1. COMELEC Olongapo City reserves the right to revise these Terms at any time.</li>
+<li>7.2. Continued use of the system constitutes acceptance of any amendments.</li>
+</ul>
+<b>Privacy Policy</b>
+<p>This Privacy Policy explains how VoteCertify, under the authority of COMELEC Olongapo City, collects, uses, and safeguards personal data in compliance with applicable privacy and data protection laws.</p>
+<b>1. Data Collected</b>
+<p>When registering and submitting requests, the following personal information is collected:</p>
+<ul>
+<li>Full Name;</li>
+<li>Date of Birth;</li>
+<li>Precinct Number;</li>
+<li>Email Address;</li>
+<li>Password;</li>
+<li>Purpose of Request;</li>
+<li>Number of Copies Requested;</li>
+<li>Uploaded Government-issued Identification Card;</li>
+<li>Uploaded Selfie with ID.</li>
+</ul>
+<b>2. Purpose of Data Collection</b>
+<p>Your personal data is collected for the following purposes:</p>
+<ul>
+<li>Verification of voter identity;</li>
+<li>Processing and approval/denial of voter’s certificate requests;</li>
+<li>Record-keeping for COMELEC Olongapo City’s official functions;</li>
+<li>Communication with applicants regarding their requests.</li>
+</ul>
+<b>3. Data Sharing and Disclosure</b>
+<ul>
+<li>3.1. Personal data will be accessed only by authorized COMELEC Olongapo City personnel for the purposes stated.</li>
+<li>3.2. Data shall not be sold, distributed, or disclosed to third parties, except when required by law or by lawful order of a competent authority.</li>
+</ul>
+<b>4. Data Storage and Security</b>
+<ul>
+<li>4.1. Personal information is stored securely within authorized databases and systems.</li>
+<li>4.2. Technical and organizational measures are implemented to safeguard data against unauthorized access, loss, misuse, or disclosure.</li>
+<li>4.3. While reasonable security measures are in place, absolute security cannot be guaranteed. Users are advised to safeguard their account credentials.</li>
+</ul>
+<b>5. Data Retention</b>
+<p>Personal data shall be retained only for as long as necessary to fulfill the purpose for which it was collected, or as required by applicable laws and regulations.</p>
+<b>6. User Rights</b>
+<p>In accordance with data protection principles, users have the right to:</p>
+<ul>
+<li>Access their personal data held in the system;</li>
+<li>Request correction of inaccurate or incomplete information;</li>
+<li>Request deletion of personal data, subject to legal and regulatory obligations.</li>
+</ul>
+<p>Requests may be submitted to COMELEC Olongapo City through the designated system contact channels.</p>
+<b>7. Consent</b>
+<p>By creating an account and submitting a request, you voluntarily consent to the collection, use, and processing of your personal data as described in this Privacy Policy.</p>
+<b>Acknowledgement</b>
+<p>By clicking “I Agree” or by using the VoteCertify system, you acknowledge that you have read, understood, and agreed to the above Terms and Conditions and Privacy Policy.</p>
+        </div>
+        <div class="modal-actions">
+          <button class="btn accept-btn" (click)="agreeToTerms()">I Agree</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

@@ -18,6 +18,11 @@ export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   errorMessage: string = '';
   loading = false;
+  showPassword = false;
+
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+  }
 
   private auth: Auth = inject(Auth);
   private firestore: Firestore = inject(Firestore);

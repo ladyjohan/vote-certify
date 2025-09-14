@@ -1,3 +1,5 @@
+
+
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
@@ -5,17 +7,65 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { Timestamp } from '@angular/fire/firestore';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterModule],
+  imports: [ReactiveFormsModule, CommonModule, RouterModule, FormsModule],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss'],
 })
 export class RegisterComponent {
   registerForm: FormGroup;
   errorMessage = '';
+  showTerms = false;
+  showPassword = false;
+  passwordChecklistVisible = false;
+  passwordStrength: 'weak' | 'medium' | 'strong' = 'weak';
+  checklist = {
+    lowerUpper: false,
+    number: false,
+    special: false,
+    length: false
+  };
+
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+  }
+
+  onPasswordInput(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.checklist.lowerUpper = /[a-z]/.test(value) && /[A-Z]/.test(value);
+    this.checklist.number = /[0-9]/.test(value);
+    this.checklist.special = /[^A-Za-z0-9]/.test(value);
+    this.checklist.length = value.length >= 8;
+    // Password strength logic
+    const passed = Object.values(this.checklist).filter(Boolean).length;
+    if (passed === 4) {
+      this.passwordStrength = 'strong';
+    } else if (passed >= 2) {
+      this.passwordStrength = 'medium';
+    } else {
+      this.passwordStrength = 'weak';
+    }
+  }
+
+  showPasswordChecklist() {
+    this.passwordChecklistVisible = true;
+  }
+
+  hidePasswordChecklist() {
+    this.passwordChecklistVisible = false;
+  }
+  showTermsModal(event: Event) {
+    event.preventDefault();
+    this.showTerms = true;
+  }
+
+  closeTermsModal() {
+    this.showTerms = false;
+  }
 
   constructor(
     private fb: FormBuilder,
@@ -28,12 +78,21 @@ export class RegisterComponent {
       birthdate: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
+      agreedToTerms: [false, [Validators.requiredTrue]]
     });
   }
 
   async register() {
+    if (!this.registerForm.get('agreedToTerms')?.value) {
+      this.toastr.error('You must agree to the Terms and Conditions before registering.', 'Registration Failed');
+      return;
+    }
     if (this.registerForm.invalid) {
       this.toastr.error('Please fill out all fields correctly.', 'Registration Failed');
+      return;
+    }
+    if (!this.checklist.lowerUpper || !this.checklist.number || !this.checklist.length) {
+      this.toastr.error('Your password does not meet all requirements.', 'Registration Failed');
       return;
     }
 
@@ -63,15 +122,18 @@ export class RegisterComponent {
     } catch (error: any) {
       console.error('Registration error:', error);
 
+      let errorMsg = 'Registration failed. Please try again.';
       if (error.code === 'auth/email-already-in-use') {
-        this.errorMessage = 'This email is already registered.';
+        errorMsg = 'This email is already registered.';
       } else if (error.code === 'auth/weak-password') {
-        this.errorMessage = 'Password must be at least 6 characters.';
-      } else {
-        this.errorMessage = 'Registration failed. Please try again.';
+        errorMsg = 'Password must be at least 6 characters.';
       }
-
-      this.toastr.error(this.errorMessage, 'Registration Failed');
+      this.toastr.error(errorMsg, 'Registration Failed');
     }
+  }
+
+  agreeToTerms() {
+    this.registerForm.get('agreedToTerms')?.setValue(true);
+    this.showTerms = false;
   }
 }
