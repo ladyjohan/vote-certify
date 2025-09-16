@@ -1,0 +1,27 @@
+1
+00:00:00,000 --> 00:00:03,000
+Welcome to VoteCertify! This video will guide you through the process of requesting your voter's certificate online.
+
+2
+00:00:03,000 --> 00:00:07,000
+Step 1: Register and log in to your VoteCertify account.
+
+3
+00:00:07,000 --> 00:00:11,000
+Step 2: Fill out the request form with your details and upload the required files.
+
+4
+00:00:11,000 --> 00:00:15,000
+Step 3: Submit your request and wait for our staff to review it.
+
+5
+00:00:15,000 --> 00:00:19,000
+Step 4: Receive an email notification with your scheduled pickup date.
+
+6
+00:00:19,000 --> 00:00:22,000
+Step 5: Visit COMELEC and claim your certificate after paying the required fee.
+
+7
+00:00:22,000 --> 00:00:25,000
+Thank you for using VoteCertify!
