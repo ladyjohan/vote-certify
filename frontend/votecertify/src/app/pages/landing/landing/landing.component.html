@@ -28,13 +28,22 @@
       <video
         #videoPlayer
         controls
-        preload="metadata"
+        preload="auto"
         muted
         loop
         autoplay
+        playsinline
         poster="assets/videos/poster.jpg"
       >
         <source [src]="videoSrc" type="video/mp4" />
+        <track
+          src="assets/videos/votecertify_process.vtt"
+          kind="subtitles"
+          srclang="en"
+          label="English"
+          default
+        />
+        Sorry, your browser does not support embedded videos.
       </video>
     </div>
   </section>
