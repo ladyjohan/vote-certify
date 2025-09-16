@@ -43,6 +43,7 @@
           <div class="subtitle-lang-switch video-top-right">
             <button [class.active]="subtitleLang === 'en'" (click)="setSubtitleLang('en')">English</button>
             <button [class.active]="subtitleLang === 'tl'" (click)="setSubtitleLang('tl')">Tagalog</button>
+            <button [class.active]="subtitleLang === 'off'" (click)="setSubtitleLang('off')">Off</button>
           </div>
           <div class="subtitle-overlay" *ngIf="currentSubtitle">
             {{ currentSubtitle }}

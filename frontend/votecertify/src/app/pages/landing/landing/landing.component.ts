@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
   styleUrls: ['./landing.component.scss']
 })
 export class LandingComponent {
+  dropdownOpen = false;
   showModal = false;
   videoSrc = 'assets/videos/votecertify_process.mp4';
 
@@ -34,7 +35,7 @@ subtitles = {
   ]
 };
 
-subtitleLang: 'en' | 'tl' = 'en';
+subtitleLang: 'en' | 'tl' | 'off' = 'en';
 currentSubtitle = '';
 
 
@@ -53,13 +54,19 @@ currentSubtitle = '';
   onVideoTimeUpdate(event: Event) {
     const video = event.target as HTMLVideoElement;
     const time = video.currentTime;
+    if (this.subtitleLang === 'off') {
+      this.currentSubtitle = '';
+      return;
+    }
     const subs = this.subtitles[this.subtitleLang];
     const found = subs.find(s => time >= s.start && time < s.end);
     this.currentSubtitle = found ? found.text : '';
   }
 
-  setSubtitleLang(lang: 'en' | 'tl') {
+  setSubtitleLang(lang: 'en' | 'tl' | 'off') {
     this.subtitleLang = lang;
-    this.currentSubtitle = '';
+    if (lang === 'off') {
+      this.currentSubtitle = '';
+    }
   }
 }
