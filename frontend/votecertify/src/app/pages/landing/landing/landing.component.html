@@ -5,9 +5,9 @@
       <img src="assets/icons/icon-512x512.png" alt="VoteCertify Logo" class="hero-logo" />
       <h1>Request Your Voter’s Certificate Online</h1>
       <p>Fast. Secure. Anytime. Anywhere.</p>
-        <button class="hero-btn" (click)="showModal = true">Request Now</button>
-      </div>
-    </section>
+      <button class="hero-btn" (click)="showModal = true">Request Now</button>
+    </div>
+  </section>
 
   <!-- Modal Popup -->
   <div class="modal-backdrop" *ngIf="showModal">
@@ -34,17 +34,20 @@
         autoplay
         playsinline
         poster="assets/videos/poster.jpg"
+        (timeupdate)="onVideoTimeUpdate($event)"
       >
         <source [src]="videoSrc" type="video/mp4" />
-        <track
-          src="assets/videos/votecertify_process.vtt"
-          kind="subtitles"
-          srclang="en"
-          label="English"
-          default
-        />
         Sorry, your browser does not support embedded videos.
       </video>
+        <div class="video-inner-container">
+          <div class="subtitle-lang-switch video-top-right">
+            <button [class.active]="subtitleLang === 'en'" (click)="setSubtitleLang('en')">English</button>
+            <button [class.active]="subtitleLang === 'tl'" (click)="setSubtitleLang('tl')">Tagalog</button>
+          </div>
+          <div class="subtitle-overlay" *ngIf="currentSubtitle">
+            {{ currentSubtitle }}
+          </div>
+        </div>
     </div>
   </section>
 
