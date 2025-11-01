@@ -19,7 +19,7 @@
       <span>Actions</span>
     </div>
 
-    <div class="request-item" *ngFor="let request of filteredRequests">
+  <div class="request-item" *ngFor="let request of displayedRequests">
   <div class="field">
     <span class="label mobile-only">Full Name: </span>
     <span class="value">{{ request.fullName }}</span>
@@ -37,7 +37,8 @@
     <span class="value" [ngClass]="{
       'status-pending': request.status === 'Pending',
       'status-approved': request.status === 'Approved',
-      'status-completed': request.status === 'Completed'
+      'status-completed': request.status === 'Completed',
+      'status-declined': request.status === 'Declined'
     }">{{ request.status }}</span>
   </div>
   <div class="field actions">
@@ -50,4 +51,22 @@
     </button>
   </div>
 </div>
+
+  <!-- Pagination -->
+  <div class="pagination-wrapper" *ngIf="filteredRequests.length > 0">
+    <div class="pagination">
+      <button class="page-btn prev" [disabled]="currentPage === 1" (click)="prevPage()">‹ Prev</button>
+
+      <ng-container *ngFor="let p of pages">
+        <button
+          class="page-btn"
+          [class.active]="currentPage === p"
+          (click)="goToPage(p)"
+        >{{ p }}</button>
+      </ng-container>
+
+      <button class="page-btn next" [disabled]="currentPage === totalPages" (click)="nextPage()">Next ›</button>
+    </div>
+    <div class="pagination-info">Page {{ currentPage }} of {{ totalPages }} — {{ filteredRequests.length }} requests</div>
+  </div>
 </div>

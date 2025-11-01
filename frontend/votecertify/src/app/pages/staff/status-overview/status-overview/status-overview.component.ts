@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { Firestore, collection, getDocs, doc, updateDoc } from '@angular/fire/firestore';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -16,11 +16,17 @@ export class StatusOverviewComponent implements OnInit {
   allRequests: any[] = [];
   filteredRequests: any[] = [];
   searchControl = new FormControl('');
+  // Pagination
+  pageSize = 10;
+  currentPage = 1;
+  totalPages = 1;
 
   constructor(private firestore: Firestore) {}
 
   async ngOnInit() {
     await this.loadRequests();
+    // choose page size based on current viewport (mobile: 5, desktop/tablet: 10)
+    this.setPageSizeForViewport();
 
     this.searchControl.valueChanges.pipe(debounceTime(300)).subscribe(searchText => {
       const term = (searchText || '').toLowerCase();
@@ -28,6 +34,9 @@ export class StatusOverviewComponent implements OnInit {
         req.fullName?.toLowerCase().includes(term) ||
         req.voterId?.toLowerCase().includes(term)
       );
+      // reset pagination when filter changes
+      this.currentPage = 1;
+      this.setupPagination();
     });
   }
 
@@ -46,6 +55,54 @@ export class StatusOverviewComponent implements OnInit {
     });
 
     this.filteredRequests = [...this.allRequests];
+    this.setupPagination();
+  }
+
+  setupPagination() {
+    this.totalPages = Math.max(1, Math.ceil(this.filteredRequests.length / this.pageSize));
+    if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
+  }
+
+  // Adjust pageSize based on viewport width; mobile gets 5 per page
+  setPageSizeForViewport() {
+    try {
+      const w = window.innerWidth || document.documentElement.clientWidth || 0;
+      const desired = w <= 600 ? 5 : 10;
+      if (this.pageSize !== desired) {
+        this.pageSize = desired;
+        this.currentPage = 1;
+        this.setupPagination();
+      }
+    } catch (e) {
+      // window might not be available in some environments (SSR) — ignore
+    }
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    this.setPageSizeForViewport();
+  }
+
+  get displayedRequests() {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredRequests.slice(start, start + this.pageSize);
+  }
+
+  get pages() {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  goToPage(page: number) {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) this.currentPage++;
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) this.currentPage--;
   }
 
   async markAsCompleted(request: any) {

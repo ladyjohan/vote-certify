@@ -1,7 +1,15 @@
 <div class="request-management-container">
-  <h2 class="title">Voter Request Management</h2>
-
   <div class="request-card">
+      <h2 class="title">Voter Request Management</h2>
+    <div class="search-bar">
+      <i class="fas fa-search search-icon" aria-hidden="true"></i>
+      <input
+        [formControl]="searchControl"
+        type="text"
+        placeholder="Search by Voter Name or Precinct Number"
+        aria-label="Search requests"
+      />
+    </div>
     <table class="request-table">
       <thead>
         <tr>
@@ -13,7 +21,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let request of pendingRequests">
+        <tr *ngFor="let request of displayedRequests">
           <td class="name">{{ request.fullName }}</td>
           <td class="id">{{ request.voterId }}</td>
           <td class="purpose">{{ request.purpose }}</td>
@@ -27,6 +35,23 @@
 
     <div *ngIf="pendingRequests.length === 0" class="no-requests">
       No pending requests at the moment.
+    </div>
+  <!-- Pagination -->
+  <div class="pagination-wrapper" *ngIf="pendingRequests.length > 0">
+      <div class="pagination">
+        <button class="page-btn prev" [disabled]="currentPage === 1" (click)="prevPage()">‹ Prev</button>
+
+        <ng-container *ngFor="let p of pages">
+          <button
+            class="page-btn"
+            [class.active]="currentPage === p"
+            (click)="goToPage(p)"
+          >{{ p }}</button>
+        </ng-container>
+
+        <button class="page-btn next" [disabled]="currentPage === totalPages" (click)="nextPage()">Next ›</button>
+      </div>
+      <div class="pagination-info">Page {{ currentPage }} of {{ totalPages }} — {{ pendingRequests.length }} requests</div>
     </div>
   </div>
 </div>

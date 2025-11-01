@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Firestore, collection, getDocs, query, where, doc, updateDoc, getDoc } from '@angular/fire/firestore';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import Swal from 'sweetalert2';
+import { debounceTime } from 'rxjs/operators';
 import { SupabaseService } from '../../../../services/supabase.service';
 import emailjs from 'emailjs-com';
 
@@ -10,12 +11,18 @@ import emailjs from 'emailjs-com';
 @Component({
   selector: 'app-request-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './request-management.component.html',
   styleUrls: ['./request-management.component.scss']
 })
 export class RequestManagementComponent implements OnInit {
   pendingRequests: any[] = [];
+  filteredPendingRequests: any[] = [];
+  // Pagination
+  pageSize = 10;
+  currentPage = 1;
+  totalPages = 1;
+  searchControl = new FormControl('');
   selectedRequest: any = null;
   isLoadingDetails = false;
   activeAttachment: { type: 'gov_id' | 'selfie', url: string } | null = null;
@@ -27,6 +34,15 @@ export class RequestManagementComponent implements OnInit {
 
   ngOnInit() {
     this.getPendingRequests();
+    this.searchControl.valueChanges.pipe(debounceTime(300)).subscribe(text => {
+      const term = (text || '').toString().toLowerCase();
+      this.filteredPendingRequests = this.pendingRequests.filter(r =>
+        (r.fullName || '').toString().toLowerCase().includes(term) ||
+        (r.voterId || '').toString().toLowerCase().includes(term)
+      );
+      this.currentPage = 1;
+      this.setupPagination();
+    });
   }
 
   // Fetch pending requests with the number of copies requested
@@ -39,7 +55,39 @@ export class RequestManagementComponent implements OnInit {
       id: doc.id,
       ...doc.data()
     }));
+    // initialize filtered list and pagination
+    this.filteredPendingRequests = [...this.pendingRequests];
+    this.setupPagination();
   }
+
+  setupPagination() {
+    this.totalPages = Math.max(1, Math.ceil(this.filteredPendingRequests.length / this.pageSize));
+    if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
+  }
+
+  get displayedRequests() {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.filteredPendingRequests.slice(start, start + this.pageSize);
+  }
+
+  get pages() {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  goToPage(page: number) {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) this.currentPage++;
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) this.currentPage--;
+  }
+
+  // pageSize is fixed to 10 per user's request; selector removed from template.
 
   openDetails(request: any) {
     this.selectedRequest = request;
@@ -98,8 +146,10 @@ export class RequestManagementComponent implements OnInit {
       //Send Email after approval
       await this.sendApprovalEmail(request, date);
 
-      this.pendingRequests = this.pendingRequests.filter(r => r.id !== request.id);
-      this.closeDetails();
+    this.pendingRequests = this.pendingRequests.filter(r => r.id !== request.id);
+    this.filteredPendingRequests = this.filteredPendingRequests.filter(r => r.id !== request.id);
+    this.setupPagination();
+  this.closeDetails();
 
       Swal.fire('Approved!', `${request.fullName}'s request has been approved.`, 'success');
     }
@@ -125,8 +175,10 @@ export class RequestManagementComponent implements OnInit {
         remarks: remarks.trim()
       });
 
-      this.pendingRequests = this.pendingRequests.filter(r => r.id !== request.id);
-      this.closeDetails();
+  this.pendingRequests = this.pendingRequests.filter(r => r.id !== request.id);
+  this.filteredPendingRequests = this.filteredPendingRequests.filter(r => r.id !== request.id);
+  this.setupPagination();
+  this.closeDetails();
 
       Swal.fire('Declined!', `${request.fullName}'s request has been declined.`, 'error');
     } else if (remarks !== undefined) {

@@ -1,8 +1,15 @@
 /* Base Styles */
 .request-management-container {
-  padding: 2rem;
+  /* Reduced outer spacing to match app and avoid large empty margins */
+  padding: 1rem; /* smaller outer spacing */
+  box-sizing: border-box;
   font-family: Arial, sans-serif;
   color: #333;
+
+  @media (min-width: 1200px) {
+    /* slight increase on very wide screens */
+    padding: 1.5rem;
+  }
 
   .title {
     color: #464646;
@@ -16,6 +23,51 @@
     border-radius: 15px;
     padding: 1rem;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+      .search-bar {
+        margin-bottom: 12px;
+        position: relative;
+
+        input {
+          width: 100%;
+          max-width: 100%;
+          box-sizing: border-box; /* ensure padding doesn't cause overflow */
+          display: block;
+          padding: 0.65rem 1rem 0.65rem 44px; /* space for icon */
+          border-radius: 8px;
+          border: 1px solid #e2e8f0;
+          font-size: 0.95rem;
+          background: #fff;
+          box-shadow: 0 2px 6px rgba(2,6,23,0.04);
+          transition: border-color 0.2s, box-shadow 0.2s;
+
+          &:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 4px rgba(79,70,229,0.08);
+          }
+        }
+
+        .search-icon {
+          position: absolute;
+          left: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          font-size: 1rem;
+          color: #6b7280;
+          pointer-events: none;
+        }
+      }
+
+      /* Prevent the search bar from stretching past the card on very small containers */
+      @media (max-width: 480px) {
+        .search-bar {
+          input {
+            padding-left: 38px; /* slightly smaller left padding on very small screens */
+            font-size: 0.9rem;
+          }
+        }
+      }
 
     .request-table {
       width: 100%;
@@ -64,6 +116,78 @@
       color: #666;
     }
   }
+}
+
+/* Pagination styles */
+.pagination-wrapper {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,0,0,0.03);
+  padding: 8px;
+  border-radius: 8px;
+}
+.page-btn {
+  background: #fff;
+  border: 1px solid #e6e8ee;
+  color: #222;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  min-width: 36px;
+  transition: background 0.12s, transform 0.08s;
+}
+.page-btn:hover:not(:disabled) {
+  background: #f4f7ff;
+  transform: translateY(-1px);
+}
+.page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.page-btn.active {
+  background: linear-gradient(90deg, #1976d2, #4e8cf5);
+  color: #fff;
+  border-color: transparent;
+}
+.pagination-info {
+  font-size: 0.95rem;
+  color: #55606a;
+}
+
+@media (max-width: 640px) {
+  .pagination { gap: 6px; padding: 6px; }
+  .page-btn { padding: 6px 8px; min-width: 32px; font-size: 0.9rem; }
+  .pagination-info { font-size: 0.85rem; }
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.page-size-label {
+  font-size: 0.9rem;
+  color: #444;
+}
+.page-size-select {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #e6e8ee;
+  background: #fff;
+}
+
+@media (max-width: 480px) {
+  .pagination-controls { flex-direction: column; align-items: stretch; }
+  .page-size-select { width: 100%; }
 }
 
 /* Modal Styles */
