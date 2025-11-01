@@ -34,6 +34,79 @@ export class RegisterComponent {
     this.showPassword = !this.showPassword;
   }
 
+  /**
+   * Sanitize the full name field on input (removes digits and disallowed characters).
+   * This handles pasted content and composition results.
+   */
+  sanitizeFullName(event: Event) {
+    const input = event.target as HTMLInputElement;
+    // allow letters (including accented), spaces and hyphens (no apostrophes)
+    const sanitized = input.value.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ \-]+/g, '');
+    if (sanitized !== input.value) {
+      // update form control without emitting valueChanges to avoid cycles
+      this.registerForm.get('fullName')?.setValue(sanitized, { emitEvent: false });
+    }
+  }
+
+  /**
+   * Prevent typing disallowed characters. Control keys are allowed.
+   */
+  allowFullNameKeydown(event: KeyboardEvent) {
+    const key = event.key;
+    // allow control keys and navigation
+    if (key.length > 1) {
+      return;
+    }
+    // allow letters (including accented), spaces and hyphens — apostrophe disallowed
+    const allowed = /^[A-Za-zÀ-ÖØ-öø-ÿ \-]$/;
+    if (!allowed.test(key)) {
+      event.preventDefault();
+    }
+  }
+
+  /**
+   * Sanitize the voterId input to allow only letters and numbers (remove other characters).
+   */
+  sanitizeVoterId(event: Event) {
+    const input = event.target as HTMLInputElement;
+    // remove non-alphanumeric characters
+    let sanitized = input.value.replace(/[^A-Za-z0-9]+/g, '');
+    // convert to uppercase so it matches the pattern (e.g., 123A)
+    const upper = sanitized.toUpperCase();
+    if (upper !== input.value) {
+      // preserve caret position
+      const start = input.selectionStart ?? upper.length;
+      const end = input.selectionEnd ?? upper.length;
+      input.value = upper;
+      // set form control value without emitting change events
+      this.registerForm.get('voterId')?.setValue(upper, { emitEvent: false });
+      // restore caret (clamp to length)
+      const len = upper.length;
+      const newStart = Math.min(start, len);
+      const newEnd = Math.min(end, len);
+      try {
+        input.setSelectionRange(newStart, newEnd);
+      } catch (e) {
+        // ignore if unable to set selection
+      }
+    }
+  }
+
+  /**
+   * Prevent typing non-alphanumeric characters in the voterId field.
+   */
+  allowVoterIdKeydown(event: KeyboardEvent) {
+    const key = event.key;
+    // allow control / navigation keys (length>1 covers keys like Backspace, Tab, Enter, Arrow keys)
+    if (key.length > 1) {
+      return;
+    }
+    const allowed = /^[A-Za-z0-9]$/;
+    if (!allowed.test(key)) {
+      event.preventDefault();
+    }
+  }
+
   onPasswordInput(event: Event) {
     const value = (event.target as HTMLInputElement).value;
     this.checklist.lowerUpper = /[a-z]/.test(value) && /[A-Z]/.test(value);

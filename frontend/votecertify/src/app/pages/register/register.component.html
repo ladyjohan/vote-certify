@@ -14,16 +14,32 @@
     <form [formGroup]="registerForm" (ngSubmit)="register()">
       <div class="input-group">
         <i class="fas fa-user"></i>
-        <input type="text" placeholder="Full Name" formControlName="fullName" required />
+        <!-- Prevent typing numbers or other disallowed characters; sanitize pasted input -->
+        <input
+          type="text"
+          placeholder="Full Name"
+          formControlName="fullName"
+          required
+          (input)="sanitizeFullName($event)"
+          (keydown)="allowFullNameKeydown($event)"
+        />
       </div>
       <div class="input-group">
         <i class="fas fa-id-card"></i>
-        <input type="text" placeholder="Precinct Number (e.g., 123A)" formControlName="voterId"
-               pattern="^[0-9]{3}[A-Z]{1}$" required />
+        <!-- Allow only letters and numbers (prevent special characters); keep pattern validation for format -->
+        <input
+          type="text"
+          placeholder="Precinct Number (e.g., 123A)"
+          formControlName="voterId"
+          pattern="^[0-9]{3}[A-Z]{1}$"
+          required
+          (input)="sanitizeVoterId($event)"
+          (keydown)="allowVoterIdKeydown($event)"
+        />
       </div>
       <div class="input-group">
         <i class="fas fa-calendar-alt"></i>
-        <input type="date" formControlName="birthdate" required />
+        <input type="date" placeholder="Date of Birth" formControlName="birthdate" required />
       </div>
       <div class="input-group">
         <i class="fas fa-envelope"></i>
