@@ -40,8 +40,8 @@ export class RegisterComponent {
    */
   sanitizeFullName(event: Event) {
     const input = event.target as HTMLInputElement;
-    // allow letters (including accented), spaces and hyphens (no apostrophes)
-    const sanitized = input.value.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ \-]+/g, '');
+  // allow letters (including accented), spaces and dot (for middle initial); hyphen removed
+  const sanitized = input.value.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ \.]+/g, '');
     if (sanitized !== input.value) {
       // update form control without emitting valueChanges to avoid cycles
       this.registerForm.get('fullName')?.setValue(sanitized, { emitEvent: false });
@@ -57,8 +57,8 @@ export class RegisterComponent {
     if (key.length > 1) {
       return;
     }
-    // allow letters (including accented), spaces and hyphens — apostrophe disallowed
-    const allowed = /^[A-Za-zÀ-ÖØ-öø-ÿ \-]$/;
+  // allow letters (including accented), spaces and dot — apostrophe and hyphen disallowed
+  const allowed = /^[A-Za-zÀ-ÖØ-öø-ÿ \.]$/;
     if (!allowed.test(key)) {
       event.preventDefault();
     }
