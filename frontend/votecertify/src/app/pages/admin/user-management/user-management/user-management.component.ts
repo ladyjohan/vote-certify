@@ -121,6 +121,14 @@ export class AdminUserManagementComponent implements OnInit {
       const user = userCredential.user;
       const uid = user.uid;
 
+      // Send Firebase verification email (official link with oobCode)
+      // Must be sent before signing out, and works with the user's auth instance
+      if (user) {
+        await import('firebase/auth').then(async (firebaseAuth) => {
+          await firebaseAuth.sendEmailVerification(user);
+        });
+      }
+
       await secondaryAuth.signOut();
 
       const userStatus = this.selectedRole === 'admin' ? 'verified' : 'pending';
@@ -137,7 +145,10 @@ export class AdminUserManagementComponent implements OnInit {
         await this.sendPasswordEmail(this.staffEmail, password);
       }
 
-      this.toastr.success(`${this.selectedRole} account created successfully.`);
+      this.toastr.success(
+        `${this.selectedRole} account created successfully. Please check your email for the verification link.`,
+        'Success'
+      );
       this.staffEmail = '';
       this.staffPassword = '';
       this.staffName = '';
