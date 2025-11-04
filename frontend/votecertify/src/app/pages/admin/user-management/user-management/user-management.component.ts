@@ -1,8 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { getAuth, createUserWithEmailAndPassword, initializeAuth, browserLocalPersistence, browserPopupRedirectResolver } from '@angular/fire/auth';
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  initializeAuth,
+  browserLocalPersistence,
+  browserPopupRedirectResolver,
+} from '@angular/fire/auth';
 import { FirebaseApp, provideFirebaseApp, initializeApp } from '@angular/fire/app';
-import { environment } from '../../../../../environments/environment'; // Adjust this path based on your setup
+import { environment } from '../../../../../environments/environment';
 import { Firestore, doc, setDoc, collection, getDocs, getDoc, updateDoc, deleteDoc } from '@angular/fire/firestore';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,7 +16,6 @@ import emailjs from 'emailjs-com';
 import { ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 
-// Define User Interface
 interface User {
   id: string;
   name: string;
@@ -35,8 +40,14 @@ export class AdminUserManagementComponent implements OnInit {
   filteredUsers: User[] = [];
   searchQuery: string = '';
   isAdmin = false;
-  currentUserId: string = ''; // 🆕 Add currentUserId
+  currentUserId: string = '';
   nameError: string = '';
+
+  // Pagination
+  currentPage: number = 1;
+  itemsPerPage: number = 5;
+  totalPages: number = 1;
+  paginatedUsers: User[] = [];
 
   private EMAIL_JS_SERVICE_ID = 'service_rrb00wy';
   private EMAIL_JS_TEMPLATE_ID = 'template_8j29e0p';
@@ -50,7 +61,7 @@ export class AdminUserManagementComponent implements OnInit {
     const auth = getAuth();
     const user = auth.currentUser;
     if (user) {
-      this.currentUserId = user.uid; // 🆕 Save logged-in Admin's UID
+      this.currentUserId = user.uid;
     }
   }
 
@@ -73,21 +84,6 @@ export class AdminUserManagementComponent implements OnInit {
     } else {
       this.toastr.error('You are not logged in!');
       window.location.href = '/';
-    }
-  }
-
-  async updateStaffStatus(userId: string) {
-    const auth = getAuth();
-    const user = auth.currentUser;
-
-    if (user && user.emailVerified) {
-      try {
-        const userDocRef = doc(this.firestore, 'users', userId);
-        await updateDoc(userDocRef, { status: 'verified' });
-        console.log('✅ Staff status updated to "verified" in Firestore.');
-      } catch (error) {
-        console.error('❌ Error updating staff status:', error);
-      }
     }
   }
 
@@ -138,13 +134,6 @@ export class AdminUserManagementComponent implements OnInit {
       });
 
       if (this.selectedRole === 'staff') {
-        // Send Firebase verification email (official link with oobCode)
-        if (user) {
-          await import('firebase/auth').then(async (firebaseAuth) => {
-            await firebaseAuth.sendEmailVerification(user);
-          });
-        }
-        // Send password notification via EmailJS (no verification link)
         await this.sendPasswordEmail(this.staffEmail, password);
       }
 
@@ -162,17 +151,11 @@ export class AdminUserManagementComponent implements OnInit {
   private async sendPasswordEmail(email: string, password: string) {
     const emailParams = {
       email: email,
-      user_password: password
+      user_password: password,
     };
 
     try {
-      await emailjs.send(
-        this.EMAIL_JS_SERVICE_ID,
-        this.EMAIL_JS_TEMPLATE_ID,
-        emailParams,
-        this.EMAIL_JS_PUBLIC_KEY
-      );
-
+      await emailjs.send(this.EMAIL_JS_SERVICE_ID, this.EMAIL_JS_TEMPLATE_ID, emailParams, this.EMAIL_JS_PUBLIC_KEY);
       console.log('✅ Password Email sent successfully to:', email);
     } catch (error) {
       console.error('❌ Error sending password email:', error);
@@ -191,61 +174,91 @@ export class AdminUserManagementComponent implements OnInit {
           name: data.name || '',
           email: data.email,
           role: data.role,
-          status: data.status
+          status: data.status,
         };
       })
       .filter(user => user.role === 'admin' || user.role === 'staff');
 
     this.filteredUsers = this.users;
+    this.setupPagination();
   }
 
-  // Disable an account with SweetAlert2
-async disableAccount(userId: string) {
-  const user = this.users.find(u => u.id === userId);
-  if (!user) return;
+  // Pagination methods
+  setupPagination() {
+    this.totalPages = Math.ceil(this.filteredUsers.length / this.itemsPerPage) || 1;
+    this.currentPage = 1;
+    this.updatePaginatedUsers();
+  }
 
-  if (user.status === 'pending') {
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: 'This pending account will be permanently deleted!',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel'
-    });
+  updatePaginatedUsers() {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedUsers = this.filteredUsers.slice(startIndex, endIndex);
+  }
 
-    if (result.isConfirmed) {
-      try {
-        await deleteDoc(doc(this.firestore, 'users', userId));
-        this.toastr.success('Account deleted successfully.');
-        await this.loadUsers();
-      } catch (error) {
-        console.error('Error deleting account:', error);
-        this.toastr.error('Failed to delete account.');
+  goToPage(page: number) {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+    this.updatePaginatedUsers();
+  }
+
+  searchUsers() {
+    const query = this.searchQuery.toLowerCase();
+    this.filteredUsers = this.users.filter(user =>
+      user.name.toLowerCase().includes(query) ||
+      user.email.toLowerCase().includes(query) ||
+      user.role.toLowerCase().includes(query)
+    );
+    this.setupPagination();
+  }
+
+  // Disable / Enable account
+  async disableAccount(userId: string) {
+    const user = this.users.find(u => u.id === userId);
+    if (!user) return;
+
+    if (user.status === 'pending') {
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: 'This pending account will be permanently deleted!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel',
+      });
+
+      if (result.isConfirmed) {
+        try {
+          await deleteDoc(doc(this.firestore, 'users', userId));
+          this.toastr.success('Account deleted successfully.');
+          await this.loadUsers();
+        } catch (error) {
+          console.error('Error deleting account:', error);
+          this.toastr.error('Failed to delete account.');
+        }
       }
-    }
-  } else {
-    const newStatus = user.status === 'disabled' ? 'verified' : 'disabled';
-    const action = newStatus === 'disabled' ? 'disable' : 'enable';
+    } else {
+      const newStatus = user.status === 'disabled' ? 'verified' : 'disabled';
+      const action = newStatus === 'disabled' ? 'disable' : 'enable';
 
-    const result = await Swal.fire({
-      title: `Are you sure you want to ${action} this account?`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: `Yes, ${action} it!`,
-      cancelButtonText: 'Cancel'
-    });
+      const result = await Swal.fire({
+        title: `Are you sure you want to ${action} this account?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: `Yes, ${action} it!`,
+        cancelButtonText: 'Cancel',
+      });
 
-    if (result.isConfirmed) {
-      try {
-        await updateDoc(doc(this.firestore, 'users', userId), { status: newStatus });
-        this.toastr.success(`Account ${action}d successfully.`);
-        await this.loadUsers();
-      } catch (error) {
-        console.error(`Error updating account status:`, error);
-        this.toastr.error('Failed to update account status.');
+      if (result.isConfirmed) {
+        try {
+          await updateDoc(doc(this.firestore, 'users', userId), { status: newStatus });
+          this.toastr.success(`Account ${action}d successfully.`);
+          await this.loadUsers();
+        } catch (error) {
+          console.error(`Error updating account status:`, error);
+          this.toastr.error('Failed to update account status.');
+        }
       }
     }
   }
-}
 }

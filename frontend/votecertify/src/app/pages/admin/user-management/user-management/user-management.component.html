@@ -1,15 +1,16 @@
-<div class="main-container">
-  <div class="content-header">
+<div class="user-management-container">
+  <!-- Page title inside the container -->
+  <div class="container-header">
     <h2>User Management</h2>
   </div>
 
-  <!-- Add Staff/Admin -->
-  <div class="content-section">
+  <!-- Flex container for form and user list -->
+  <div class="user-management-wrapper">
+    <!-- Add Staff/Admin Form -->
     <div class="section-card add-user-form">
       <div class="card-header">
         <h3>Create New Account</h3>
       </div>
-      
       <div class="form-content">
         <div class="form-row">
           <label for="roleSelect">Select Role</label>
@@ -19,33 +20,20 @@
           </select>
         </div>
 
-        <div class="form-row">      <label for="emailInput">Email Address</label>
-      <input id="emailInput" 
-             type="email" 
-             [(ngModel)]="staffEmail" 
-             placeholder="Enter email address"
-             class="form-control short-input">
-    </div>
+        <div class="form-row">
+          <label for="emailInput">Email Address</label>
+          <input id="emailInput" type="email" [(ngModel)]="staffEmail" placeholder="Enter email address" class="form-control">
+        </div>
 
-    <div *ngIf="selectedRole === 'staff'" class="form-row name-input-container">
-      <label for="nameInput">Full Name</label>
-      <input id="nameInput"
-             type="text" 
-             [(ngModel)]="staffName" 
-             placeholder="Enter full name"
-             (blur)="validateName(staffName)"
-             [class.error]="nameError"
-             class="form-control short-input">
-      <span class="error-message" *ngIf="nameError">{{ nameError }}</span>
-    </div>
+        <div *ngIf="selectedRole === 'staff'" class="form-row">
+          <label for="nameInput">Full Name</label>
+          <input id="nameInput" type="text" [(ngModel)]="staffName" placeholder="Enter full name" (blur)="validateName(staffName)" [class.error]="nameError" class="form-control">
+          <span class="error-message" *ngIf="nameError">{{ nameError }}</span>
+        </div>
 
-    <div *ngIf="selectedRole === 'admin'" class="form-row">
-      <label for="passwordInput">Password</label>
-      <input id="passwordInput"
-             type="password" 
-             [(ngModel)]="staffPassword" 
-             placeholder="Enter password"
-             class="form-control short-input">
+        <div *ngIf="selectedRole === 'admin'" class="form-row">
+          <label for="passwordInput">Password</label>
+          <input id="passwordInput" type="password" [(ngModel)]="staffPassword" placeholder="Enter password" class="form-control">
         </div>
 
         <div class="form-row">
@@ -56,15 +44,14 @@
         </div>
       </div>
     </div>
-  </div>
-  <!-- User List Section -->
-  <div class="content-section">
+
+    <!-- User List Section -->
     <div class="section-card user-list">
       <div class="card-header">
         <h3>User Accounts</h3>
       </div>
-      
-      <!-- Desktop Table View -->
+
+      <!-- Desktop Table -->
       <div class="table-responsive">
         <table class="table desktop-view">
           <thead>
@@ -77,32 +64,21 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let user of users">
+            <tr *ngFor="let user of paginatedUsers">
               <td>{{ user.name }}</td>
               <td>{{ user.email }}</td>
-              <td>
-                <span class="badge role-badge" [ngClass]="user.role">
-                  {{ user.role | titlecase }}
-                </span>
-              </td>
-              <td>
-                <span class="badge status-badge" [ngClass]="user.status">
-                  {{ user.status | titlecase }}
-                </span>
-              </td>
+              <td><span class="badge role-badge" [ngClass]="user.role">{{ user.role | titlecase }}</span></td>
+              <td><span class="badge status-badge" [ngClass]="user.status">{{ user.status | titlecase }}</span></td>
               <td class="actions-cell">
                 <ng-container *ngIf="user.id !== currentUserId">
                   <button *ngIf="user.status === 'pending'" class="btn-action delete" (click)="disableAccount(user.id)">
-                    <mat-icon>delete</mat-icon>
-                    <span>Delete</span>
+                    <mat-icon>delete</mat-icon> Delete
                   </button>
                   <button *ngIf="user.status === 'verified'" class="btn-action disable" (click)="disableAccount(user.id)">
-                    <mat-icon>block</mat-icon>
-                    <span>Disable</span>
+                    <mat-icon>block</mat-icon> Disable
                   </button>
                   <button *ngIf="user.status === 'disabled'" class="btn-action enable" (click)="disableAccount(user.id)">
-                    <mat-icon>check_circle</mat-icon>
-                    <span>Enable</span>
+                    <mat-icon>check_circle</mat-icon> Enable
                   </button>
                 </ng-container>
                 <ng-container *ngIf="user.id === currentUserId">
@@ -114,44 +90,25 @@
         </table>
       </div>
 
-      <!-- Mobile Card View -->
+      <!-- Mobile Cards -->
       <div class="mobile-cards">
-        <div class="user-card" *ngFor="let user of users">
+        <div class="user-card" *ngFor="let user of paginatedUsers">
           <div class="user-info">
-            <div class="info-row">
-              <strong>Name:</strong>
-              <span>{{ user.name }}</span>
-            </div>
-            <div class="info-row">
-              <strong>Email:</strong>
-              <span>{{ user.email }}</span>
-            </div>
-            <div class="info-row">
-              <strong>Role:</strong>
-              <span class="badge role-badge" [ngClass]="user.role">
-                {{ user.role | titlecase }}
-              </span>
-            </div>
-            <div class="info-row">
-              <strong>Status:</strong>
-              <span class="badge status-badge" [ngClass]="user.status">
-                {{ user.status | titlecase }}
-              </span>
-            </div>
+            <div class="info-row"><strong>Name:</strong> <span>{{ user.name }}</span></div>
+            <div class="info-row"><strong>Email:</strong> <span>{{ user.email }}</span></div>
+            <div class="info-row"><strong>Role:</strong> <span class="badge role-badge" [ngClass]="user.role">{{ user.role | titlecase }}</span></div>
+            <div class="info-row"><strong>Status:</strong> <span class="badge status-badge" [ngClass]="user.status">{{ user.status | titlecase }}</span></div>
           </div>
           <div class="card-actions">
             <ng-container *ngIf="user.id !== currentUserId">
               <button *ngIf="user.status === 'pending'" class="btn-action delete" (click)="disableAccount(user.id)">
-                <mat-icon>delete</mat-icon>
-                <span>Delete</span>
+                <mat-icon>delete</mat-icon> Delete
               </button>
               <button *ngIf="user.status === 'verified'" class="btn-action disable" (click)="disableAccount(user.id)">
-                <mat-icon>block</mat-icon>
-                <span>Disable</span>
+                <mat-icon>block</mat-icon> Disable
               </button>
               <button *ngIf="user.status === 'disabled'" class="btn-action enable" (click)="disableAccount(user.id)">
-                <mat-icon>check_circle</mat-icon>
-                <span>Enable</span>
+                <mat-icon>check_circle</mat-icon> Enable
               </button>
             </ng-container>
             <ng-container *ngIf="user.id === currentUserId">
@@ -159,6 +116,23 @@
             </ng-container>
           </div>
         </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-container" *ngIf="totalPages > 1">
+        <button class="btn-action" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+
+        <ng-container *ngFor="let page of [].constructor(totalPages); let i = index">
+          <button class="btn-action" [ngClass]="{'active-page': currentPage === i + 1}" (click)="goToPage(i + 1)">
+            {{ i + 1 }}
+          </button>
+        </ng-container>
+
+        <button class="btn-action" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
       </div>
     </div>
   </div>

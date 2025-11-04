@@ -2,11 +2,66 @@ h2 {
   text-align: center;
   color: #333;
   margin-bottom: 20px;
-  font-size: clamp(1.5rem, 2vw, 2rem);
+  font-size: 20px;
+}
+
+.user-management-container {
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 1rem 2rem;
+  background-color: #ffffff;
+  border-radius: 12px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+
+.container-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.container-header h2 {
+  margin: 0;
+  text-align: left; /* left-aligned */
+  font-size: 1.75rem;
+    font-weight: 700;
+  color: #2c3e50;
+}
+
+.user-management-wrapper {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding: rem 1.5rem;
+  box-sizing: border-box;
+}
+
+.add-user-form {
+  flex: 0 0 40%; /* left 40% */
+  min-width: 300px;
+  box-sizing: border-box;
+}
+
+.user-list {
+  flex: 1; /* right takes remaining 60% */
+  min-width: 300px;
+  box-sizing: border-box;
+}
+
+/* Responsive stack */
+@media (max-width: 992px) {
+  .user-management-wrapper {
+    flex-direction: column;
+  }
+  .add-user-form,
+  .user-list {
+    flex: 1 1 100%;
+  }
 }
 
 .main-container {
-  padding: 2rem;
+  padding: 1rem;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -70,7 +125,7 @@ h2 {
   }
 
   .form-control {
-    width: 100%;
+    width: 80%;
     padding: 0.75rem 1rem;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
@@ -259,6 +314,66 @@ h2 {
     }
   }
 }
+.user-management-wrapper {
+  display: flex;
+  gap: 1rem; // small gap between form and table
+  flex-wrap: wrap;
+
+
+  .add-user-form {
+    flex: 1 1 0%; /* take half of the container by default */
+    min-width: 300px;
+    min-height: 500px;
+    max-width: 100%; /* allow to expand */
+    box-sizing: border-box;
+  }
+
+  .user-list {
+    flex: 1 1 50%; /* take other half */
+    min-width: 300px;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+// Adjust short input widths inside form
+.add-user-form .form-control.short-input {
+  width: 100%;
+}
+
+/* Responsive tweaks */
+@media (max-width: 992px) {
+  .user-management-wrapper {
+    flex-direction: column; /* stack vertically on smaller screens */
+    gap: 1rem;
+  }
+
+  .add-user-form,
+  .user-list {
+    flex: 1 1 100%; /* full width */
+    min-width: 100%;
+  }
+}
+
+/* Mobile cards for smaller screens */
+@media (max-width: 768px) {
+  .table-responsive {
+    display: none;
+  }
+
+  .mobile-cards {
+    display: block;
+    padding: 1rem;
+  }
+
+  .add-user-form .form-content {
+    padding: 1rem;
+  }
+
+  .section-card .card-header {
+    padding: 1rem;
+  }
+}
 
 .mobile-cards {
   display: none;
@@ -309,6 +424,33 @@ h2 {
   font-size: 0.875rem;
   margin-top: 0.25rem;
   display: block;
+}
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 0;
+  flex-wrap: wrap;
+}
+
+.pagination-container .btn-action {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pagination-container .btn-action.active-page {
+  background-color: #003FCB;
+  color: #fff;
+}
+
+.pagination-container .btn-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {
