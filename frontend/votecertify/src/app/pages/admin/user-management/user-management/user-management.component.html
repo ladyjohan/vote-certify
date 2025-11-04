@@ -27,7 +27,7 @@
 
         <div *ngIf="selectedRole === 'staff'" class="form-row">
           <label for="nameInput">Full Name</label>
-          <input id="nameInput" type="text" [(ngModel)]="staffName" placeholder="Enter full name" (blur)="validateName(staffName)" [class.error]="nameError" class="form-control">
+          <input id="nameInput" type="text" [(ngModel)]="staffName" placeholder="Enter full name" (input)="sanitizeName($event)" (keydown)="allowNameKeydown($event)" (blur)="validateName(staffName)" [class.error]="nameError" class="form-control">
           <span class="error-message" *ngIf="nameError">{{ nameError }}</span>
         </div>
 

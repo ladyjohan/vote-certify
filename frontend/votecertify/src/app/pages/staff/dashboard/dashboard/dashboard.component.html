@@ -49,15 +49,27 @@
   <div class="charts-row">
     <!-- Pie Chart -->
     <div class="chart-container pie-chart">
-      <h2>Requests Overview</h2>
+      <div class="chart-header">
+        <h2>Requests Overview</h2>
+        <p class="chart-subtitle">Distribution of all request statuses</p>
+      </div>
       <div class="chart-wrapper">
         <canvas #combinedPieChartCanvas></canvas>
+      </div>
+      <div class="chart-stats">
+        <div class="stat-item">
+          <span class="stat-label">Total Requests:</span>
+          <span class="stat-value">{{ forApproval + onProcess + declinedRequests + totalProcessed }}</span>
+        </div>
       </div>
     </div>
 
     <!-- Bar Chart -->
     <div class="chart-container bar-chart">
-      <h2>Total Requests This Month</h2>
+      <div class="chart-header">
+        <h2>Monthly Requests Trend</h2>
+        <p class="chart-subtitle">Daily requests submitted this month</p>
+      </div>
       <div class="chart-wrapper">
         <canvas #requestsChartCanvas></canvas>
       </div>

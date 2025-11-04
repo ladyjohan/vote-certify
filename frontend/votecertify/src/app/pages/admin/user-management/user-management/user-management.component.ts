@@ -89,16 +89,43 @@ export class AdminUserManagementComponent implements OnInit {
   }
 
   validateName(name: string): boolean {
-    if (/\d/.test(name)) {
-      this.nameError = 'Name cannot contain numbers';
-      return false;
-    }
-    if (!/^[a-zA-Z\s]+$/.test(name)) {
-      this.nameError = 'Name can only contain letters and spaces';
+    if (!/^[a-zA-Z\s.]+$/.test(name)) {
+      this.nameError = 'Name can only contain letters, spaces, and periods (.)';
       return false;
     }
     this.nameError = '';
     return true;
+  }
+
+  sanitizeName(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value;
+    // Remove any characters that are not letters, spaces, or periods
+    const sanitized = value.replace(/[^a-zA-Z\s.]/g, '');
+    if (sanitized !== value) {
+      input.value = sanitized;
+      this.staffName = sanitized;
+      this.nameError = '';
+    }
+  }
+
+  allowNameKeydown(event: KeyboardEvent): void {
+    const key = event.key;
+    // Allow: letters, spaces, periods, backspace, delete, tab, arrow keys, etc.
+    const allowedKeys = ['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
+    
+    // Allow if it's a control key
+    if (allowedKeys.includes(key)) {
+      return;
+    }
+    
+    // Allow if it's a letter (a-z, A-Z), space, or period
+    if (/^[a-zA-Z\s.]$/.test(key)) {
+      return;
+    }
+    
+    // Prevent all other keys
+    event.preventDefault();
   }
 
   async addStaff() {
