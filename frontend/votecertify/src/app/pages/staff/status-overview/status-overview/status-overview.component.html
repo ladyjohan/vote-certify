@@ -1,13 +1,43 @@
 <div class="status-overview-container">
   <h2 class="title">Status Overview</h2>
 
-  <div class="search-bar">
-    <i class="fas fa-search search-icon"></i>
-    <input
-      [formControl]="searchControl"
-      type="text"
-      placeholder="Search by Voter Name or Precinct Number"
-    />
+  <!-- Top Controls: Search, Filter, Sort -->
+  <div class="top-row">
+    <!-- Search Bar -->
+    <div class="search-bar">
+      <i class="fas fa-search search-icon"></i>
+      <input
+        [formControl]="searchControl"
+        type="text"
+        placeholder="Search by Voter Name or Precinct Number"
+      />
+    </div>
+
+    <!-- Status Filter -->
+    <div class="filter-container">
+      <label for="statusFilter">Status:</label>
+      <select id="statusFilter" (change)="onStatusFilterChange($event)">
+        <option value="all">All</option>
+        <option value="approved">Approved</option>
+        <option value="completed">Completed</option>
+      </select>
+    </div>
+
+    <!-- Sort Options -->
+    <div class="sort-container">
+      <label for="sortField">Sort By:</label>
+      <select id="sortField" (change)="onSortFieldChange($event)">
+        <option value="fullName">Name</option>
+        <option value="pickupDate" selected>Pickup Date</option>
+        <option value="submittedAt">Submitted Date</option>
+        <option value="status">Status</option>
+      </select>
+
+      <select id="sortDirection" (change)="onSortDirectionChange($event)">
+        <option value="asc">Oldest First</option>
+        <option value="desc" selected>Newest First</option>
+      </select>
+    </div>
   </div>
 
   <div class="request-list">
@@ -19,7 +49,7 @@
       <span>Actions</span>
     </div>
 
-  <div class="request-item" *ngFor="let request of displayedRequests">
+    <div class="request-item" *ngFor="let request of pagedRequests">
   <div class="field">
     <span class="label mobile-only">Full Name: </span>
     <span class="value">{{ request.fullName }}</span>
@@ -34,12 +64,7 @@
   </div>
   <div class="field">
     <span class="label mobile-only">Status: </span>
-    <span class="value" [ngClass]="{
-      'status-pending': request.status === 'Pending',
-      'status-approved': request.status === 'Approved',
-      'status-completed': request.status === 'Completed',
-      'status-declined': request.status === 'Declined'
-    }">{{ request.status }}</span>
+    <span class="value status-badge" [ngClass]="getStatusClass(request.status)">{{ request.status }}</span>
   </div>
   <div class="field actions">
     <button
@@ -52,21 +77,43 @@
   </div>
 </div>
 
+    <div *ngIf="filteredRequests.length === 0" class="no-requests">
+      No requests found.
+    </div>
+  </div>
+
   <!-- Pagination -->
   <div class="pagination-wrapper" *ngIf="filteredRequests.length > 0">
     <div class="pagination">
-      <button class="page-btn prev" [disabled]="currentPage === 1" (click)="prevPage()">‹ Prev</button>
+      <button
+        class="page-btn prev"
+        [disabled]="currentPage === 1"
+        (click)="prevPage()"
+      >
+        ‹ Prev
+      </button>
 
       <ng-container *ngFor="let p of pages">
         <button
           class="page-btn"
           [class.active]="currentPage === p"
           (click)="goToPage(p)"
-        >{{ p }}</button>
+        >
+          {{ p }}
+        </button>
       </ng-container>
 
-      <button class="page-btn next" [disabled]="currentPage === totalPages" (click)="nextPage()">Next ›</button>
+      <button
+        class="page-btn next"
+        [disabled]="currentPage === totalPages"
+        (click)="nextPage()"
+      >
+        Next ›
+      </button>
     </div>
-    <div class="pagination-info">Page {{ currentPage }} of {{ totalPages }} — {{ filteredRequests.length }} requests</div>
+
+    <div class="pagination-info">
+      Page {{ currentPage }} of {{ totalPages }} — {{ filteredRequests.length }} requests
+    </div>
   </div>
 </div>

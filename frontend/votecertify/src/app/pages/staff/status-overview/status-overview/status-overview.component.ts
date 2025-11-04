@@ -15,28 +15,25 @@ import Swal from 'sweetalert2';
 export class StatusOverviewComponent implements OnInit {
   allRequests: any[] = [];
   filteredRequests: any[] = [];
+  pagedRequests: any[] = [];
   searchControl = new FormControl('');
+  currentStatusFilter: string = 'all'; // all, approved, completed
+  currentSortField: string = 'pickupDate';
+  currentSortDirection: 'asc' | 'desc' = 'desc';
   // Pagination
   pageSize = 10;
   currentPage = 1;
   totalPages = 1;
+  pages: number[] = [];
 
   constructor(private firestore: Firestore) {}
 
   async ngOnInit() {
-    await this.loadRequests();
-    // choose page size based on current viewport (mobile: 5, desktop/tablet: 10)
     this.setPageSizeForViewport();
+    await this.loadRequests();
 
-    this.searchControl.valueChanges.pipe(debounceTime(300)).subscribe(searchText => {
-      const term = (searchText || '').toLowerCase();
-      this.filteredRequests = this.allRequests.filter(req =>
-        req.fullName?.toLowerCase().includes(term) ||
-        req.voterId?.toLowerCase().includes(term)
-      );
-      // reset pagination when filter changes
-      this.currentPage = 1;
-      this.setupPagination();
+    this.searchControl.valueChanges.pipe(debounceTime(300)).subscribe(() => {
+      this.applyFilters();
     });
   }
 
@@ -50,17 +47,90 @@ export class StatusOverviewComponent implements OnInit {
       return {
         id: doc.id,
         ...data,
-        pickupDate: data['pickupDate'] || null // treat as string
+        pickupDate: data['pickupDate'] || null,
+        submittedAt: data['submittedAt']?.toDate?.() || null
       };
     });
 
-    this.filteredRequests = [...this.allRequests];
+    // Filter to show only Approved and Completed by default
+    this.allRequests = this.allRequests.filter(req => {
+      const status = (req.status || '').toLowerCase();
+      return status === 'approved' || status === 'completed';
+    });
+
+    this.applyFilters();
+  }
+
+  applyFilters() {
+    const term = (this.searchControl.value || '').toLowerCase();
+
+    this.filteredRequests = this.allRequests.filter(req => {
+      const matchesSearch = 
+        (req.fullName?.toLowerCase().includes(term) || '') ||
+        (req.voterId?.toLowerCase().includes(term) || '');
+      
+      const matchesStatus = 
+        this.currentStatusFilter === 'all' ||
+        (req.status || '').toLowerCase() === this.currentStatusFilter;
+      
+      return matchesSearch && matchesStatus;
+    });
+
+    this.sortRequests();
     this.setupPagination();
   }
 
+  sortRequests() {
+    this.filteredRequests.sort((a, b) => {
+      let valueA = a[this.currentSortField];
+      let valueB = b[this.currentSortField];
+
+      if (this.currentSortField === 'pickupDate' || this.currentSortField === 'submittedAt') {
+        valueA = valueA ? new Date(valueA).getTime() : 0;
+        valueB = valueB ? new Date(valueB).getTime() : 0;
+      } else {
+        valueA = (valueA || '').toString().toLowerCase();
+        valueB = (valueB || '').toString().toLowerCase();
+      }
+
+      if (this.currentSortDirection === 'asc') {
+        return valueA > valueB ? 1 : valueA < valueB ? -1 : 0;
+      } else {
+        return valueA < valueB ? 1 : valueA > valueB ? -1 : 0;
+      }
+    });
+  }
+
+  onStatusFilterChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.currentStatusFilter = target.value;
+    this.currentPage = 1;
+    this.applyFilters();
+  }
+
+  onSortFieldChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.currentSortField = target.value;
+    this.applyFilters();
+  }
+
+  onSortDirectionChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.currentSortDirection = target.value as 'asc' | 'desc';
+    this.applyFilters();
+  }
+
   setupPagination() {
-    this.totalPages = Math.max(1, Math.ceil(this.filteredRequests.length / this.pageSize));
+    this.totalPages = Math.ceil(this.filteredRequests.length / this.pageSize) || 1;
+    this.currentPage = Math.min(this.currentPage, this.totalPages) || 1;
     if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
+    this.pages = Array.from({ length: this.totalPages }, (_, i) => i + 1);
+    this.updatePagedRequests();
+  }
+
+  updatePagedRequests() {
+    const start = (this.currentPage - 1) * this.pageSize;
+    this.pagedRequests = this.filteredRequests.slice(start, start + this.pageSize);
   }
 
   // Adjust pageSize based on viewport width; mobile gets 5 per page
@@ -83,26 +153,35 @@ export class StatusOverviewComponent implements OnInit {
     this.setPageSizeForViewport();
   }
 
-  get displayedRequests() {
-    const start = (this.currentPage - 1) * this.pageSize;
-    return this.filteredRequests.slice(start, start + this.pageSize);
-  }
-
-  get pages() {
-    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
-  }
-
   goToPage(page: number) {
     if (page < 1 || page > this.totalPages) return;
     this.currentPage = page;
+    this.updatePagedRequests();
   }
 
   nextPage() {
-    if (this.currentPage < this.totalPages) this.currentPage++;
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.updatePagedRequests();
+    }
   }
 
   prevPage() {
-    if (this.currentPage > 1) this.currentPage--;
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.updatePagedRequests();
+    }
+  }
+
+  getStatusClass(status: string): string {
+    switch ((status || '').toLowerCase()) {
+      case 'approved': return 'status-approved';
+      case 'pending': return 'status-pending';
+      case 'declined':
+      case 'rejected': return 'status-declined';
+      case 'completed': return 'status-completed';
+      default: return 'status-default';
+    }
   }
 
   async markAsCompleted(request: any) {
@@ -121,7 +200,13 @@ export class StatusOverviewComponent implements OnInit {
       const requestRef = doc(this.firestore, 'requests', request.id);
       await updateDoc(requestRef, { status: 'Completed' });
 
-      request.status = 'Completed'; // update local state for instant UI reflection
+      // Update local state
+      const index = this.allRequests.findIndex(r => r.id === request.id);
+      if (index !== -1) {
+        this.allRequests[index].status = 'Completed';
+      }
+      
+      this.applyFilters();
       Swal.fire('Success', 'Request marked as completed!', 'success');
     } catch (error) {
       console.error('Error updating request:', error);
