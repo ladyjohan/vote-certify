@@ -15,27 +15,76 @@
     </div>
   </div>
 
+  <!-- CARDS: 4 cards side-by-side -->
   <div class="dashboard-cards">
     <div class="card">
       <div class="icon">
         <i class="fas fa-users"></i>
       </div>
-      <h3>Total COMELEC Staff</h3>
+      <h3>Number Of COMELEC Staff</h3>
       <p>{{ totalStaff }}</p>
     </div>
+
     <div class="card">
       <div class="icon">
         <i class="fas fa-clipboard-check"></i>
       </div>
-      <h3>Total Processed Certificates</h3>
+      <h3>Number of Processed Voter Certificates</h3>
       <p>{{ totalProcessed }}</p>
     </div>
-  </div>
-</div>
 
-<div class="chart-container">
-  <h2>Total Requests This Month</h2>
-  <div class="chart-wrapper">
-    <canvas id="requestsChart"></canvas>
+    <div class="card">
+      <div class="icon">
+        <i class="fas fa-calendar-day"></i>
+      </div>
+      <h3>Today's Requests</h3>
+      <p>{{ todaysRequests }}</p>
+    </div>
+
+    <div class="card">
+      <div class="icon">
+        <i class="fas fa-user-plus"></i>
+      </div>
+      <h3>User Registrations (Voters)</h3>
+      <p>{{ totalVoterAccounts }}</p>
+    </div>
   </div>
-</div>
+
+  <!-- Analytics controls -->
+  <div class="analytics-controls">
+    <div class="controls-left">
+      <label for="rangeSelect">Analytics Range</label>
+      <select id="rangeSelect" [(ngModel)]="selectedRange" (change)="onRangeChange()">
+        <option value="thisMonth">This Month</option>
+        <option value="thisWeek">This Week</option>
+        <option value="thisYear">This Year</option>
+      </select>
+    </div>
+
+      <button class="btn-download" (click)="downloadReport()">Download Report (PDF)</button>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="chart-container">
+    <h2>{{ chartTitle }}</h2>
+    <div class="chart-wrapper">
+      <canvas id="requestsChart"></canvas>
+    </div>
+
+    <div class="analytics-summary">
+      <div class="summary-item">
+        <strong>Total:</strong> {{ analyticsTotals.total }}
+      </div>
+      <div class="summary-item">
+        <strong>Approved:</strong> {{ analyticsTotals.approved }}
+      </div>
+      <div class="summary-item">
+        <strong>Pending:</strong> {{ analyticsTotals.pending }}
+      </div>
+      <div class="summary-item">
+        <strong>Declined:</strong> {{ analyticsTotals.declined }}
+      </div>
+    </div>
+  </div>
+
