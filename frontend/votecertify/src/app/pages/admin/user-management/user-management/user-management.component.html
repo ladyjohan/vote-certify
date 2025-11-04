@@ -119,20 +119,38 @@
       </div>
 
       <!-- Pagination -->
-      <div class="pagination-container" *ngIf="totalPages > 1">
-        <button class="btn-action" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
-          <mat-icon>chevron_left</mat-icon>
-        </button>
-
-        <ng-container *ngFor="let page of [].constructor(totalPages); let i = index">
-          <button class="btn-action" [ngClass]="{'active-page': currentPage === i + 1}" (click)="goToPage(i + 1)">
-            {{ i + 1 }}
+      <div class="pagination-wrapper" *ngIf="filteredUsers.length > 0">
+        <div class="pagination">
+          <button
+            class="page-btn prev"
+            [disabled]="currentPage === 1"
+            (click)="prevPage()"
+          >
+            ‹ Prev
           </button>
-        </ng-container>
 
-        <button class="btn-action" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
-          <mat-icon>chevron_right</mat-icon>
-        </button>
+          <ng-container *ngFor="let p of pages">
+            <button
+              class="page-btn"
+              [class.active]="currentPage === p"
+              (click)="goToPage(p)"
+            >
+              {{ p }}
+            </button>
+          </ng-container>
+
+          <button
+            class="page-btn next"
+            [disabled]="currentPage === totalPages"
+            (click)="nextPage()"
+          >
+            Next ›
+          </button>
+        </div>
+
+        <div class="pagination-info">
+          Page {{ currentPage }} of {{ totalPages }} — {{ filteredUsers.length }} users
+        </div>
       </div>
     </div>
   </div>

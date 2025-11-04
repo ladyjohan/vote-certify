@@ -48,6 +48,7 @@ export class AdminUserManagementComponent implements OnInit {
   itemsPerPage: number = 5;
   totalPages: number = 1;
   paginatedUsers: User[] = [];
+  pages: number[] = [];
 
   private EMAIL_JS_SERVICE_ID = 'service_rrb00wy';
   private EMAIL_JS_TEMPLATE_ID = 'template_8j29e0p';
@@ -197,7 +198,9 @@ export class AdminUserManagementComponent implements OnInit {
   // Pagination methods
   setupPagination() {
     this.totalPages = Math.ceil(this.filteredUsers.length / this.itemsPerPage) || 1;
-    this.currentPage = 1;
+    this.currentPage = Math.min(this.currentPage, this.totalPages) || 1;
+    
+    this.pages = Array.from({ length: this.totalPages }, (_, i) => i + 1);
     this.updatePaginatedUsers();
   }
 
@@ -211,6 +214,20 @@ export class AdminUserManagementComponent implements OnInit {
     if (page < 1 || page > this.totalPages) return;
     this.currentPage = page;
     this.updatePaginatedUsers();
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.updatePaginatedUsers();
+    }
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.updatePaginatedUsers();
+    }
   }
 
   searchUsers() {
