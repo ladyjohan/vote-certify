@@ -71,13 +71,50 @@
   gap: 1rem;
 }
 
+.card.staff {
+  background: linear-gradient(140deg, #ffffff,#ffffff, #005AE0);
+}
+
+.card.processed {
+  background: linear-gradient(140deg, #ffffff,#ffffff, #42A5F5);
+}
+
+.card.today {
+  background: linear-gradient(140deg, #ffffff,#ffffff, #26C6DA);
+}
+
+.card.voters {
+  background: linear-gradient(140deg, #ffffff, #ffffff, #26A69A);
+}
+
 .card {
-  background: #ffffff;
+  position: relative;
+  background: #ffffff; /* fallback */
   border-radius: 16px;
   padding: 1.2rem;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
   text-align: center;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden; /* ensures gradient stays inside card */
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  z-index: 0;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.15) 0%, rgba(0, 204, 255, 0.1) 100%);
+  pointer-events: none; /* allows clicking through gradient */
+}
+
+/* Ensure content stays above gradient */
+.card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .card:hover {
@@ -100,7 +137,7 @@
 .card p {
   font-size: 1.8rem;
   font-weight: bold;
-  color: #2563eb;
+  color: #283655;
 }
 
 /* ===========================
