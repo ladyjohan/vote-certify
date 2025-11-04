@@ -48,12 +48,15 @@
         <button routerLink="/voter/certificate-status">View Certificate History</button>
         <button
           routerLink="/voter/request-form"
-          [disabled]="currentRequest && currentRequest.status === 'Pending'"
-          [ngClass]="{'disabled-btn': currentRequest && currentRequest.status === 'Pending'}"
+          [disabled]="currentRequest && (currentRequest.status === 'Pending' || currentRequest.status === 'Approved')"
+          [ngClass]="{'disabled-btn': currentRequest && (currentRequest.status === 'Pending' || currentRequest.status === 'Approved')}"
         >Request New Certificate</button>
       </div>
       <div *ngIf="currentRequest && currentRequest.status === 'Pending'" class="pending-msg">
        *You can't request a new one because your request is still <b class="pending-orange">Pending</b>. Please wait until it is Approved or Declined.*
+      </div>
+      <div *ngIf="currentRequest && currentRequest.status === 'Approved'" class="pending-msg">
+       *You can't request a new one because you still haven't claimed your voter certificate at the office.*
       </div>
     </div>
   <div class="dashboard-row-card dashboard-info dashboard-content-padding">

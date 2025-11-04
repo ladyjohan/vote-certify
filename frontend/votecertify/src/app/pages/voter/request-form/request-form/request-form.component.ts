@@ -23,7 +23,8 @@ export class RequestFormComponent implements OnInit {
   voterId: string = '';
   fullName: string = '';
   birthdate: string = '';
-  hasPendingRequest: boolean = false;  // Flag to track if the user has a pending request
+  hasPendingRequest: boolean = false;  // Flag to track if the user has a pending or approved request
+  hasApprovedRequest: boolean = false;  // Flag to track if the user has an approved but not completed request
 
   constructor(
     private firestore: Firestore,
@@ -44,7 +45,7 @@ export class RequestFormComponent implements OnInit {
       if (user) {
         this.currentUser = user;
         await this.fetchVoterDetails(user.email);
-        await this.checkForPendingRequest(); // Check if the user has a pending request
+        await this.checkForPendingOrApprovedRequest(); // Check if the user has a pending or approved request
       }
     });
   }
@@ -101,9 +102,11 @@ export class RequestFormComponent implements OnInit {
   }
 
   async submitRequest() {
-    if (this.requestForm.invalid || this.voterNotFound || this.hasPendingRequest) {
+    if (this.requestForm.invalid || this.voterNotFound || this.hasPendingRequest || this.hasApprovedRequest) {
       if (this.hasPendingRequest) {
         Swal.fire('Pending Request', 'You already have a pending request. Please wait for it to be processed before submitting a new one.', 'warning');
+      } else if (this.hasApprovedRequest) {
+        Swal.fire('Approved Request', 'You still haven\'t claimed your voter certificate at the office. Please claim it before requesting a new one.', 'warning');
       } else {
         Swal.fire('Incomplete Form', 'Please fill in all fields correctly.', 'warning');
       }
@@ -163,12 +166,25 @@ export class RequestFormComponent implements OnInit {
 
       await Swal.fire('Success', 'Request submitted successfully!', 'success');
 
+      // Reset form completely including file inputs
       this.requestForm.reset({
         purpose: '',
         copiesRequested: 1,
         govId: null,
         selfie: null
       });
+
+      // Clear file input elements - use setTimeout to ensure DOM is updated
+      setTimeout(() => {
+        const govIdInput = document.getElementById('govId') as HTMLInputElement;
+        const selfieInput = document.getElementById('selfie') as HTMLInputElement;
+        if (govIdInput) {
+          govIdInput.value = '';
+        }
+        if (selfieInput) {
+          selfieInput.value = '';
+        }
+      }, 0);
     } catch (error: any) {
       console.error('Error submitting request:', error);
       Swal.fire('Submission Failed', error.message, 'error');
@@ -177,11 +193,17 @@ export class RequestFormComponent implements OnInit {
     }
   }
 
-  async checkForPendingRequest() {
+  async checkForPendingOrApprovedRequest() {
     const requestsRef = collection(this.firestore, 'requests');
-    const q = query(requestsRef, where('voterId', '==', this.voterId), where('status', '==', 'Pending'));
+    
+    // Check for pending requests
+    const pendingQuery = query(requestsRef, where('voterId', '==', this.voterId), where('status', '==', 'Pending'));
+    const pendingSnapshot = await getDocs(pendingQuery);
+    this.hasPendingRequest = !pendingSnapshot.empty;
 
-    const querySnapshot = await getDocs(q);
-    this.hasPendingRequest = !querySnapshot.empty; // Set the flag based on the result
+    // Check for approved (but not completed) requests
+    const approvedQuery = query(requestsRef, where('voterId', '==', this.voterId), where('status', '==', 'Approved'));
+    const approvedSnapshot = await getDocs(approvedQuery);
+    this.hasApprovedRequest = !approvedSnapshot.empty;
   }
 }
