@@ -175,10 +175,13 @@ export class RequestManagementComponent implements OnInit {
         remarks: remarks.trim()
       });
 
-  this.pendingRequests = this.pendingRequests.filter(r => r.id !== request.id);
-  this.filteredPendingRequests = this.filteredPendingRequests.filter(r => r.id !== request.id);
-  this.setupPagination();
-  this.closeDetails();
+      // Send Email after decline
+      await this.sendDeclineEmail(request, remarks.trim());
+
+      this.pendingRequests = this.pendingRequests.filter(r => r.id !== request.id);
+      this.filteredPendingRequests = this.filteredPendingRequests.filter(r => r.id !== request.id);
+      this.setupPagination();
+      this.closeDetails();
 
       Swal.fire('Declined!', `${request.fullName}'s request has been declined.`, 'error');
     } else if (remarks !== undefined) {
@@ -208,6 +211,30 @@ export class RequestManagementComponent implements OnInit {
     } catch (error) {
       console.error('Failed to send approval email:', error);
       Swal.fire('Error', 'Failed to send approval email.', 'error');
+    }
+  }
+
+  async sendDeclineEmail(request: any, remarks: string) {
+    const templateParams = {
+      name: request.fullName,
+      remarks: remarks,
+      voter_id: request.voterId,
+      email: request.email
+    };
+
+    // Use SECOND EmailJS Account credentials
+    emailjs.init('c4wdO5d7b4OvOf5ae'); // Second account Public Key
+
+    try {
+      const result = await emailjs.send(
+        'service_g5f5afj',  // your service id
+        'template_njgg0lj', // Decline template id
+        templateParams
+      );
+      console.log('Decline Email sent!', result.text);
+    } catch (error) {
+      console.error('Failed to send decline email:', error);
+      Swal.fire('Error', 'Failed to send decline email.', 'error');
     }
   }
 }
