@@ -340,33 +340,195 @@ const drawHeader = (yStart: number = 30) => {
   y += 50; // spacing before charts
 
   for (const range of ranges) {
-    const { labels, seriesTotal } = await this.loadAnalyticsForRange(range);
+    // Calculate date range for this specific period
+    const now = new Date();
+    let startDate: Date;
+    let endDate: Date;
+
+    if (range === 'thisWeek') {
+      const day = now.getDay();
+      const mondayOffset = (day === 0) ? -6 : 1 - day;
+      startDate = new Date(now);
+      startDate.setDate(now.getDate() + mondayOffset);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + 7);
+    } else if (range === 'thisYear') {
+      startDate = new Date(this.selectedYear, 0, 1);
+      endDate = new Date(this.selectedYear + 1, 0, 1);
+    } else {
+      startDate = new Date(this.selectedYear, this.selectedMonth, 1);
+      endDate = new Date(this.selectedYear, this.selectedMonth + 1, 1);
+    }
+
+    // Fetch requests for this range
+    const requestsRef = collection(this.firestore, 'requests');
+    const q = query(
+      requestsRef,
+      where('submittedAt', '>=', Timestamp.fromDate(startDate)),
+      where('submittedAt', '<', Timestamp.fromDate(endDate))
+    );
+    const snap = await getDocs(q);
+
+    // Calculate status counts and collect timestamps
+    const statusCounts = { approved: 0, pending: 0, declined: 0 };
+    const timestamps: Date[] = [];
+
+    snap.forEach(d => {
+      const data: any = d.data();
+      const sa = data['submittedAt'];
+      const dt = sa?.toDate ? sa.toDate() : new Date(sa);
+      timestamps.push(dt);
+      const st = (data['status'] || '').toLowerCase();
+      if (st.includes('approved') || st.includes('completed')) statusCounts.approved++;
+      else if (st.includes('decline') || st.includes('rejected')) statusCounts.declined++;
+      else statusCounts.pending++;
+    });
+
+    // Calculate chart data (labels and seriesTotal) directly from the fetched data
+    let labels: string[] = [];
+    let seriesTotal: number[] = [];
+
+    if (range === 'thisYear') {
+      labels = this.months;
+      seriesTotal = new Array(12).fill(0);
+      timestamps.forEach(dt => {
+        const monthIndex = dt.getMonth();
+        if (monthIndex >= 0 && monthIndex < 12) seriesTotal[monthIndex]++;
+      });
+    } else if (range === 'thisWeek') {
+      labels = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(startDate);
+        d.setDate(startDate.getDate() + i);
+        return this.formatDayShort(d);
+      });
+      seriesTotal = new Array(7).fill(0);
+      timestamps.forEach(dt => {
+        const diff = Math.floor((dt.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+        if (diff >= 0 && diff < 7) seriesTotal[diff]++;
+      });
+    } else {
+      // For month, calculate days in the month
+      const daysInMonth = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      labels = Array.from({ length: daysInMonth }, (_, i) => `Day ${i + 1}`);
+      seriesTotal = new Array(daysInMonth).fill(0);
+      timestamps.forEach(dt => {
+        const dayIndex = dt.getDate() - 1;
+        if (dayIndex >= 0 && dayIndex < daysInMonth) seriesTotal[dayIndex]++;
+      });
+    }
+
+    // Calculate total requests from the chart data
+    const totalRequests = seriesTotal.reduce((a, b) => a + b, 0);
+    
+    // Calculate max value for Y-axis (round up to next integer, minimum 5)
+    const maxValue = Math.max(...seriesTotal, 0);
+    const yAxisMax = maxValue === 0 ? 5 : Math.max(maxValue, 5); // Use actual max or 5, whichever is higher
+
+    // Debug: Log the data to verify it's correct
+    console.log(`PDF Chart Data for ${range}:`, {
+      labels,
+      seriesTotal,
+      maxValue,
+      yAxisMax,
+      totalRequests
+    });
 
     const chartCanvas = document.createElement('canvas');
-    chartCanvas.width = 800;
-    chartCanvas.height = 350;
-    const tempChart = new Chart(chartCanvas.getContext('2d')!, {
+    const displayWidth = 800;
+    const displayHeight = 350;
+    
+    // Set canvas size - Chart.js will handle the rendering
+    chartCanvas.width = displayWidth;
+    chartCanvas.height = displayHeight;
+    
+    // Ensure data is properly formatted as numbers
+    const chartData = seriesTotal.map(val => Number(val) || 0);
+    
+    // Verify data before rendering
+    console.log('Chart rendering with data:', {
+      range,
+      chartData,
+      maxInData: Math.max(...chartData),
+      yAxisMax,
+      labels
+    });
+    
+    const ctx = chartCanvas.getContext('2d');
+    if (!ctx) {
+      console.error('Failed to get canvas context');
+      continue;
+    }
+    
+    const tempChart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels,
+        labels: labels,
         datasets: [{
           label: 'Total Requests',
-          data: seriesTotal,
+          data: chartData,
           fill: true,
           backgroundColor: 'rgba(0,102,255,0.12)',
           borderColor: '#0043C8',
           borderWidth: 2,
-          pointRadius: 2
+          pointRadius: 3,
+          pointBackgroundColor: '#0043C8',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 1,
+          tension: 0.35
         }]
       },
       options: {
         responsive: false,
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        maintainAspectRatio: false,
+        animation: {
+          duration: 0 // Disable animation to ensure accurate rendering
+        },
+        devicePixelRatio: 1, // Force 1:1 pixel ratio for accurate rendering
+        plugins: { 
+          legend: { display: false },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+            callbacks: {
+              label: function(context: any) {
+                return `Requests: ${context.parsed.y}`;
+              }
+            }
+          }
+        },
+        scales: { 
+          y: { 
+            beginAtZero: true,
+            min: 0,
+            max: yAxisMax,
+            ticks: { 
+              stepSize: 1,
+              precision: 0,
+              callback: function(value: any) {
+                const num = Number(value);
+                return Number.isInteger(num) ? num.toString() : '';
+              }
+            },
+            grid: {
+              display: true
+            }
+          },
+          x: {
+            ticks: {
+              maxRotation: 45,
+              minRotation: 0
+            },
+            grid: {
+              display: true
+            }
+          }
+        }
       }
     });
 
-    await new Promise(res => setTimeout(res, 250));
+    // Wait longer to ensure chart is fully rendered
+    await new Promise(res => setTimeout(res, 500));
     const chartImg = tempChart.toBase64Image();
     tempChart.destroy();
 
@@ -385,7 +547,6 @@ const drawHeader = (yStart: number = 30) => {
 
     // Determine chart title
     let chartTitle = '';
-    const now = new Date();
 
     if (range === 'thisMonth') chartTitle = `Requests for ${this.months[this.selectedMonth]} ${this.selectedYear}`;
     else if (range === 'thisWeek') {
@@ -408,11 +569,12 @@ const drawHeader = (yStart: number = 30) => {
     doc.addImage(chartImg, 'PNG', margin, y, imgWidth, imgHeight);
     y += imgHeight + 40;
 
+    // Use the accurate status counts calculated for this specific range
     const chartInsight = this.generateInsightText({
-      total: seriesTotal.reduce((a, b) => a + b, 0),
-      approved: this.analyticsTotals.approved,
-      pending: this.analyticsTotals.pending,
-      declined: this.analyticsTotals.declined
+      total: totalRequests,
+      approved: statusCounts.approved,
+      pending: statusCounts.pending,
+      declined: statusCounts.declined
     });
 
     doc.setFont('helvetica', 'normal');
