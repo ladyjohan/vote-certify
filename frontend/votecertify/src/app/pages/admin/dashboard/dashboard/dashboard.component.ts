@@ -51,10 +51,9 @@ export class AdminDashboardComponent implements OnInit {
     await this.getProcessedCertificatesStats();
     await this.getTodaysRequests();
     await this.getTotalVoterAccounts();
-    await this.loadAnalyticsForRange(this.selectedRange); // initialize chart
+    await this.loadAnalyticsForRange(this.selectedRange);
   }
 
-  // ------------------ DATA FETCH ------------------
   async getStaffStats() {
     const usersRef = collection(this.firestore, 'users');
     const staffQuery = query(usersRef, where('role', '==', 'staff'));
@@ -91,7 +90,6 @@ export class AdminDashboardComponent implements OnInit {
     this.totalVoterAccounts = snap.size;
   }
 
-  // ------------------ HELPERS ------------------
   formatDayShort(d: Date) {
     return d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' });
   }
@@ -100,7 +98,6 @@ export class AdminDashboardComponent implements OnInit {
     return d.toLocaleDateString();
   }
 
-  // ------------------ UI CHART ------------------
   onRangeChange() {
     this.loadAnalyticsForRange(this.selectedRange);
   }
@@ -151,13 +148,11 @@ export class AdminDashboardComponent implements OnInit {
       else statusCounts.pending++;
     });
 
-    // update totals for UI
     this.analyticsTotals.total = snap.size;
     this.analyticsTotals.approved = statusCounts.approved;
     this.analyticsTotals.pending = statusCounts.pending;
     this.analyticsTotals.declined = statusCounts.declined;
 
-    // build labels & series for chart
     let labels: string[] = [];
     let seriesTotal: number[] = [];
 
@@ -184,10 +179,7 @@ export class AdminDashboardComponent implements OnInit {
     }
 
     this.renderChart(labels, seriesTotal);
-
-    // also return image for PDF
-    const chartImg = await this.renderChartImage(labels, seriesTotal, this.chartTitle);
-    return { chartImg, totals: this.analyticsTotals, chartTitle: this.chartTitle };
+    return { labels, seriesTotal, totals: this.analyticsTotals };
   }
 
   renderChart(labels: string[], dataSet: number[]) {
@@ -205,7 +197,7 @@ export class AdminDashboardComponent implements OnInit {
           data: dataSet,
           fill: true,
           tension: 0.35,
-          backgroundColor: 'rgba(0,102,255,0.15)',
+          backgroundColor: 'rgba(0,102,255,0.12)',
           borderColor: '#0043C8',
           borderWidth: 2,
           pointRadius: 2
@@ -215,40 +207,20 @@ export class AdminDashboardComponent implements OnInit {
         responsive: true,
         maintainAspectRatio: false,
         plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
-        scales: { y: { beginAtZero: true } }
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
       }
     });
   }
 
-  async renderChartImage(labels: string[], dataSet: number[], title: string): Promise<string> {
-    const canvas = document.createElement('canvas');
-    canvas.width = 800;
-    canvas.height = 300;
-    const tempChart = new Chart(canvas.getContext('2d')!, {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          label: 'Total Requests',
-          data: dataSet,
-          fill: true,
-          tension: 0.35,
-          backgroundColor: 'rgba(0,102,255,0.15)',
-          borderColor: '#0043C8',
-          borderWidth: 2,
-          pointRadius: 2
-        }]
-      },
-      options: {
-        plugins: { title: { display: true, text: title, font: { size: 14 } }, legend: { display: false } },
-        scales: { y: { beginAtZero: true } }
-      }
-    });
-    await new Promise(res => setTimeout(res, 300)); // allow chart render
-    const img = tempChart.toBase64Image();
-    tempChart.destroy();
-    return img;
+  generateCardInsights(): string {
+  return `
+  The system currently has ${this.totalStaff} COMELEC staff managing requests.
+  So far, ${this.totalProcessed} certificates have been processed.
+  Today, ${this.todaysRequests} requests have been submitted.
+  There are ${this.totalVoterAccounts} registered voter accounts in the system.
+    `;
   }
+
 
   generateInsightText(totals: any): string {
     if (totals.total === 0) return 'No requests found in this period.';
@@ -258,91 +230,198 @@ export class AdminDashboardComponent implements OnInit {
     return `In this period, ${totals.total} requests were recorded. ${approvedPct}% approved, ${declinedPct}% declined, and ${pendingPct}% pending.`;
   }
 
-  // ------------------ PDF ------------------
   async downloadReport() {
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 40;
-    let y = 60;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 40;
 
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(18);
-    doc.text('VoteCertify Admin Analytics Report', pageWidth / 2, y, { align: 'center' });
-    y += 20;
-    doc.setFontSize(11);
-    doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth / 2, y, { align: 'center' });
-    y += 25;
-    doc.setLineWidth(0.5);
-    doc.line(margin, y, pageWidth - margin, y);
-    y += 25;
-
-    // --- SUMMARY CARDS ---
-    doc.setFontSize(13);
-    doc.text('Summary Overview', margin, y);
-    y += 15;
-    const cardHeight = 55;
-    const cardWidth = (pageWidth - margin * 2 - 20) / 2;
-    const cardData = [
-      { title: 'COMELEC Staff', value: this.totalStaff },
-      { title: 'Processed Certificates', value: this.totalProcessed },
-      { title: "Today's Requests", value: this.todaysRequests },
-      { title: 'Registered Voters', value: this.totalVoterAccounts }
-    ];
-
-    for (let i = 0; i < cardData.length; i++) {
-      const x = margin + (i % 2) * (cardWidth + 20);
-      const yPos = y + Math.floor(i / 2) * (cardHeight + 15);
-      doc.setDrawColor(180);
-      doc.setFillColor(245, 247, 255);
-      doc.roundedRect(x, yPos, cardWidth, cardHeight, 8, 8, 'F');
-      doc.setTextColor(50);
-      doc.setFontSize(11);
-      doc.text(cardData[i].title, x + 15, yPos + 22);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(16);
-      doc.text(`${cardData[i].value}`, x + 15, yPos + 45);
-    }
-    y += cardHeight * 2 + 50;
-
-    // --- ANALYTICS FOR MULTIPLE RANGES ---
-    const ranges: ('thisWeek' | 'thisMonth' | 'thisYear')[] = ['thisWeek', 'thisMonth', 'thisYear'];
-
-    for (const range of ranges) {
-      const { chartImg, totals, chartTitle } = await this.loadAnalyticsForRange(range);
-
-      doc.addPage();
-      y = 60;
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(14);
-      doc.text(chartTitle, margin, y);
-      y += 10;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(11);
-      doc.text(`Total: ${totals.total} | Approved: ${totals.approved} | Pending: ${totals.pending} | Declined: ${totals.declined}`, margin, y);
-      y += 20;
-
-      if (chartImg) {
-        const imgWidth = pageWidth - margin * 2;
-        const imgHeight = imgWidth * 0.45;
-        doc.addImage(chartImg, 'PNG', margin, y, imgWidth, imgHeight);
-        y += imgHeight + 20;
-      }
-
-      const insight = this.generateInsightText(totals);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(11);
-      doc.text(insight, margin, y, { maxWidth: pageWidth - margin * 2, lineHeightFactor: 1.5 });
-    }
-
-    // --- FOOTER ---
-    const pageCount = doc.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(9);
-      doc.text(`VoteCertify • Generated ${new Date().toLocaleDateString()}`, margin, doc.internal.pageSize.getHeight() - 25);
-      doc.text(`Page ${i} of ${pageCount}`, pageWidth - margin - 50, doc.internal.pageSize.getHeight() - 25);
-    }
-
-    doc.save(`VoteCertify_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
+  const loadLogo = async (url: string): Promise<string | null> => {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (err) {
+    console.warn('Failed to load logo:', err);
+    return null;
   }
+};
+
+const leftLogo = await loadLogo('assets/logo2.png');
+const rightLogo = await loadLogo('assets/comelec_logo.png');
+
+
+const drawHeader = (yStart: number = 30) => {
+  const logoSize = 50;
+
+  // Logos
+  if (leftLogo) doc.addImage(leftLogo, 'PNG', margin, yStart, logoSize, logoSize);
+  if (rightLogo) doc.addImage(rightLogo, 'PNG', pageWidth - margin - logoSize, yStart, logoSize, logoSize);
+
+  // Top-right timestamp
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth - margin, yStart, { align: 'right' });
+
+  // Centered government text
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  const headerLines = ['Republic of the Philippines', 'COMMISSION ON ELECTIONS', 'Olongapo City'];
+  let yText = yStart + 20;
+  headerLines.forEach(line => {
+    doc.text(line, pageWidth / 2, yText, { align: 'center' });
+    yText += 14;
+  });
+
+  // Main report title
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  yText += 5;
+  doc.text('VoteCertify: Admin Analytics Report', pageWidth / 2, yText, { align: 'center' });
+
+  return yText + 50; // starting Y for charts/cards
+};
+
+
+  // Page 1: Summary Cards
+  await drawHeader();
+
+  let y = 120;
+  const cardWidth = (pageWidth - margin * 2 - 16) / 2;
+  const cardHeight = 66;
+  const cardColor = { r: 245, g: 247, b: 255 };
+  const titles = [
+    { t: 'COMELEC Staff', v: this.totalStaff },
+    { t: 'Processed Certificates', v: this.totalProcessed },
+    { t: "Today's Requests", v: this.todaysRequests },
+    { t: 'Registered Voters', v: this.totalVoterAccounts }
+  ];
+
+  doc.setFontSize(12);
+  for (let i = 0; i < titles.length; i++) {
+    const x = margin + (i % 2) * (cardWidth + 16);
+    const yPos = y + Math.floor(i / 2) * (cardHeight + 12);
+    doc.setFillColor(cardColor.r, cardColor.g, cardColor.b);
+    doc.roundedRect(x, yPos, cardWidth, cardHeight, 8, 8, 'F');
+    doc.setTextColor(30);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(titles[i].t, x + 12, yPos + 20);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(20);
+    doc.text(String(titles[i].v), x + 12, yPos + 46);
+  }
+
+  y += cardHeight * 2 + 36;
+  doc.setDrawColor(220);
+  doc.setLineWidth(0.5);
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 18;
+
+// Card Insights
+  const cardInsight = this.generateCardInsights();
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(11);
+  doc.text(cardInsight, margin, y, { maxWidth: pageWidth - margin * 2, lineHeightFactor: 1.4 });
+  y += 50; // spacing before charts
+
+  doc.setFontSize(9);
+  doc.text(`VoteCertify • Generated ${new Date().toLocaleDateString()}`, margin, pageHeight - 30);
+  doc.text(`Page 1`, pageWidth - margin - 40, pageHeight - 30);
+
+  // Charts - continuous placement
+  const ranges: ('thisWeek' | 'thisMonth' | 'thisYear')[] = ['thisWeek', 'thisMonth', 'thisYear'];
+  let pageIndex = 2;
+  y += 50; // spacing before charts
+
+  for (const range of ranges) {
+    const { labels, seriesTotal } = await this.loadAnalyticsForRange(range);
+
+    const chartCanvas = document.createElement('canvas');
+    chartCanvas.width = 800;
+    chartCanvas.height = 350;
+    const tempChart = new Chart(chartCanvas.getContext('2d')!, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Total Requests',
+          data: seriesTotal,
+          fill: true,
+          backgroundColor: 'rgba(0,102,255,0.12)',
+          borderColor: '#0043C8',
+          borderWidth: 2,
+          pointRadius: 2
+        }]
+      },
+      options: {
+        responsive: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+      }
+    });
+
+    await new Promise(res => setTimeout(res, 250));
+    const chartImg = tempChart.toBase64Image();
+    tempChart.destroy();
+
+    const imgWidth = pageWidth - margin * 2;
+    const imgHeight = imgWidth * 0.45;
+
+    // Check if there is enough space; otherwise, add page
+    if (y + imgHeight + 60 > pageHeight - margin) {
+      doc.addPage();
+      await drawHeader();
+      y = 110;
+      doc.setFontSize(9);
+      doc.text(`Page ${pageIndex}`, pageWidth - margin - 40, pageHeight - 30);
+      pageIndex++;
+    }
+
+    // Determine chart title
+    let chartTitle = '';
+    const now = new Date();
+
+    if (range === 'thisMonth') chartTitle = `Requests for ${this.months[this.selectedMonth]} ${this.selectedYear}`;
+    else if (range === 'thisWeek') {
+      const day = now.getDay();
+      const mondayOffset = (day === 0) ? -6 : 1 - day;
+      const weekStart = new Date();
+      weekStart.setDate(now.getDate() + mondayOffset);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+      chartTitle = `Requests This Week (${this.formatDateShort(weekStart)} - ${this.formatDateShort(weekEnd)})`;
+    } else if (range === 'thisYear') chartTitle = `Requests for Year ${this.selectedYear}`;
+
+    // Add title above chart
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text(chartTitle, margin, y);
+    y += 20;
+
+
+    doc.addImage(chartImg, 'PNG', margin, y, imgWidth, imgHeight);
+    y += imgHeight + 40;
+
+    const chartInsight = this.generateInsightText({
+      total: seriesTotal.reduce((a, b) => a + b, 0),
+      approved: this.analyticsTotals.approved,
+      pending: this.analyticsTotals.pending,
+      declined: this.analyticsTotals.declined
+    });
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.text(chartInsight, margin, y, { maxWidth: pageWidth - margin * 2, lineHeightFactor: 1.4 });
+    y += 40;
+  }
+
+  doc.save(`VoteCertify_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
+}
+
 }
