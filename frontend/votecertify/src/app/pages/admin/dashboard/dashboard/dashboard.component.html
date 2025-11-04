@@ -1,4 +1,5 @@
 <div class="dashboard-container">
+  <!-- Welcome card -->
   <div class="welcome-card">
     <div class="icon-area">
       <i class="fa-solid fa-user-shield"></i>
@@ -15,36 +16,28 @@
     </div>
   </div>
 
-  <!-- CARDS: 4 cards side-by-side -->
+  <!-- Statistic cards -->
   <div class="dashboard-cards">
     <div class="card">
-      <div class="icon">
-        <i class="fas fa-users"></i>
-      </div>
+      <div class="icon"><i class="fas fa-users"></i></div>
       <h3>Number Of COMELEC Staff</h3>
       <p>{{ totalStaff }}</p>
     </div>
 
     <div class="card">
-      <div class="icon">
-        <i class="fas fa-clipboard-check"></i>
-      </div>
+      <div class="icon"><i class="fas fa-clipboard-check"></i></div>
       <h3>Number of Processed Voter Certificates</h3>
       <p>{{ totalProcessed }}</p>
     </div>
 
     <div class="card">
-      <div class="icon">
-        <i class="fas fa-calendar-day"></i>
-      </div>
+      <div class="icon"><i class="fas fa-calendar-day"></i></div>
       <h3>Today's Requests</h3>
       <p>{{ todaysRequests }}</p>
     </div>
 
     <div class="card">
-      <div class="icon">
-        <i class="fas fa-user-plus"></i>
-      </div>
+      <div class="icon"><i class="fas fa-user-plus"></i></div>
       <h3>User Registrations (Voters)</h3>
       <p>{{ totalVoterAccounts }}</p>
     </div>
@@ -61,8 +54,7 @@
       </select>
     </div>
 
-      <button class="btn-download" (click)="downloadReport()">Download Report (PDF)</button>
-    </div>
+    <button class="btn-download" (click)="downloadReport()">Download Report (PDF)</button>
   </div>
 
   <!-- Chart -->
@@ -73,18 +65,10 @@
     </div>
 
     <div class="analytics-summary">
-      <div class="summary-item">
-        <strong>Total:</strong> {{ analyticsTotals.total }}
-      </div>
-      <div class="summary-item">
-        <strong>Approved:</strong> {{ analyticsTotals.approved }}
-      </div>
-      <div class="summary-item">
-        <strong>Pending:</strong> {{ analyticsTotals.pending }}
-      </div>
-      <div class="summary-item">
-        <strong>Declined:</strong> {{ analyticsTotals.declined }}
-      </div>
+      <div class="summary-item"><strong>Total:</strong> {{ analyticsTotals.total }}</div>
+      <div class="summary-item"><strong>Approved:</strong> {{ analyticsTotals.approved }}</div>
+      <div class="summary-item"><strong>Pending:</strong> {{ analyticsTotals.pending }}</div>
+      <div class="summary-item"><strong>Declined:</strong> {{ analyticsTotals.declined }}</div>
     </div>
   </div>
-
+</div>
