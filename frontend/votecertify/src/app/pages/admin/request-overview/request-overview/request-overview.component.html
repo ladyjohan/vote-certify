@@ -1,12 +1,19 @@
 <div class="admin-overview-container">
   <h2 class="title">Request Overview</h2>
 
+  <!-- Top Controls: Search, Filter, Sort, Export -->
   <div class="top-row">
+    <!-- Search Bar -->
     <div class="search-bar">
       <i class="fas fa-search search-icon"></i>
-      <input [formControl]="searchControl" type="text" placeholder="Search Voter Request" />
+      <input
+        [formControl]="searchControl"
+        type="text"
+        placeholder="Search Voter Request"
+      />
     </div>
 
+    <!-- Status Filter -->
     <div class="filter-container">
       <label for="statusFilter">Status:</label>
       <select id="statusFilter" (change)="onStatusFilterChange($event)">
@@ -14,9 +21,11 @@
         <option value="pending">Pending</option>
         <option value="approved">Approved</option>
         <option value="completed">Completed</option>
+        <option value="declined">Declined</option>
       </select>
     </div>
 
+    <!-- Sort Options -->
     <div class="sort-container">
       <label for="sortField">Sort By:</label>
       <select id="sortField" (change)="onSortFieldChange($event)">
@@ -32,6 +41,7 @@
       </select>
     </div>
 
+    <!-- Export Button -->
     <div class="export-btn-container">
       <button class="export-btn" (click)="exportPDF()">
         <i class="fas fa-file-pdf"></i> Export to PDF
@@ -39,6 +49,7 @@
     </div>
   </div>
 
+  <!-- Request List Table -->
   <div class="request-list">
     <div class="request-header">
       <span>Voter Name</span>
@@ -48,14 +59,54 @@
       <span>Processing Time</span>
     </div>
 
-    <div class="request-item" *ngFor="let request of filteredRequests">
-      <span>{{ request.fullName || 'N/A' }}</span>
-      <span class="status-badge" [ngClass]="getStatusClass(request.status)">
-        {{ request.status || 'N/A' }}
-      </span>
-      <span>{{ request.submittedAt ? (request.submittedAt | date: 'MM/dd/yyyy') : 'N/A' }}</span>
-      <span>{{ formatDateString(request.pickupDate) }}</span>
-      <span>{{ getProcessingTime(request) }}</span>
+    <div class="request-item" *ngFor="let request of pagedRequests">
+  <span>{{ request.fullName || 'N/A' }}</span>
+  <span class="status-badge" [ngClass]="getStatusClass(request.status)">
+    {{ request.status || 'N/A' }}
+  </span>
+  <span>{{ request.submittedAt ? (request.submittedAt | date: 'MM/dd/yyyy') : 'N/A' }}</span>
+  <span>{{ formatDateString(request.pickupDate) }}</span>
+  <span>{{ getProcessingTime(request) }}</span>
+</div>
+
+
+    <div *ngIf="filteredRequests.length === 0" class="no-requests">
+      No requests found.
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-wrapper" *ngIf="filteredRequests.length > 0">
+    <div class="pagination">
+      <button
+        class="page-btn prev"
+        [disabled]="currentPage === 1"
+        (click)="prevPage()"
+      >
+        ‹ Prev
+      </button>
+
+      <ng-container *ngFor="let p of pages">
+        <button
+          class="page-btn"
+          [class.active]="currentPage === p"
+          (click)="goToPage(p)"
+        >
+          {{ p }}
+        </button>
+      </ng-container>
+
+      <button
+        class="page-btn next"
+        [disabled]="currentPage === totalPages"
+        (click)="nextPage()"
+      >
+        Next ›
+      </button>
+    </div>
+
+    <div class="pagination-info">
+      Page {{ currentPage }} of {{ totalPages }} — {{ filteredRequests.length }} requests
     </div>
   </div>
 </div>

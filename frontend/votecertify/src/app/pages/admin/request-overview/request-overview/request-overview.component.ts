@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Firestore, collection, getDocs } from '@angular/fire/firestore';
@@ -20,17 +20,34 @@ export class AdminRequestOverviewComponent implements OnInit {
 
   allRequests: any[] = [];
   filteredRequests: any[] = [];
+  pagedRequests: any[] = [];
   searchControl = new FormControl('');
   currentSortField: string = 'submittedAt';
   currentSortDirection: 'asc' | 'desc' = 'asc';
   currentStatusFilter: string = 'all';
 
-  async ngOnInit() {
-    await this.loadRequests();
+  currentPage = 1;
+  pageSize = 10;
+  totalPages = 1;
+  pages: number[] = [];
+
+  ngOnInit() {
+    this.setPageSizeByScreen();
+    this.loadRequests();
 
     this.searchControl.valueChanges.pipe(debounceTime(300)).subscribe(() => {
       this.applyFilters();
     });
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    this.setPageSizeByScreen();
+    this.applyFilters();
+  }
+
+  setPageSizeByScreen() {
+    this.pageSize = window.innerWidth < 768 ? 5 : 10;
   }
 
   async loadRequests() {
@@ -61,6 +78,7 @@ export class AdminRequestOverviewComponent implements OnInit {
     });
 
     this.sortRequests();
+    this.setupPagination();
   }
 
   searchInFields(request: any, term: string): boolean {
@@ -96,12 +114,14 @@ export class AdminRequestOverviewComponent implements OnInit {
     const target = event.target as HTMLSelectElement;
     this.currentSortField = target.value;
     this.sortRequests();
+    this.setupPagination();
   }
 
   onSortDirectionChange(event: Event) {
     const target = event.target as HTMLSelectElement;
     this.currentSortDirection = target.value as 'asc' | 'desc';
     this.sortRequests();
+    this.setupPagination();
   }
 
   onStatusFilterChange(event: Event) {
@@ -125,17 +145,12 @@ export class AdminRequestOverviewComponent implements OnInit {
 
   getStatusClass(status: string): string {
     switch ((status || '').toLowerCase()) {
-      case 'approved':
-        return 'status-approved';
-      case 'pending':
-        return 'status-pending';
+      case 'approved': return 'status-approved';
+      case 'pending': return 'status-pending';
       case 'declined':
-      case 'rejected':
-        return 'status-declined';
-      case 'completed':
-        return 'status-completed';
-      default:
-        return 'status-default';
+      case 'rejected': return 'status-declined';
+      case 'completed': return 'status-completed';
+      default: return 'status-default';
     }
   }
 
@@ -151,12 +166,7 @@ export class AdminRequestOverviewComponent implements OnInit {
     ]);
 
     doc.text('Voter Request Overview Report', 14, 15);
-    autoTable(doc, {
-      startY: 20,
-      head: [columns],
-      body: rows
-    });
-
+    autoTable(doc, { startY: 20, head: [columns], body: rows });
     doc.save('Voter_Request_Overview_Report.pdf');
   }
 
@@ -168,5 +178,38 @@ export class AdminRequestOverviewComponent implements OnInit {
     if (!dateStr) return 'N/A';
     const date = new Date(dateStr);
     return isNaN(date.getTime()) ? 'N/A' : this.formatDate(date);
+  }
+
+  /* ================= Pagination Methods ================= */
+  setupPagination() {
+    this.totalPages = Math.ceil(this.filteredRequests.length / this.pageSize);
+    this.currentPage = Math.min(this.currentPage, this.totalPages) || 1;
+
+    this.pages = Array.from({ length: this.totalPages }, (_, i) => i + 1);
+    this.updatePagedRequests();
+  }
+
+  updatePagedRequests() {
+    const start = (this.currentPage - 1) * this.pageSize;
+    this.pagedRequests = this.filteredRequests.slice(start, start + this.pageSize);
+  }
+
+  goToPage(page: number) {
+    this.currentPage = page;
+    this.updatePagedRequests();
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.updatePagedRequests();
+    }
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.updatePagedRequests();
+    }
   }
 }
