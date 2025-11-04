@@ -51,13 +51,16 @@ export const routes: Routes = [
   },
 
   // Voter Routes (with VoterLayout)
-{
-  path: 'voter',
-  component: VoterLayoutComponent, // layout with sidenav + header
-  children: [
-    { path: 'dashboard', component: VoterDashboardComponent },
-    { path: 'request-form', component: RequestFormComponent },
-    { path: 'certificate-status', component: CertificateStatusComponent },
-  ],
-}
+  {
+    path: 'voter',
+    component: VoterLayoutComponent, // layout with sidenav + header
+    children: [
+      { path: 'dashboard', component: VoterDashboardComponent },
+      { path: 'request-form', component: RequestFormComponent },
+      { path: 'certificate-status', component: CertificateStatusComponent },
+    ],
+  },
+  
+  // Wildcard route - must be last
+  { path: '**', redirectTo: '/', pathMatch: 'full' }
 ];

@@ -29,73 +29,99 @@ export class AppComponent implements OnInit {
   isAuthChecked = false;
 
   ngOnInit() {
-    onAuthStateChanged(this.auth, async (user) => {
-      this.isAuthChecked = true;
-
-      if (user) {
-        try {
-          const role = await this.authService.getUserRole(user.uid);
-
-          if (role) {
-            this.userLoggedIn = true;
-            this.userRole = role;
-
-            const currentRoute = this.router.url;
-
-            if (currentRoute.startsWith('/verify-email') || currentRoute === '/login') {
-              if (currentRoute.startsWith('/verify-email') && !user.emailVerified) {
-                await this.waitForEmailVerification(user);
-              }
-
-              if (user.emailVerified) {
-                this.redirectBasedOnRole(role, currentRoute);
-              }
-              return; // Prevent premature redirect
-            }
-
-            if (user.emailVerified) {
-              this.redirectBasedOnRole(role, currentRoute);
-            } else {
-              // Email not verified — do NOT redirect to /verify-email automatically
-              console.log('Email not verified yet. Please verify your email.');
-              // You can show a notification here instead if you want
-            }
-          } else {
-            this.router.navigate(['/login']);
-          }
-        } catch (error) {
-          console.error('Error checking user role:', error);
-          // Only redirect to /login if not on landing page
-          if (this.router.url !== '/' && this.router.url !== '') {
-            this.router.navigate(['/login']);
-          }
-        }
-      } else {
-        this.userLoggedIn = false;
-        this.userRole = null;
-        // Only redirect to /login if not on landing page
-        if (this.router.url !== '/' && this.router.url !== '') {
-          this.router.navigate(['/login']);
-        }
-      }
-    });
-
+    // Set initial auth state - router outlet should render immediately
+    this.isAuthChecked = false;
+    
+    // Handle router events first
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
       const excludedRoutes = ['/login', '/register', '/verify-email'];
       this.showSidenav = !excludedRoutes.includes(event.url);
     });
+    
+    // Use NgZone to ensure change detection runs for auth state
+    // Don't block rendering - handle auth asynchronously
+    onAuthStateChanged(this.auth, async (user) => {
+      this.zone.run(() => {
+        this.isAuthChecked = true;
+
+        if (user) {
+          // Handle auth state asynchronously without blocking render
+          this.handleAuthenticatedUser(user).catch(err => {
+            console.error('Error in handleAuthenticatedUser:', err);
+            // Don't block UI on error
+          });
+        } else {
+          this.userLoggedIn = false;
+          this.userRole = null;
+          // Only redirect to /login if not on landing/public pages
+          const publicRoutes = ['/', '/login', '/register', '/verify-email'];
+          if (!publicRoutes.includes(this.router.url)) {
+            this.zone.run(() => {
+              this.router.navigate(['/login']).catch(err => {
+                console.error('Navigation error:', err);
+              });
+            });
+          }
+        }
+      });
+    });
+  }
+
+  private async handleAuthenticatedUser(user: any) {
+    const currentRoute = this.router.url;
+    
+    try {
+      const role = await this.authService.getUserRole(user.uid);
+
+      if (role) {
+        this.userLoggedIn = true;
+        this.userRole = role;
+
+        if (currentRoute.startsWith('/verify-email') || currentRoute === '/login') {
+          if (currentRoute.startsWith('/verify-email') && !user.emailVerified) {
+            await this.waitForEmailVerification(user);
+          }
+
+          if (user.emailVerified) {
+            this.redirectBasedOnRole(role, currentRoute);
+          }
+          return;
+        }
+
+        if (user.emailVerified) {
+          this.redirectBasedOnRole(role, currentRoute);
+        } else {
+          console.log('Email not verified yet. Please verify your email.');
+        }
+      } else {
+        // Only redirect if not on public pages
+        const publicRoutes = ['/', '/login', '/register'];
+        if (!publicRoutes.includes(currentRoute)) {
+          this.router.navigate(['/login']);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking user role:', error);
+      // Only redirect to /login if not on landing/public pages
+      const publicRoutes = ['/', '/login', '/register'];
+      if (!publicRoutes.includes(currentRoute)) {
+        this.router.navigate(['/login']);
+      }
+    }
   }
 
   private redirectBasedOnRole(role: string, currentRoute: string) {
-    if (role === 'voter' && currentRoute !== '/voter/dashboard') {
-      this.router.navigate(['/voter/dashboard']);
-    } else if (role === 'staff' && currentRoute !== '/staff/dashboard') {
-      this.router.navigate(['/staff/dashboard']);
-    } else if (role === 'admin' && currentRoute !== '/admin/dashboard') {
-      this.router.navigate(['/admin/dashboard']);
-    }
+    this.zone.run(() => {
+      if (role === 'voter' && !currentRoute.startsWith('/voter')) {
+        this.router.navigate(['/voter/dashboard']);
+      } else if (role === 'staff' && !currentRoute.startsWith('/staff')) {
+        this.router.navigate(['/staff/dashboard']);
+      } else if (role === 'admin' && !currentRoute.startsWith('/admin')) {
+        this.router.navigate(['/admin/dashboard']);
+      }
+    });
   }
 
   private waitForEmailVerification(user: User): Promise<void> {
