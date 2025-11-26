@@ -122,6 +122,7 @@ export class VoterChatComponent implements OnInit, OnDestroy {
     }
 
     this.listenToMessages(requestId);
+    this.markMessagesAsRead(requestId);
   }
 
   private selectFirstRequest(navigate: boolean = true): void {
@@ -186,6 +187,14 @@ export class VoterChatComponent implements OnInit, OnDestroy {
     }
     const status = (this.selectedRequest.status || '').toLowerCase();
     return status === 'completed';
+  }
+
+  private async markMessagesAsRead(requestId: string): Promise<void> {
+    try {
+      await this.chatService.markMessagesAsRead(requestId, 'voter');
+    } catch (error) {
+      console.error('Error marking messages as read:', error);
+    }
   }
 
   private scrollToBottom(): void {

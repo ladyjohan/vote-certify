@@ -9,9 +9,12 @@ import {
   query,
   where,
   addDoc,
-  serverTimestamp
+  serverTimestamp,
+  updateDoc,
+  getDocs,
+  writeBatch
 } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject, Subscription } from 'rxjs';
 
 export type ChatSender = 'voter' | 'staff';
 
@@ -21,6 +24,8 @@ export interface ChatMessage {
   senderId: string;
   message: string;
   timestamp?: any;
+  readByVoter?: boolean;
+  readByStaff?: boolean;
 }
 
 export interface ChatRequest {
@@ -34,6 +39,9 @@ export interface ChatRequest {
 
 @Injectable({ providedIn: 'root' })
 export class ChatService {
+  private unreadCountSubject = new BehaviorSubject<number>(0);
+  unreadCount$ = this.unreadCountSubject.asObservable();
+
   constructor(private firestore: Firestore) {}
 
   listenToVoterRequests(email: string): Observable<ChatRequest[]> {
@@ -79,8 +87,140 @@ export class ChatService {
       sender,
       senderId,
       message: trimmed,
-      timestamp: serverTimestamp()
+      timestamp: serverTimestamp(),
+      readByVoter: sender === 'voter',
+      readByStaff: sender === 'staff'
     });
   }
-}
 
+  async markMessagesAsRead(requestId: string, userType: 'voter' | 'staff'): Promise<void> {
+    const messagesRef = collection(this.firestore, 'chats', requestId, 'messages');
+    const readField = userType === 'voter' ? 'readByVoter' : 'readByStaff';
+    const senderType = userType === 'voter' ? 'staff' : 'voter';
+    
+    const unreadQuery = query(
+      messagesRef,
+      where('sender', '==', senderType),
+      where(readField, '==', false)
+    );
+    const unreadDocs = await getDocs(unreadQuery);
+
+    if (unreadDocs.empty) {
+      return;
+    }
+
+    const batch = writeBatch(this.firestore);
+    unreadDocs.forEach((doc) => {
+      batch.update(doc.ref, { [readField]: true });
+    });
+
+    await batch.commit();
+  }
+
+  listenToUnreadCount(email: string, userType: 'voter' | 'staff'): Observable<number> {
+    const readField = userType === 'voter' ? 'readByVoter' : 'readByStaff';
+    const senderType = userType === 'voter' ? 'staff' : 'voter';
+
+    return new Observable((observer) => {
+      const subscriptions: Subscription[] = [];
+      let requestsList: any[] = [];
+
+      const requestsRef = collection(this.firestore, 'requests');
+      let requestsQuery;
+
+      if (userType === 'voter') {
+        requestsQuery = query(requestsRef, where('email', '==', email));
+      } else {
+        requestsQuery = query(requestsRef);
+      }
+
+      // Listen to requests
+      const requestsSub = collectionData(requestsQuery, { idField: 'id' }).subscribe((requests: any[]) => {
+        requestsList = requests;
+        
+        // Cleanup old message subscriptions
+        subscriptions.forEach(sub => sub.unsubscribe());
+        subscriptions.length = 0;
+
+        if (requests.length === 0) {
+          observer.next(0);
+          this.unreadCountSubject.next(0);
+          return;
+        }
+
+        // For each request, listen to messages from sender with readField = false
+        const messageSubscriptions: { [key: string]: Subscription } = {};
+
+        requests.forEach((req: any) => {
+          const messagesRef = collection(this.firestore, 'chats', req.id, 'messages');
+          const messagesQuery = query(
+            messagesRef,
+            where('sender', '==', senderType),
+            where(readField, '==', false)
+          );
+
+          const messageSub = collectionData(messagesQuery, { idField: 'id' }).subscribe(() => {
+            // Recalculate total unread count
+            let totalUnread = 0;
+
+            const countPromises = requestsList.map((request: any) => {
+              const msgRef = collection(this.firestore, 'chats', request.id, 'messages');
+              const msgQuery = query(
+                msgRef,
+                where('sender', '==', senderType),
+                where(readField, '==', false)
+              );
+              return getDocs(msgQuery).then((snapshot) => snapshot.size);
+            });
+
+            Promise.all(countPromises).then((counts) => {
+              totalUnread = counts.reduce((sum, count) => sum + count, 0);
+              observer.next(totalUnread);
+              this.unreadCountSubject.next(totalUnread);
+            });
+          });
+
+          messageSubscriptions[req.id] = messageSub;
+          subscriptions.push(messageSub);
+        });
+      });
+
+      subscriptions.push(requestsSub);
+
+      return () => {
+        subscriptions.forEach((sub) => sub.unsubscribe());
+      };
+    });
+  }
+
+  private async getUnreadCount(email: string, userType: 'voter' | 'staff'): Promise<number> {
+    const requestsRef = collection(this.firestore, 'requests');
+    let requestsQuery;
+
+    if (userType === 'voter') {
+      requestsQuery = query(requestsRef, where('email', '==', email));
+    } else {
+      requestsQuery = query(requestsRef);
+    }
+
+    const requestDocs = await getDocs(requestsQuery);
+    let totalUnread = 0;
+
+    for (const reqDoc of requestDocs.docs) {
+      const messagesRef = collection(this.firestore, 'chats', reqDoc.id, 'messages');
+      const readField = userType === 'voter' ? 'readByVoter' : 'readByStaff';
+      const senderType = userType === 'voter' ? 'staff' : 'voter';
+
+      const unreadQuery = query(
+        messagesRef,
+        where('sender', '==', senderType),
+        where(readField, '==', false)
+      );
+
+      const unreadDocs = await getDocs(unreadQuery);
+      totalUnread += unreadDocs.size;
+    }
+
+    return totalUnread;
+  }
+}

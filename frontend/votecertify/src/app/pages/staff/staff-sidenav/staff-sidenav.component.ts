@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
@@ -8,6 +8,8 @@ import { RouterModule } from '@angular/router';
 import { getAuth, signOut, User } from '@angular/fire/auth';
 import { Firestore, doc, getDoc } from '@angular/fire/firestore';
 import Swal from 'sweetalert2';
+import { ChatService } from '../../../services/chat.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-staff-sidenav',
@@ -16,10 +18,16 @@ import Swal from 'sweetalert2';
   templateUrl: './staff-sidenav.component.html',
   styleUrls: ['./staff-sidenav.component.scss']
 })
-export class StaffSidenavComponent implements OnInit {
-  displayName: string = 'Staff'; // Default name
+export class StaffSidenavComponent implements OnInit, OnDestroy {
+  displayName: string = 'Staff';
+  unreadCount: number = 0;
+  private unreadSub?: Subscription;
 
-  constructor(private router: Router, private firestore: Firestore) {}
+  constructor(
+    private router: Router,
+    private firestore: Firestore,
+    private chatService: ChatService
+  ) {}
 
   ngOnInit() {
     const auth = getAuth();
@@ -33,7 +41,20 @@ export class StaffSidenavComponent implements OnInit {
           const userData = userDocSnap.data();
           this.displayName = userData['name'] || 'Staff';
         }
+
+        // Initialize unread listener
+        this.initializeUnreadListener();
       }
+    });
+  }
+
+  ngOnDestroy() {
+    this.unreadSub?.unsubscribe();
+  }
+
+  private initializeUnreadListener() {
+    this.unreadSub = this.chatService.listenToUnreadCount('', 'staff').subscribe((count) => {
+      this.unreadCount = count;
     });
   }
 
@@ -64,7 +85,7 @@ export class StaffSidenavComponent implements OnInit {
       const auth = getAuth();
       signOut(auth)
         .then(() => {
-          console.log('✅ Admin logged out');
+          console.log('✅ Staff logged out');
           this.router.navigate(['/login']);
         })
         .catch(error => console.error('❌ Logout error:', error));

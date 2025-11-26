@@ -133,6 +133,7 @@ export class StaffChatComponent implements OnInit, OnDestroy {
     }
 
     this.listenToMessages(requestId);
+    this.markMessagesAsRead(requestId);
   }
 
   private listenToMessages(requestId: string): void {
@@ -231,5 +232,13 @@ export class StaffChatComponent implements OnInit, OnDestroy {
     }
     const status = (this.selectedRequest.status || '').toLowerCase();
     return status === 'completed';
+  }
+
+  private async markMessagesAsRead(requestId: string): Promise<void> {
+    try {
+      await this.chatService.markMessagesAsRead(requestId, 'staff');
+    } catch (error) {
+      console.error('Error marking messages as read:', error);
+    }
   }
 }

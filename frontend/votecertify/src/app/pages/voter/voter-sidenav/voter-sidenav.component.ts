@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
@@ -8,6 +8,8 @@ import { RouterModule } from '@angular/router';
 import { getAuth, signOut, User } from '@angular/fire/auth';
 import { Firestore, doc, getDoc } from '@angular/fire/firestore';
 import Swal from 'sweetalert2';
+import { ChatService } from '../../../services/chat.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-voter-sidenav',
@@ -16,10 +18,16 @@ import Swal from 'sweetalert2';
   templateUrl: './voter-sidenav.component.html',
   styleUrls: ['./voter-sidenav.component.scss']
 })
-export class VoterSidenavComponent implements OnInit {
-  displayName: string = 'Voter'; // Default name
+export class VoterSidenavComponent implements OnInit, OnDestroy {
+  displayName: string = 'Voter';
+  unreadCount: number = 0;
+  private unreadSub?: Subscription;
 
-  constructor(private router: Router, private firestore: Firestore) {}
+  constructor(
+    private router: Router,
+    private firestore: Firestore,
+    private chatService: ChatService
+  ) {}
 
   ngOnInit() {
     const auth = getAuth();
@@ -27,13 +35,25 @@ export class VoterSidenavComponent implements OnInit {
 
     if (user) {
       this.fetchVoterFullName(user.uid);
+      this.initializeUnreadListener(user.email || '');
     } else {
       auth.onAuthStateChanged((user: User | null) => {
         if (user) {
           this.fetchVoterFullName(user.uid);
+          this.initializeUnreadListener(user.email || '');
         }
       });
     }
+  }
+
+  ngOnDestroy() {
+    this.unreadSub?.unsubscribe();
+  }
+
+  private initializeUnreadListener(email: string) {
+    this.unreadSub = this.chatService.listenToUnreadCount(email, 'voter').subscribe((count) => {
+      this.unreadCount = count;
+    });
   }
 
   async fetchVoterFullName(uid: string) {
@@ -77,7 +97,7 @@ export class VoterSidenavComponent implements OnInit {
       const auth = getAuth();
       signOut(auth)
         .then(() => {
-          console.log('✅ Admin logged out');
+          console.log('✅ Voter logged out');
           this.router.navigate(['/login']);
         })
         .catch(error => console.error('❌ Logout error:', error));
