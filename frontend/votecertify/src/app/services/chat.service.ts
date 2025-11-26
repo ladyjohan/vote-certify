@@ -35,6 +35,8 @@ export interface ChatRequest {
   status?: string;
   submittedAt?: any;
   email?: string;
+  purpose?: string;
+  copiesRequested?: number;
 }
 
 @Injectable({ providedIn: 'root' })

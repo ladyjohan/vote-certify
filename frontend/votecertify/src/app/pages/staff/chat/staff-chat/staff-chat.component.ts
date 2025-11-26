@@ -240,7 +240,7 @@ export class StaffChatComponent implements OnInit, OnDestroy {
       return false;
     }
     const status = (this.selectedRequest.status || '').toLowerCase();
-    return status === 'completed';
+    return status === 'completed' || status === 'approved';
   }
 
   private async markMessagesAsRead(requestId: string): Promise<void> {

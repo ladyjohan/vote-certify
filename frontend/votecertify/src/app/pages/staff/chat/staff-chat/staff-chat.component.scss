@@ -45,15 +45,30 @@
 }
 
 .archived-toggle {
-  border: 1px solid #c7d2fe;
-  background: #eef2ff;
-  color: #312e81;
-  border-radius: 999px;
-  padding: 0.4rem 1rem;
-  font-size: 0.85rem;
-  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: #2563eb;
   cursor: pointer;
   flex-shrink: 0;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #f3f4f6;
+  }
+
+  .material-icons {
+    font-size: 1.5rem;
+  }
+}
+
+.search-box {
+  margin-bottom: 1rem;
+  overflow: hidden;
 }
 
 .search-box input {
@@ -61,7 +76,7 @@
   padding: 0.65rem 0.75rem;
   border-radius: 12px;
   border: 1px solid #d1d5db;
-  margin-bottom: 1rem;
+  box-sizing: border-box;
 }
 
 .requests-list {
@@ -166,7 +181,7 @@
   padding: 0.45rem;
   border-radius: 10px;
   border: none;
-  background: #111827;
+  background: #47b154;
   color: #fff;
   font-weight: 600;
 }
@@ -192,6 +207,60 @@
   border-radius: 999px;
 }
 
+.request-info {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: #f9fafb;
+  border-radius: 12px;
+  border-left: 4px solid #2563eb;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  .label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .value {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #1f2937;
+
+    &.pending {
+      color: #b45309;
+      background: #fef3c7;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      width: fit-content;
+    }
+
+    &.approved {
+      color: #15803d;
+      background: #dcfce7;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      width: fit-content;
+    }
+
+    &.completed {
+      color: #1d4ed8;
+      background: #dbeafe;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      width: fit-content;
+    }
+  }
+}
+
 .messages {
   flex: 1;
   overflow-y: auto;
@@ -208,8 +277,8 @@
 
 .message.from-staff {
   margin-left: auto;
-  background: #111827;
-  color: #fff;
+  background: #dbeafe;
+  color: #0c4a6e;
 }
 
 .message.from-voter {

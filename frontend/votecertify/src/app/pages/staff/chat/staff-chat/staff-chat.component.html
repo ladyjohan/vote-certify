@@ -5,9 +5,8 @@
         <h2>Requests</h2>
         <p>Open a request to chat with the voter.</p>
       </div>
-      <button class="archived-toggle" (click)="toggleArchived()">
-        <span class="material-symbol">archive</span>
-        Archived Chats
+      <button class="archived-toggle" (click)="toggleArchived()" title="Toggle archived chats">
+        <span class="material-icons">{{ showArchived ? 'folder_open' : 'folder' }}</span>
       </button>
     </div>
 
@@ -38,23 +37,21 @@
             <div class="card-body">
               <div>
               <p class="request-name">
-                {{ request.fullName || 'Request' }}
+                {{ request.fullName || 'Voter' }}
                 <span class="unread-dot" *ngIf="isUnread(request.id)"></span>
               </p>
-              <p class="request-id">Voter ID: {{ request.voterId || 'N/A' }}</p>
               </div>
               <span class="status" [class]="(request.status || '').toLowerCase()">
                 {{ request.status || 'Pending' }}
               </span>
             </div>
-            <button class="chat-btn">Open Chat</button>
           </div>
         </ng-container>
       </div>
 
       <div class="list-section archived" *ngIf="showArchived">
         <div class="section-header">
-          <h3>Archived</h3>
+          <h3>Archived Chats</h3>
           <span class="count-pill">{{ filteredArchivedRequests.length }}</span>
         </div>
 
@@ -67,14 +64,12 @@
           >
             <div class="card-body">
               <div>
-                <p class="request-name">{{ request.fullName || 'Request' }}</p>
-                <p class="request-id">Voter ID: {{ request.voterId || 'N/A' }}</p>
+                <p class="request-name">{{ request.fullName || 'Voter' }}</p>
               </div>
               <span class="status archived-status">
                 {{ request.status || 'Approved' }}
               </span>
             </div>
-            <button class="chat-btn secondary">Review Chat</button>
           </div>
         </ng-container>
       </div>
@@ -94,11 +89,20 @@
   <section class="chat-panel" *ngIf="selectedRequest; else noSelection">
     <header class="chat-header">
       <div>
-        <h2>Chat with {{ selectedRequest!.fullName || 'voter' }}</h2>
-        <p>Status: {{ selectedRequest!.status || 'Pending' }}</p>
+        <h2>{{ selectedRequest!.fullName || 'Voter' }}</h2>
       </div>
-      <span class="request-tag">#{{ selectedRequest!.id }}</span>
     </header>
+
+    <div class="request-info">
+      <div class="info-item">
+        <span class="label">Purpose:</span>
+        <span class="value">{{ selectedRequest!.purpose || 'N/A' }}</span>
+      </div>
+      <div class="info-item">
+        <span class="label">Status:</span>
+        <span class="value" [class]="(selectedRequest!.status || '').toLowerCase()">{{ selectedRequest!.status || 'Pending' }}</span>
+      </div>
+    </div>
 
     <div class="messages" #messagesContainer>
       <ng-container *ngIf="!isLoadingMessages; else loadingMessages">
@@ -115,7 +119,7 @@
           <p>{{ message.message }}</p>
         </div>
 
-        <div class="end-of-chat" *ngIf="messages.length > 0 && isChatEnded()">
+        <div class="end-of-chat" *ngIf="isChatEnded()">
           <div class="end-content">
             <div class="end-icon">✓</div>
             <h3>End of Chat</h3>
@@ -123,7 +127,7 @@
           </div>
         </div>
 
-        <p class="empty" *ngIf="messages.length === 0">No messages yet.</p>
+        <p class="empty" *ngIf="messages.length === 0 && !isChatEnded()">No messages yet.</p>
       </ng-container>
     </div>
 
