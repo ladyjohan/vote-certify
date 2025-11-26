@@ -19,10 +19,18 @@ export class VoterDashboardComponent implements OnInit {
   allRequests: any[] = [];
   private intervalId: any;
 
-  // Time slots
+  // Time slots (30-minute intervals from 9:00 AM to 2:30 PM, 1 person per slot, excluding 12:00 PM - 1:00 PM)
   timeSlots = [
-    { label: '1:00 PM - 2:00 PM', value: '13:00-14:00' },
-    { label: '2:00 PM - 3:00 PM', value: '14:00-15:00' }
+    { label: '9:00 AM - 9:30 AM', value: '09:00-09:30', capacity: 1 },
+    { label: '9:30 AM - 10:00 AM', value: '09:30-10:00', capacity: 1 },
+    { label: '10:00 AM - 10:30 AM', value: '10:00-10:30', capacity: 1 },
+    { label: '10:30 AM - 11:00 AM', value: '10:30-11:00', capacity: 1 },
+    { label: '11:00 AM - 11:30 AM', value: '11:00-11:30', capacity: 1 },
+    { label: '11:30 AM - 12:00 PM', value: '11:30-12:00', capacity: 1 },
+    { label: '1:00 PM - 1:30 PM', value: '13:00-13:30', capacity: 1 },
+    { label: '1:30 PM - 2:00 PM', value: '13:30-14:00', capacity: 1 },
+    { label: '2:00 PM - 2:30 PM', value: '14:00-14:30', capacity: 1 },
+    { label: '2:30 PM - 3:00 PM', value: '14:30-15:00', capacity: 1 }
   ];
 
   constructor(private firestore: Firestore, private auth: Auth) {}

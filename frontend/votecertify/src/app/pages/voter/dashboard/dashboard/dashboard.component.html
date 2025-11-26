@@ -29,7 +29,7 @@
               'text-grey-600': currentRequest.status === 'Completed'
             }">{{ currentRequest.status }}</span>
           </p>
-          <p><strong>Submitted At:</strong> {{ currentRequest.submittedAt ? (currentRequest.submittedAt.toDate() | date:'medium') : 'N/A' }}</p>
+          <p><strong>Date and Time of Request:</strong> {{ currentRequest.submittedAt ? (currentRequest.submittedAt.toDate() | date:'medium') : 'N/A' }}</p>
 
           <ng-container *ngIf="currentRequest.status === 'Approved' || currentRequest.status === 'Ready for Pickup'">
             <p><strong>Pick-up Date:</strong> {{ currentRequest.pickupDate || 'To be scheduled' }}</p>

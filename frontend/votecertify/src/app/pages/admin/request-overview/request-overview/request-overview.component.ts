@@ -31,6 +31,20 @@ export class AdminRequestOverviewComponent implements OnInit {
   totalPages = 1;
   pages: number[] = [];
 
+  // Time slots for display
+  timeSlots = [
+    { label: '9:00 AM - 9:30 AM', value: '09:00-09:30' },
+    { label: '9:30 AM - 10:00 AM', value: '09:30-10:00' },
+    { label: '10:00 AM - 10:30 AM', value: '10:00-10:30' },
+    { label: '10:30 AM - 11:00 AM', value: '10:30-11:00' },
+    { label: '11:00 AM - 11:30 AM', value: '11:00-11:30' },
+    { label: '11:30 AM - 12:00 PM', value: '11:30-12:00' },
+    { label: '1:00 PM - 1:30 PM', value: '13:00-13:30' },
+    { label: '1:30 PM - 2:00 PM', value: '13:30-14:00' },
+    { label: '2:00 PM - 2:30 PM', value: '14:00-14:30' },
+    { label: '2:30 PM - 3:00 PM', value: '14:30-15:00' }
+  ];
+
   ngOnInit() {
     this.setPageSizeByScreen();
     this.loadRequests();
@@ -318,12 +332,14 @@ for (const status of statuses) {
   doc.text(status.title, margin, y);
   y += 12;
 
-  const columns = ['#', 'Voter Name', 'Submitted Date', 'Pickup Date', 'Completed By'];
+  const columns = ['#', 'Voter Name', 'Date Requested', 'Time Requested', 'Pickup Date', 'Time of Release', 'Completed By'];
   const rows = reqs.map((r, idx) => [
     idx + 1,
     r.fullName || 'N/A',
     this.formatDate(r.submittedAt),
+    r.submittedAt ? this.datePipe.transform(r.submittedAt, 'HH:mm:ss') : 'N/A',
     this.formatDateString(r.pickupDate),
+    this.getTimeSlotLabel(r.claimTimeSlot),
     r.completedByName || r.completedBy || 'N/A'
   ]);
 
@@ -365,6 +381,12 @@ for (const status of statuses) {
     if (!dateStr) return 'N/A';
     const date = new Date(dateStr);
     return isNaN(date.getTime()) ? 'N/A' : this.formatDate(date);
+  }
+
+  getTimeSlotLabel(timeSlotValue: string | null): string {
+    if (!timeSlotValue) return 'N/A';
+    const slot = this.timeSlots.find(s => s.value === timeSlotValue);
+    return slot ? slot.label : timeSlotValue;
   }
 
   /* ================= Pagination Methods ================= */

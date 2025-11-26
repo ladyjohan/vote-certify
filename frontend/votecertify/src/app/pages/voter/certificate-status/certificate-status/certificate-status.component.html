@@ -46,7 +46,7 @@
             'text-grey-600': request.status === 'Completed'
           }">{{ request.status }}</span>
         </p>
-        <p><strong>Submitted At:</strong> {{ formatDate(request.submittedAt) }}</p>
+        <p><strong>Date and Time of Request:</strong> {{ formatDate(request.submittedAt) }}</p>
 
         <ng-container *ngIf="request.status === 'Approved' || request.status === 'Ready for Pickup'">
           <p><strong>Pick-up Date:</strong> {{ request.pickupDate || 'To be scheduled' }}</p>
