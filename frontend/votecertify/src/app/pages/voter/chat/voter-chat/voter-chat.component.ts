@@ -180,6 +180,14 @@ export class VoterChatComponent implements OnInit, OnDestroy {
     return message.sender === 'voter' ? 'You' : 'Staff';
   }
 
+  isChatEnded(): boolean {
+    if (!this.selectedRequest) {
+      return false;
+    }
+    const status = (this.selectedRequest.status || '').toLowerCase();
+    return status === 'completed';
+  }
+
   private scrollToBottom(): void {
     if (!this.messagesContainer) {
       return;

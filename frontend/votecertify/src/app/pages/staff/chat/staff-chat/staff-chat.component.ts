@@ -225,5 +225,11 @@ export class StaffChatComponent implements OnInit, OnDestroy {
     }
   }
 
+  isChatEnded(): boolean {
+    if (!this.selectedRequest) {
+      return false;
+    }
+    const status = (this.selectedRequest.status || '').toLowerCase();
+    return status === 'completed';
+  }
 }
-

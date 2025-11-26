@@ -101,11 +101,19 @@
           <p>{{ message.message }}</p>
         </div>
 
+        <div class="end-of-chat" *ngIf="messages.length > 0 && isChatEnded()">
+          <div class="end-content">
+            <div class="end-icon">✓</div>
+            <h3>End of Chat</h3>
+            <p>This chat has been completed. You can no longer send messages.</p>
+          </div>
+        </div>
+
         <p class="empty" *ngIf="messages.length === 0">No messages yet. Say hi!</p>
       </ng-container>
     </div>
 
-    <form class="composer" (ngSubmit)="sendMessage()">
+    <form class="composer" (ngSubmit)="sendMessage()" *ngIf="!isChatEnded()">
       <textarea
         [(ngModel)]="messageText"
         name="message"
@@ -115,6 +123,10 @@
       ></textarea>
       <button type="submit" [disabled]="isSending || !messageText.trim()">Send</button>
     </form>
+
+    <div class="composer-disabled" *ngIf="isChatEnded()">
+      <p>Chat is closed. No more messages can be sent.</p>
+    </div>
   </section>
 
   <ng-template #noSelection>
