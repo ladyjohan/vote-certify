@@ -1,4 +1,5 @@
 <form [formGroup]="requestForm" (ngSubmit)="submitRequest()" class="request-form">
+   <h2>Voter Certificate Request Form</h2>
   <div class="voter-info">
     <div class="voter-info-item">
       <label>Full Name:</label>
@@ -24,15 +25,6 @@
         <option value="Proof of Residency">Proof of Residency</option>
         <option value="Government Transactions">Government Transactions</option>
         <option value="General Identification Purposes">General Identification Purposes</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="form-group">
-    <label for="copiesRequested">No. of Original Copies:</label>
-    <div class="custom-select-container">
-      <select id="copiesRequested" formControlName="copiesRequested">
-        <option *ngFor="let num of [1, 2, 3]" [value]="num">{{ num }}</option>
       </select>
     </div>
   </div>

@@ -86,7 +86,8 @@ export class AdminRequestOverviewComponent implements OnInit {
       (request.fullName?.toLowerCase().includes(term) || '') ||
       (request.status?.toLowerCase().includes(term) || '') ||
       (request.submittedAt && this.formatDate(request.submittedAt).toLowerCase().includes(term)) ||
-      (request.pickupDate && this.formatDateString(request.pickupDate).toLowerCase().includes(term))
+      (request.pickupDate && this.formatDateString(request.pickupDate).toLowerCase().includes(term)) ||
+      (request.completedBy?.toLowerCase().includes(term) || '')
     );
   }
 
@@ -291,13 +292,13 @@ for (const status of statuses) {
   doc.text(status.title, margin, y);
   y += 12;
 
-  const columns = ['#', 'Voter Name', 'Submitted Date', 'Pickup Date', 'Processing Time'];
+  const columns = ['#', 'Voter Name', 'Submitted Date', 'Pickup Date', 'Completed By'];
   const rows = reqs.map((r, idx) => [
     idx + 1,
     r.fullName || 'N/A',
     this.formatDate(r.submittedAt),
     this.formatDateString(r.pickupDate),
-    this.getProcessingTime(r)
+    r.completedBy || 'N/A'
   ]);
 
   const headerColor = tableHeaderColorMap[status.key as keyof typeof tableHeaderColorMap];

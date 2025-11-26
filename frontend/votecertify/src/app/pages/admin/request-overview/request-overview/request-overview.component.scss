@@ -88,7 +88,7 @@
 .request-header,
 .request-item {
   display: grid;
-  grid-template-columns: 2fr 1.5fr 2fr 2fr 1.5fr;
+  grid-template-columns: 2fr 1.5fr 2fr 2fr 2fr;
   padding: 1rem 1.25rem;
   align-items: center;
 }
@@ -617,7 +617,7 @@
 .request-header,
 .request-item {
   display: grid;
-  grid-template-columns: 2fr 1.5fr 2fr 2fr 1.5fr;
+  grid-template-columns: 2fr 1.5fr 2fr 2fr 2fr;
   padding: 1rem 1.25rem;
   align-items: center;
 }

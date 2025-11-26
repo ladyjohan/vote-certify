@@ -4,6 +4,7 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { debounceTime } from 'rxjs/operators';
 import Swal from 'sweetalert2';
+import { Auth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-status-overview',
@@ -26,7 +27,7 @@ export class StatusOverviewComponent implements OnInit {
   totalPages = 1;
   pages: number[] = [];
 
-  constructor(private firestore: Firestore) {}
+  constructor(private firestore: Firestore, private auth: Auth) {}
 
   async ngOnInit() {
     this.setPageSizeForViewport();
@@ -197,13 +198,20 @@ export class StatusOverviewComponent implements OnInit {
     if (!confirm.isConfirmed) return;
 
     try {
+      const staffEmail = this.auth.currentUser?.email || 'Unknown Staff';
       const requestRef = doc(this.firestore, 'requests', request.id);
-      await updateDoc(requestRef, { status: 'Completed' });
+      await updateDoc(requestRef, { 
+        status: 'Completed',
+        completedBy: staffEmail,
+        completedAt: new Date()
+      });
 
       // Update local state
       const index = this.allRequests.findIndex(r => r.id === request.id);
       if (index !== -1) {
         this.allRequests[index].status = 'Completed';
+        this.allRequests[index].completedBy = staffEmail;
+        this.allRequests[index].completedAt = new Date();
       }
       
       this.applyFilters();
