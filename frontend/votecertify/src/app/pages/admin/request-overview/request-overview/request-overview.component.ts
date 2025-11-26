@@ -337,7 +337,7 @@ for (const status of statuses) {
     idx + 1,
     r.fullName || 'N/A',
     this.formatDate(r.submittedAt),
-    r.submittedAt ? this.datePipe.transform(r.submittedAt, 'HH:mm:ss') : 'N/A',
+    r.submittedAt ? this.formatTimeWithAMPM(r.submittedAt) : 'N/A',
     this.formatDateString(r.pickupDate),
     this.getTimeSlotLabel(r.claimTimeSlot),
     r.completedByName || r.completedBy || 'N/A'
@@ -381,6 +381,11 @@ for (const status of statuses) {
     if (!dateStr) return 'N/A';
     const date = new Date(dateStr);
     return isNaN(date.getTime()) ? 'N/A' : this.formatDate(date);
+  }
+
+  formatTimeWithAMPM(date: Date | null): string {
+    if (!date) return 'N/A';
+    return this.datePipe.transform(date, 'hh:mm:ss a') ?? 'N/A';
   }
 
   getTimeSlotLabel(timeSlotValue: string | null): string {

@@ -27,6 +27,20 @@ export class StatusOverviewComponent implements OnInit {
   totalPages = 1;
   pages: number[] = [];
 
+  // Time slots for display
+  timeSlots = [
+    { label: '9:00 AM - 9:30 AM', value: '09:00-09:30' },
+    { label: '9:30 AM - 10:00 AM', value: '09:30-10:00' },
+    { label: '10:00 AM - 10:30 AM', value: '10:00-10:30' },
+    { label: '10:30 AM - 11:00 AM', value: '10:30-11:00' },
+    { label: '11:00 AM - 11:30 AM', value: '11:00-11:30' },
+    { label: '11:30 AM - 12:00 PM', value: '11:30-12:00' },
+    { label: '1:00 PM - 1:30 PM', value: '13:00-13:30' },
+    { label: '1:30 PM - 2:00 PM', value: '13:30-14:00' },
+    { label: '2:00 PM - 2:30 PM', value: '14:00-14:30' },
+    { label: '2:30 PM - 3:00 PM', value: '14:30-15:00' }
+  ];
+
   constructor(private firestore: Firestore, private auth: Auth) {}
 
   async ngOnInit() {
@@ -220,5 +234,11 @@ export class StatusOverviewComponent implements OnInit {
       console.error('Error updating request:', error);
       Swal.fire('Error', 'Failed to mark as completed.', 'error');
     }
+  }
+
+  getTimeSlotLabel(timeSlotValue: string | null): string {
+    if (!timeSlotValue) return 'N/A';
+    const slot = this.timeSlots.find(s => s.value === timeSlotValue);
+    return slot ? slot.label : timeSlotValue;
   }
 }

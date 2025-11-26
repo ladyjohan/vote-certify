@@ -127,7 +127,7 @@
   overflow: visible;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     /* column template variable so header and rows always match */
-    --cols: 2fr 2fr 2fr 1.5fr 1.5fr;
+    --cols: 1.5fr 1.5fr 1.5fr 1.8fr 1.5fr 1.2fr;
 
   .request-header,
   .request-item {
@@ -184,6 +184,9 @@
 
   .request-header > span:nth-child(5),
   .request-item > .field:nth-child(5) { justify-content: center; text-align: center; }
+
+  .request-header > span:nth-child(6),
+  .request-item > .field:nth-child(6) { justify-content: center; text-align: center; }
 
   .request-item {
     border-bottom: 1px solid #f1f5f9;

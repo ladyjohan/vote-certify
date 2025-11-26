@@ -45,6 +45,7 @@
       <span>Full Name</span>
       <span>Birthdate</span>
       <span>Pickup Date</span>
+      <span>Time Slot Released</span>
       <span>Status</span>
       <span>Actions</span>
     </div>
@@ -61,6 +62,10 @@
   <div class="field">
     <span class="label mobile-only">Pickup Date: </span>
     <span class="value">{{ request.pickupDate ? (request.pickupDate | date:'MM/dd/yyyy') : 'N/A' }}</span>
+  </div>
+  <div class="field">
+    <span class="label mobile-only">Time Slot Released: </span>
+    <span class="value">{{ getTimeSlotLabel(request.claimTimeSlot) }}</span>
   </div>
   <div class="field">
     <span class="label mobile-only">Status: </span>

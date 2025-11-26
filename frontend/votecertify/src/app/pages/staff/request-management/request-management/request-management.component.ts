@@ -202,9 +202,9 @@ export class RequestManagementComponent implements OnInit {
             <label for="timeSlot" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">Select Time Slot</label>
             <select id="timeSlot" class="swal2-input modern-input" style="width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; margin: 0; -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3e%3cpolyline points=%226 9 12 15 18 9%3e%3c/polyline%3e%3c/svg%3e'); background-repeat: no-repeat; background-position: right 10px center; background-size: 20px; padding-right: 36px;">
               <option value="">-- Choose a time slot --</option>
-              ${this.timeSlots.map(slot => `<option value="${slot.value}">${slot.label} (${this.getSlotAvailability(slot.value)} available)</option>`).join('')}
+              ${this.timeSlots.map(slot => `<option value="${slot.value}">${slot.label}</option>`).join('')}
             </select>
-            <small style="color: #666; display: block; margin-top: 5px; font-size: 12px;">Each slot accepts up to 5 claimants</small>
+            <small style="color: #666; display: block; margin-top: 5px; font-size: 12px;">Each slot accepts up to 1 claimant</small>
           </div>
         </div>
       `,
@@ -220,12 +220,27 @@ export class RequestManagementComponent implements OnInit {
       },
       didOpen: () => {
         const pickupDateInput = document.getElementById('pickupDate') as HTMLInputElement;
+        const timeSlotSelect = document.getElementById('timeSlot') as HTMLSelectElement;
+        
         const today = new Date();
         const year = today.getFullYear();
         const month = String(today.getMonth() + 1).padStart(2, '0');
         const day = String(today.getDate()).padStart(2, '0');
         const minDate = `${year}-${month}-${day}`;
         pickupDateInput.min = minDate;
+
+        // Listen for date changes to update slot availability
+        pickupDateInput.addEventListener('change', async () => {
+          const selectedDate = pickupDateInput.value;
+          if (selectedDate) {
+            this.updateSlotOptions(timeSlotSelect, selectedDate);
+          }
+        });
+
+        // Initial update
+        if (pickupDateInput.value) {
+          this.updateSlotOptions(timeSlotSelect, pickupDateInput.value);
+        }
       },
       preConfirm: async () => {
         const pickupDate = (document.getElementById('pickupDate') as HTMLInputElement).value;
@@ -292,11 +307,11 @@ export class RequestManagementComponent implements OnInit {
     const requestsRef = collection(this.firestore, 'requests');
     const approvedQuery = query(
       requestsRef,
-      where('status', '==', 'Approved')
+      where('status', 'in', ['Approved', 'Ready for Pickup', 'Completed'])
     );
     const snapshot = await getDocs(approvedQuery);
 
-    // Count approvals made today
+    // Count approvals made today (all approved records regardless of later status)
     this.approvalsToday = snapshot.docs.filter(doc => {
       const data = doc.data();
       const pickupDate = data['pickupDate'];
@@ -310,13 +325,39 @@ export class RequestManagementComponent implements OnInit {
     return slot.capacity;
   }
 
+  async updateSlotOptions(selectElement: HTMLSelectElement, pickupDate: string) {
+    // Clear existing options (keep the placeholder)
+    const placeholderOption = selectElement.querySelector('option[value=""]');
+    selectElement.innerHTML = '';
+    if (placeholderOption) {
+      selectElement.appendChild(placeholderOption);
+    }
+
+    // Add all time slot options with disabled state based on availability
+    for (const slot of this.timeSlots) {
+      const available = await this.getSlotCapacityForDate(pickupDate, slot.value);
+      const option = document.createElement('option');
+      option.value = slot.value;
+      option.textContent = slot.label;
+      option.disabled = available <= 0;
+      
+      // Style disabled options to appear greyed out
+      if (available <= 0) {
+        option.style.color = '#ccc';
+        option.style.backgroundColor = '#f5f5f5';
+      }
+      
+      selectElement.appendChild(option);
+    }
+  }
+
   async getSlotCapacityForDate(pickupDate: string, timeSlot: string): Promise<number> {
     const requestsRef = collection(this.firestore, 'requests');
     const slotQuery = query(
       requestsRef,
       where('pickupDate', '==', pickupDate),
       where('claimTimeSlot', '==', timeSlot),
-      where('status', 'in', ['Approved', 'Ready for Pickup'])
+      where('status', 'in', ['Approved', 'Ready for Pickup', 'Completed'])
     );
     const snapshot = await getDocs(slotQuery);
     const slot = this.timeSlots.find(s => s.value === timeSlot);

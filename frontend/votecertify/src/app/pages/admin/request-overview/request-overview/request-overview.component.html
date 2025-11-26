@@ -67,7 +67,7 @@
     {{ request.status || 'N/A' }}
   </span>
   <span>{{ request.submittedAt ? (request.submittedAt | date: 'MM/dd/yyyy') : 'N/A' }}</span>
-  <span>{{ request.submittedAt ? (request.submittedAt | date: 'HH:mm:ss') : 'N/A' }}</span>
+  <span>{{ formatTimeWithAMPM(request.submittedAt) }}</span>
   <span>{{ formatDateString(request.pickupDate) }}</span>
   <span>{{ getTimeSlotLabel(request.claimTimeSlot) }}</span>
   <span>{{ request.completedByName || request.completedBy || 'N/A' }}</span>
