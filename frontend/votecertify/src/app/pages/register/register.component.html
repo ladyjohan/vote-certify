@@ -62,7 +62,13 @@
           <span class="terms-text-link">I have read and agree to the <a href="#" (click)="showTermsModal($event)">Terms and Conditions and Privacy Policy.</a></span>
         </label>
       </div>
-      <button type="submit" class="btn" [disabled]="!checklist.lowerUpper || !checklist.number || !checklist.length || !registerForm.get('agreedToTerms')?.value">
+      <div class="terms-container">
+        <label class="terms-label">
+          <input type="checkbox" formControlName="agreedToDataPrivacy" required />
+          <span class="terms-text-link">I have read and agree to the <a href="#" (click)="showDataPrivacyModal($event)">Data Privacy Notice.</a></span>
+        </label>
+      </div>
+      <button type="submit" class="btn" [disabled]="!checklist.lowerUpper || !checklist.number || !checklist.length || !registerForm.get('agreedToTerms')?.value || !registerForm.get('agreedToDataPrivacy')?.value">
         Register
       </button>
     </form>
@@ -185,11 +191,103 @@
 <p>Requests may be submitted to COMELEC Olongapo City through the designated system contact channels.</p>
 <b>7. Consent</b>
 <p>By creating an account and submitting a request, you voluntarily consent to the collection, use, and processing of your personal data as described in this Privacy Policy.</p>
+<b>Data Privacy Act of 2012</b>
+<p>In compliance with the <b>Republic Act No. 10173 (Data Privacy Act of 2012)</b>, VoteCertify and COMELEC Olongapo City are committed to protecting your personal information and respecting your privacy rights.</p>
+<b>1. Legal Basis</b>
+<ul>
+<li>1.1. This system operates under the authority of the Commission on Elections (COMELEC) as mandated by the Constitution of the Philippines and relevant election laws.</li>
+<li>1.2. The collection and processing of personal data is conducted in accordance with the Data Privacy Act of 2012 (RA 10173) and its implementing rules and regulations (IRR).</li>
+</ul>
+<b>2. Personal Data Processing</b>
+<ul>
+<li>2.1. COMELEC Olongapo City, as the Data Controller, collects and processes personal data for the legitimate purpose of managing voter certificate requests and maintaining election records.</li>
+<li>2.2. Your personal information will be processed fairly, lawfully, and transparently.</li>
+<li>2.3. Personal data collected shall be adequate, relevant, and not excessive in relation to the purpose for which it is collected.</li>
+</ul>
+<b>3. Your Privacy Rights</b>
+<p>Under the Data Privacy Act of 2012, you have the following rights:</p>
+<ul>
+<li><b>Right to be Informed:</b> You have the right to be informed about the collection and processing of your personal data.</li>
+<li><b>Right of Access:</b> You may request access to your personal data held in the system.</li>
+<li><b>Right to Rectification:</b> You may request correction of inaccurate, incomplete, or outdated personal data.</li>
+<li><b>Right to Erasure:</b> Subject to legal obligations, you may request deletion of your personal data when no longer necessary for the stated purpose.</li>
+<li><b>Right to Object:</b> You may object to the processing of your personal data on legitimate grounds.</li>
+<li><b>Right to Data Portability:</b> You may request a copy of your personal data in a structured, commonly used, and machine-readable format.</li>
+</ul>
+<b>4. Data Security and Protection</b>
+<ul>
+<li>4.1. COMELEC Olongapo City implements appropriate technical, administrative, and physical security measures to protect your personal data against unauthorized access, alteration, disclosure, or destruction.</li>
+<li>4.2. Access to personal data is restricted to authorized personnel who require such access for legitimate purposes.</li>
+<li>4.3. Personal data shall not be transferred outside the Philippines without proper authorization and safeguards, in accordance with RA 10173.</li>
+</ul>
+<b>5. Data Retention and Disposal</b>
+<ul>
+<li>5.1. Personal data shall be retained only for as long as necessary to fulfill the purpose for which it was collected, or as required by applicable laws and regulations.</li>
+<li>5.2. Upon expiration of the retention period, personal data shall be securely disposed of or permanently anonymized.</li>
+</ul>
+<b>6. Data Subject Requests</b>
+<p>To exercise your rights under the Data Privacy Act of 2012, you may submit a written request to:</p>
+<p><b>COMELEC Olongapo City<br/>
+Data Protection Officer<br/>
+Commission on Elections Office<br/>
+Olongapo City, Philippines<br/>
+Email: comelec.olongapo&#64;gmail.com</b></p>
+<p>Requests shall be processed within the timeline specified by RA 10173 and its IRR.</p>
+<b>7. Liability and Remedies</b>
+<ul>
+<li>7.1. COMELEC Olongapo City shall be liable for damages caused by processing of personal data in violation of the Data Privacy Act of 2012.</li>
+<li>7.2. In case of a personal data breach, affected individuals shall be notified in accordance with RA 10173.</li>
+<li>7.3. If you believe your rights have been violated, you may file a complaint with the National Privacy Commission (NPC).</li>
+</ul>
+<b>8. Updates to This Policy</b>
+<p>COMELEC Olongapo City may update this Data Privacy Act compliance statement to reflect changes in applicable laws or system practices. Users will be notified of significant changes.</p>
 <b>Acknowledgement</b>
-<p>By clicking “I Agree” or by using the VoteCertify system, you acknowledge that you have read, understood, and agreed to the above Terms and Conditions and Privacy Policy.</p>
+<p>By clicking "I Agree" or by using the VoteCertify system, you acknowledge that you have read, understood, and agreed to the above Terms and Conditions, Privacy Policy, and Data Privacy Act of 2012 compliance statement.</p>
         </div>
         <div class="modal-actions">
           <button class="btn accept-btn" (click)="agreeToTerms()">I Agree</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-backdrop" *ngIf="showDataPrivacy">
+      <div class="modal terms-modal card-style-modal terms-popup" tabindex="-1" role="dialog" aria-modal="true">
+        <div class="modal-header">
+          <div class="modal-icon"><i class="fas fa-file-contract"></i></div>
+          <div class="modal-title-group" style="display: flex; flex-direction: column; align-items: flex-start; width: 100%; position: relative;">
+            <div class="modal-title">Data Privacy Notice</div>
+            <div style="display: flex; align-items: center; width: 100%;">
+              <div class="modal-date" style="flex: 1 1 auto;">Republic Act No. 10173 (Data Privacy Act of 2012)</div>
+            </div>
+          </div>
+        </div>
+  <div class="modal-content scrollable-terms">
+<p>In compliance with the <b>Republic Act No. 10173 (Data Privacy Act of 2012)</b>, VoteCertify and COMELEC Olongapo City are committed to protecting your personal information and respecting your privacy rights.</p>
+<b>1. Legal Basis and Authority</b>
+<p>This system operates under COMELEC authority as mandated by the Constitution of the Philippines. Data processing is conducted in accordance with the Data Privacy Act of 2012 (RA 10173) and its implementing rules and regulations.</p>
+<b>2. Data Processing</b>
+<p>COMELEC Olongapo City, as the Data Controller, collects and processes personal data for managing voter certificate requests and maintaining election records. Your personal information will be processed fairly, lawfully, and transparently.</p>
+<b>3. Your Privacy Rights</b>
+<p>Under the Data Privacy Act of 2012, you have the right to:</p>
+<ul>
+<li><b>Be Informed</b> about the collection and processing of your data</li>
+<li><b>Access</b> your personal data held in the system</li>
+<li><b>Rectification</b> of inaccurate or incomplete information</li>
+<li><b>Erasure</b> of your data when no longer necessary (subject to legal obligations)</li>
+<li><b>Object</b> to the processing of your data on legitimate grounds</li>
+<li><b>Data Portability</b> in a structured, commonly used format</li>
+</ul>
+<b>4. Data Security and Protection</b>
+<p>COMELEC implements appropriate technical, administrative, and physical security measures to protect your data against unauthorized access, alteration, or disclosure. Personal data shall not be transferred outside the Philippines without proper authorization.</p>
+<b>5. Data Retention</b>
+<p>Personal data is retained only as long as necessary to fulfill the stated purpose or as required by applicable laws. Upon expiration, data shall be securely disposed of or permanently anonymized.</p>
+<b>6. Data Subject Requests</b>
+<p>To exercise your rights under the Data Privacy Act of 2012, contact:</p>
+<p><b>COMELEC Olongapo City<br/>Data Protection Officer<br/>Commission on Elections Office, Olongapo City, Philippines<br/>Email: comelec.olongapo&#64;gmail.com</b></p>
+<b>7. Complaints</b>
+<p>If you believe your rights have been violated, you may file a complaint with the National Privacy Commission (NPC). In case of a personal data breach, affected individuals shall be notified in accordance with RA 10173.</p>
+        </div>
+        <div class="modal-actions">
+          <button class="btn accept-btn" (click)="agreeToDataPrivacy()">I Agree</button>
         </div>
       </div>
     </div>

@@ -20,6 +20,7 @@ export class RegisterComponent {
   registerForm: FormGroup;
   errorMessage = '';
   showTerms = false;
+  showDataPrivacy = false;
   showPassword = false;
   passwordChecklistVisible = false;
   passwordStrength: 'weak' | 'medium' | 'strong' = 'weak';
@@ -97,6 +98,15 @@ export class RegisterComponent {
     this.showTerms = false;
   }
 
+  showDataPrivacyModal(event: Event) {
+    event.preventDefault();
+    this.showDataPrivacy = true;
+  }
+
+  closeDataPrivacyModal() {
+    this.showDataPrivacy = false;
+  }
+
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
@@ -107,13 +117,18 @@ export class RegisterComponent {
       birthdate: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      agreedToTerms: [false, [Validators.requiredTrue]]
+      agreedToTerms: [false, [Validators.requiredTrue]],
+      agreedToDataPrivacy: [false, [Validators.requiredTrue]]
     });
   }
 
   async register() {
     if (!this.registerForm.get('agreedToTerms')?.value) {
-      this.toastr.error('You must agree to the Terms and Conditions before registering.', 'Registration Failed');
+      this.toastr.error('You must agree to the Terms and Conditions and Privacy Policy before registering.', 'Registration Failed');
+      return;
+    }
+    if (!this.registerForm.get('agreedToDataPrivacy')?.value) {
+      this.toastr.error('You must agree to the Data Privacy Act of 2012 before registering.', 'Registration Failed');
       return;
     }
     if (this.registerForm.invalid) {
@@ -164,5 +179,10 @@ export class RegisterComponent {
   agreeToTerms() {
     this.registerForm.get('agreedToTerms')?.setValue(true);
     this.showTerms = false;
+  }
+
+  agreeToDataPrivacy() {
+    this.registerForm.get('agreedToDataPrivacy')?.setValue(true);
+    this.showDataPrivacy = false;
   }
 }
