@@ -67,7 +67,7 @@ export class StatusOverviewComponent implements OnInit {
     this.filteredRequests = this.allRequests.filter(req => {
       const matchesSearch = 
         (req.fullName?.toLowerCase().includes(term) || '') ||
-        (req.voterId?.toLowerCase().includes(term) || '');
+        (req.birthdate?.toLowerCase().includes(term) || '');
       
       const matchesStatus = 
         this.currentStatusFilter === 'all' ||

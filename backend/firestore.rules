@@ -1,35 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
+
   match /databases/{database}/documents {
-
-    // Voter Pool: Only allow read access (Registration verification)
-    match /voter_pool/{voterId} {
-      allow read: if true; // Everyone can read voter data
-      allow write: if false; // No direct write access
-    }
-
-    // Users Collection: Allow authenticated users to read, update their own data, or admins/staff to update others
-    match /users/{userId} {
-      // Allow read access for authenticated users
-      allow read: if request.auth != null;
-
-      // Allow update only if user is updating their own data or if admin/staff is updating any user
-      allow update: if request.auth != null && (
-        request.auth.uid == userId ||  // Can update own data
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ["admin", "staff"]  // Admin/staff can update any user
-      );
-
-      // Allow users to create their own account (voter self-registration) or admin to create staff accounts
-      allow create: if request.auth != null && (
-        request.auth.uid == userId ||  // Voter can create their own account
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'  // Admin can create staff accounts
-      );
-
-      // Allow delete only by Admin
-      allow delete: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';  // Admin only can delete users
-    }
-
+    // Helper lookups so we don't repeat Firestore reads
     function userDoc() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid));
     }
@@ -43,33 +16,84 @@ service cloud.firestore {
     }
 
     function isRequestVoter(requestId) {
-      return requestDoc(requestId).data.voterId == userDoc().data.voterId;
+      return requestDoc(requestId).data.email == request.auth.token.email;
     }
 
     function isStaffLike() {
-      return userRole() in ["admin", "staff"];
+      return userRole() in ['admin', 'staff'];
     }
 
-    // Requests Collection: Allow authenticated users to submit requests and admins/staff to approve/decline
-    match /requests/{requestId} {
-      // Allow authenticated users to read requests (but only their own requests for staff/admin)
+    // Allow chat access only to the voter tied to the request or staff/admin
+    match /chats/{requestId}/messages/{messageId} {
+      allow read, write: if request.auth != null &&
+        (isRequestVoter(requestId) || isStaffLike());
+    }
+
+    // =========================
+    // USERS COLLECTION
+    // =========================
+    match /users/{userId} {
+      
+      // READ: Any authenticated user
       allow read: if request.auth != null;
 
-      // Allow authenticated users to create requests if their voterId matches the one in the request
-      allow write: if request.auth != null && request.resource.data.voterId == userDoc().data.voterId;
+      // CREATE:
+      // - Voter can create their own account
+      // - Admin can create staff accounts
+      allow create: if
+        (request.auth != null && request.auth.uid == userId) ||
+        (request.auth != null &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
 
-      // Allow staff/admin to update the request status
-      allow update: if request.auth != null && isStaffLike();
+      // UPDATE:
+      // - User can update their own data
+      // - Admin/Staff can update any user
+      // - Unauthenticated update allowed for email verification (status → verified)
+      allow update: if
+        // Authenticated user updating their own profile
+        (request.auth != null && request.auth.uid == userId) ||
 
-      // Allow delete only if the request is in a pending state (Admin/Staff can delete pending requests)
-      allow delete: if request.auth != null && 
-        isStaffLike() &&
-        resource.data.status == "Pending";  // Only allow delete if the status is "Pending"
+        // Admin or staff updating any user
+        (request.auth != null &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'staff']) ||
+
+        // Unauthenticated email verification update
+        (request.auth == null &&
+         request.resource.data.keys().hasOnly(['status']) &&
+         request.resource.data.status == 'verified');
+
+      // DELETE: Only admin can delete users
+      allow delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Chat messages tied to specific requests
-    match /chats/{requestId}/messages/{messageId} {
-      allow read, write: if request.auth != null && (isRequestVoter(requestId) || isStaffLike());
+    // =========================
+    // REQUESTS COLLECTION
+    // =========================
+    match /requests/{requestId} {
+      
+      // READ: Any authenticated user
+      allow read: if request.auth != null;
+
+      // CREATE: Authenticated user can create a request
+      // if their email matches the one in the request
+      allow create: if request.auth != null &&
+        request.resource.data.email == request.auth.token.email;
+
+      // UPDATE: Staff/Admin can update request status
+      allow update: if request.auth != null &&
+        isStaffLike();
+
+      // UPDATE: Voters can update their own pending requests
+      allow update: if request.auth != null &&
+        isRequestVoter(requestId) &&
+        resource.data.status == 'Pending';
+
+      // DELETE: Staff/Admin can delete only if status is "Pending"
+      allow delete: if request.auth != null &&
+        isStaffLike() &&
+        resource.data.status == 'Pending';
     }
   }
 }
+

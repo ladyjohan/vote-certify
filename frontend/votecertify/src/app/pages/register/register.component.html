@@ -25,19 +25,6 @@
         />
       </div>
       <div class="input-group">
-        <i class="fas fa-id-card"></i>
-        <!-- Allow only letters and numbers (prevent special characters); keep pattern validation for format -->
-        <input
-          type="text"
-          placeholder="Precinct Number (e.g., 123A)"
-          formControlName="voterId"
-          pattern="^[0-9]{3}[A-Z]{1}$"
-          required
-          (input)="sanitizeVoterId($event)"
-          (keydown)="allowVoterIdKeydown($event)"
-        />
-      </div>
-      <div class="input-group">
         <i class="fas fa-calendar-alt"></i>
         <input type="date" placeholder="Date of Birth" formControlName="birthdate" required />
       </div>
@@ -98,7 +85,7 @@
 <b>1. Eligibility</b>
 <ul>
 <li>1.1. This system is available exclusively to registered voters of Olongapo City.</li>
-<li>1.2. Users must provide accurate and truthful personal information including their full name, date of birth, precinct number, email address, and password during account registration.</li>
+<li>1.2. Users must provide accurate and truthful personal information including their full name, date of birth, email address, and password during account registration.</li>
 <li>1.3. Only individuals with a valid voter record in the official database of COMELEC Olongapo City may access and utilize this service.</li>
 </ul>
 <b>2. User Accounts</b>
@@ -160,7 +147,6 @@
 <ul>
 <li>Full Name;</li>
 <li>Date of Birth;</li>
-<li>Precinct Number;</li>
 <li>Email Address;</li>
 <li>Password;</li>
 <li>Purpose of Request;</li>

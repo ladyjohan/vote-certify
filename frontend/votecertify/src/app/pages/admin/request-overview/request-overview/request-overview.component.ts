@@ -41,7 +41,7 @@ export class AdminRequestOverviewComponent implements OnInit {
   }
 
   @HostListener('window:resize', ['$event'])
-  onResize() {
+  onResize(event: Event) {
     this.setPageSizeByScreen();
     this.applyFilters();
   }
@@ -84,7 +84,6 @@ export class AdminRequestOverviewComponent implements OnInit {
   searchInFields(request: any, term: string): boolean {
     return (
       (request.fullName?.toLowerCase().includes(term) || '') ||
-      (request.voterId?.toLowerCase().includes(term) || '') ||
       (request.status?.toLowerCase().includes(term) || '') ||
       (request.submittedAt && this.formatDate(request.submittedAt).toLowerCase().includes(term)) ||
       (request.pickupDate && this.formatDateString(request.pickupDate).toLowerCase().includes(term))

@@ -64,49 +64,6 @@ export class RegisterComponent {
     }
   }
 
-  /**
-   * Sanitize the voterId input to allow only letters and numbers (remove other characters).
-   */
-  sanitizeVoterId(event: Event) {
-    const input = event.target as HTMLInputElement;
-    // remove non-alphanumeric characters
-    let sanitized = input.value.replace(/[^A-Za-z0-9]+/g, '');
-    // convert to uppercase so it matches the pattern (e.g., 123A)
-    const upper = sanitized.toUpperCase();
-    if (upper !== input.value) {
-      // preserve caret position
-      const start = input.selectionStart ?? upper.length;
-      const end = input.selectionEnd ?? upper.length;
-      input.value = upper;
-      // set form control value without emitting change events
-      this.registerForm.get('voterId')?.setValue(upper, { emitEvent: false });
-      // restore caret (clamp to length)
-      const len = upper.length;
-      const newStart = Math.min(start, len);
-      const newEnd = Math.min(end, len);
-      try {
-        input.setSelectionRange(newStart, newEnd);
-      } catch (e) {
-        // ignore if unable to set selection
-      }
-    }
-  }
-
-  /**
-   * Prevent typing non-alphanumeric characters in the voterId field.
-   */
-  allowVoterIdKeydown(event: KeyboardEvent) {
-    const key = event.key;
-    // allow control / navigation keys (length>1 covers keys like Backspace, Tab, Enter, Arrow keys)
-    if (key.length > 1) {
-      return;
-    }
-    const allowed = /^[A-Za-z0-9]$/;
-    if (!allowed.test(key)) {
-      event.preventDefault();
-    }
-  }
-
   onPasswordInput(event: Event) {
     const value = (event.target as HTMLInputElement).value;
     this.checklist.lowerUpper = /[a-z]/.test(value) && /[A-Z]/.test(value);
@@ -147,7 +104,6 @@ export class RegisterComponent {
   ) {
     this.registerForm = this.fb.group({
       fullName: ['', [Validators.required]],
-      voterId: ['', [Validators.required, Validators.pattern(/^[0-9]{3}[A-Z]{1}$/)]],
       birthdate: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
@@ -170,7 +126,7 @@ export class RegisterComponent {
     }
 
     this.errorMessage = '';
-    const { fullName, voterId, birthdate, email, password } = this.registerForm.value;
+    const { fullName, birthdate, email, password } = this.registerForm.value;
 
     try {
       // Convert birthdate to Firestore Timestamp (for future use if needed)
@@ -179,7 +135,7 @@ export class RegisterComponent {
       const birthdateTimestamp = Timestamp.fromDate(selectedDate);
 
       // Call AuthService to handle registration
-      await this.authService.register(fullName, voterId, birthdate, email, password);
+      await this.authService.register(fullName, birthdate, email, password);
 
       // Show success toast
       this.toastr.success(

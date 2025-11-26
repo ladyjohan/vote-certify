@@ -7,7 +7,7 @@
   </header>
 
   <main class="dashboard-main dashboard-row">
-  <div class="dashboard-row-card dashboard-card status-card dashboard-content-padding">
+    <div class="dashboard-row-card dashboard-card status-card">
       <h2>Status</h2>
       <p>Your latest request status:</p>
       <ng-container *ngIf="currentRequest; else noRequest">
@@ -17,9 +17,8 @@
           'completed': currentRequest.status === 'Completed',
           'declined': currentRequest.status === 'Declined'
         }">
-          <p><strong>Precinct Number:</strong> {{ currentRequest.voterId }}</p>
           <p><strong>Full Name:</strong> {{ currentRequest.fullName }}</p>
-          <p><strong>Birthdate:</strong> {{ currentRequest.birthdate }}</p>
+          <p><strong>Birthdate:</strong> {{ currentRequest.birthdate | date:'MM/dd/yyyy' }}</p>
           <p><strong>Purpose:</strong> {{ currentRequest.purpose }}</p>
           <p><strong>Copies Requested:</strong> {{ currentRequest.copiesRequested }}</p>
           <p><strong>Status: </strong>
@@ -48,18 +47,15 @@
         <button routerLink="/voter/certificate-status">View Certificate History</button>
         <button
           routerLink="/voter/request-form"
-          [disabled]="currentRequest && (currentRequest.status === 'Pending' || currentRequest.status === 'Approved')"
-          [ngClass]="{'disabled-btn': currentRequest && (currentRequest.status === 'Pending' || currentRequest.status === 'Approved')}"
+          [disabled]="currentRequest && currentRequest.status === 'Pending'"
+          [ngClass]="{'disabled-btn': currentRequest && currentRequest.status === 'Pending'}"
         >Request New Certificate</button>
       </div>
       <div *ngIf="currentRequest && currentRequest.status === 'Pending'" class="pending-msg">
        *You can't request a new one because your request is still <b class="pending-orange">Pending</b>. Please wait until it is Approved or Declined.*
       </div>
-      <div *ngIf="currentRequest && currentRequest.status === 'Approved'" class="pending-msg">
-       *You can't request a new one because you still haven't claimed your voter certificate at the office.*
-      </div>
     </div>
-  <div class="dashboard-row-card dashboard-info dashboard-content-padding">
+    <div class="dashboard-row-card dashboard-info">
       <h2>How to Use the Dashboard</h2>
       <ul>
         <li>Start a new request for a voter’s certificate.</li>

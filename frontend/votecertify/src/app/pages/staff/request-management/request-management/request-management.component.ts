@@ -40,7 +40,7 @@ export class RequestManagementComponent implements OnInit {
       const term = (text || '').toString().toLowerCase();
       this.filteredPendingRequests = this.pendingRequests.filter(r =>
         (r.fullName || '').toString().toLowerCase().includes(term) ||
-        (r.voterId || '').toString().toLowerCase().includes(term)
+        (r.birthdate || '').toString().toLowerCase().includes(term)
       );
       this.currentPage = 1;
       this.setupPagination();
@@ -200,7 +200,6 @@ export class RequestManagementComponent implements OnInit {
       name: request.fullName,
       pickup_date: pickupDate,
       copies_requested: request.copiesRequested,
-      voter_id: request.voterId,
       email: request.email
     };
 
@@ -224,7 +223,6 @@ export class RequestManagementComponent implements OnInit {
     const templateParams = {
       name: request.fullName,
       remarks: remarks,
-      voter_id: request.voterId,
       email: request.email
     };
 

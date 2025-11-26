@@ -4,12 +4,9 @@ import { FormsModule } from '@angular/forms';
 import {
   Firestore,
   collection,
-  getDoc,
   getDocs,
   query,
-  where,
-  orderBy,
-  doc
+  orderBy
 } from '@angular/fire/firestore';
 import { Auth } from '@angular/fire/auth';
 
@@ -31,24 +28,23 @@ export class CertificateStatusComponent implements OnInit {
     this.auth.onAuthStateChanged(async (user) => {
       if (!user) return;
 
-      const userRef = doc(this.firestore, 'users', user.uid);
-      const userSnap = await getDoc(userRef);
-
-      if (!userSnap.exists()) return;
-
-      const voterId = userSnap.data()['voterId'];
       const requestsRef = collection(this.firestore, 'requests');
+      // Get all requests and filter by email on client side
       const q = query(
         requestsRef,
-        where('voterId', '==', voterId),
         orderBy('submittedAt', 'desc')
       );
 
       const querySnapshot = await getDocs(q);
-      this.requests = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const userEmail = user.email?.toLowerCase();
+      
+      // Filter by user email on client side to support both old and new requests
+      this.requests = querySnapshot.docs
+        .filter(doc => doc.data()['email']?.toLowerCase() === userEmail)
+        .map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
     });
   }
 

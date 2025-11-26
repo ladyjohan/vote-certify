@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { Firestore, collection, getDocs, query, where, orderBy, limit, doc, getDoc } from '@angular/fire/firestore';
+import { Firestore, collection, getDocs, query, orderBy, doc, getDoc } from '@angular/fire/firestore';
 import { Auth } from '@angular/fire/auth';
 
 @Component({
@@ -47,34 +47,26 @@ export class VoterDashboardComponent implements OnInit {
         this.allRequests = [];
         return;
       }
-      const userRef = doc(this.firestore, 'users', user.uid);
-      const userSnap = await getDoc(userRef);
-      if (!userSnap.exists()) {
-        this.currentRequest = null;
-        this.allRequests = [];
-        return;
-      }
-      const voterId = userSnap.data()['voterId'];
       const requestsRef = collection(this.firestore, 'requests');
-      // Get all requests for timeline
+      // Try to get all requests and filter by email on the client side to handle both old and new requests
       const qAll = query(
         requestsRef,
-        where('voterId', '==', voterId),
         orderBy('submittedAt', 'desc')
       );
       const allSnapshot = await getDocs(qAll);
-      this.allRequests = allSnapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+      
+      // Filter by user email on client side
+      const userEmail = user.email?.toLowerCase();
+      const filteredDocs = allSnapshot.docs.filter(doc => {
+        const docData = doc.data();
+        return docData['email']?.toLowerCase() === userEmail;
+      });
 
-      // Get latest request for status card
-      const q = query(
-        requestsRef,
-        where('voterId', '==', voterId),
-        orderBy('submittedAt', 'desc'),
-        limit(1)
-      );
-      const querySnapshot = await getDocs(q);
-      if (!querySnapshot.empty) {
-        this.currentRequest = { id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() };
+      this.allRequests = filteredDocs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+
+      // Get the latest request
+      if (filteredDocs.length > 0) {
+        this.currentRequest = { id: filteredDocs[0].id, ...filteredDocs[0].data() };
       } else {
         this.currentRequest = null;
       }

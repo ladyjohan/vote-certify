@@ -21,7 +21,6 @@ export class RequestFormComponent implements OnInit {
   isLoadingVoter: boolean = false;
   voterNotFound: boolean = false;
   currentUser: User | null = null;
-  voterId: string = '';
   fullName: string = '';
   birthdate: string = '';
   hasPendingRequest: boolean = false;  // Flag to track if the user has a pending or approved request
@@ -66,12 +65,11 @@ export class RequestFormComponent implements OnInit {
       if (!querySnapshot.empty) {
         const userData = querySnapshot.docs[0].data();
 
-        if (!userData['fullName'] || !userData['voterId'] || !userData['birthdate']) {
+        if (!userData['fullName'] || !userData['birthdate']) {
           this.voterNotFound = true;
           return;
         }
 
-        this.voterId = userData['voterId'];
         this.fullName = userData['fullName'];
         this.birthdate = userData['birthdate'];
       } else {
@@ -115,7 +113,7 @@ export class RequestFormComponent implements OnInit {
       return;
     }
 
-    if (!this.voterId || !this.fullName || !this.birthdate) {
+    if (!this.fullName || !this.birthdate) {
       Swal.fire('Missing Voter Info', 'Please reload the page and try again.', 'warning');
       return;
     }
@@ -141,8 +139,8 @@ export class RequestFormComponent implements OnInit {
         return;
       }
 
-      const govIdFileName = `${this.voterId}-${uuidv4()}.${govId.name.split('.').pop()}`;
-      const selfieFileName = `${this.voterId}-${uuidv4()}.${selfie.name.split('.').pop()}`;
+      const govIdFileName = `${this.currentUser?.uid}-${uuidv4()}.${govId.name.split('.').pop()}`;
+      const selfieFileName = `${this.currentUser?.uid}-${uuidv4()}.${selfie.name.split('.').pop()}`;
 
       const govIdUpload = await this.supabaseService.uploadFile('gov_ids', govIdFileName, govId);
       const selfieUpload = await this.supabaseService.uploadFile('selfies', selfieFileName, selfie);
@@ -152,7 +150,6 @@ export class RequestFormComponent implements OnInit {
       }
 
       const requestData = {
-        voterId: this.voterId,
         fullName: this.fullName,
         birthdate: this.birthdate,
         purpose,
@@ -207,12 +204,12 @@ export class RequestFormComponent implements OnInit {
     const requestsRef = collection(this.firestore, 'requests');
     
     // Check for pending requests
-    const pendingQuery = query(requestsRef, where('voterId', '==', this.voterId), where('status', '==', 'Pending'));
+    const pendingQuery = query(requestsRef, where('email', '==', this.currentUser?.email), where('status', '==', 'Pending'));
     const pendingSnapshot = await getDocs(pendingQuery);
     this.hasPendingRequest = !pendingSnapshot.empty;
 
     // Check for approved (but not completed) requests
-    const approvedQuery = query(requestsRef, where('voterId', '==', this.voterId), where('status', '==', 'Approved'));
+    const approvedQuery = query(requestsRef, where('email', '==', this.currentUser?.email), where('status', '==', 'Approved'));
     const approvedSnapshot = await getDocs(approvedQuery);
     this.hasApprovedRequest = !approvedSnapshot.empty;
   }

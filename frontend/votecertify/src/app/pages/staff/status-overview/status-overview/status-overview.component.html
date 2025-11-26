@@ -9,7 +9,7 @@
       <input
         [formControl]="searchControl"
         type="text"
-        placeholder="Search by Voter Name or Precinct Number"
+        placeholder="Search by Voter Name or Birthdate"
       />
     </div>
 
@@ -43,7 +43,7 @@
   <div class="request-list">
     <div class="request-header">
       <span>Full Name</span>
-      <span>Precinct Number</span>
+      <span>Birthdate</span>
       <span>Pickup Date</span>
       <span>Status</span>
       <span>Actions</span>
@@ -55,8 +55,8 @@
     <span class="value">{{ request.fullName }}</span>
   </div>
   <div class="field">
-    <span class="label mobile-only">Precinct Number: </span>
-    <span class="value">{{ request.voterId }}</span>
+    <span class="label mobile-only">Birthdate: </span>
+    <span class="value">{{ request.birthdate | date:'MM/dd/yyyy' }}</span>
   </div>
   <div class="field">
     <span class="label mobile-only">Pickup Date: </span>

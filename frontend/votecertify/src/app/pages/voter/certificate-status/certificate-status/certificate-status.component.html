@@ -34,9 +34,8 @@
          }">
       <div class="marker"></div>
       <div class="content">
-        <p><strong>Precinct Number:</strong> {{ request.voterId }}</p>
         <p><strong>Full Name:</strong> {{ request.fullName }}</p>
-        <p><strong>Birthdate:</strong> {{ request.birthdate }}</p>
+        <p><strong>Birthdate:</strong> {{ request.birthdate | date:'MM/dd/yyyy' }}</p>
         <p><strong>Purpose:</strong> {{ request.purpose }}</p>
         <p><strong>Copies Requested:</strong> {{ request.copiesRequested }}</p>
         <p><strong>Status: </strong>

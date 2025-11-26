@@ -1,16 +1,12 @@
 <form [formGroup]="requestForm" (ngSubmit)="submitRequest()" class="request-form">
   <div class="voter-info">
     <div class="voter-info-item">
-      <label>Precinct Number:</label>
-      <span>{{ voterId }}</span>
-    </div>
-    <div class="voter-info-item">
       <label>Full Name:</label>
       <span>{{ fullName }}</span>
     </div>
     <div class="voter-info-item">
       <label>Birthdate:</label>
-      <span>{{ birthdate }}</span>
+      <span>{{ birthdate | date:'MM/dd/yyyy' }}</span>
     </div>
   </div>
 
@@ -27,7 +23,6 @@
         <option value="Educational Application">Educational Application</option>
         <option value="Proof of Residency">Proof of Residency</option>
         <option value="Government Transactions">Government Transactions</option>
-        <option value="Precinct Verification">Precinct Verification</option>
         <option value="General Identification Purposes">General Identification Purposes</option>
       </select>
     </div>

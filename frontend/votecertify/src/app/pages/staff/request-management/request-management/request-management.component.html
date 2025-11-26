@@ -6,7 +6,7 @@
       <input
         [formControl]="searchControl"
         type="text"
-        placeholder="Search by Voter Name or Precinct Number"
+        placeholder="Search by Voter Name or Birthdate"
         aria-label="Search requests"
       />
     </div>
@@ -14,7 +14,7 @@
       <thead>
         <tr>
           <th>Voter Name</th>
-          <th>Precinct Number</th>
+          <th>Birthdate</th>
           <th>Purpose</th>
           <th>No. of Copies</th> <!-- Added Column -->
           <th>Actions</th>
@@ -23,7 +23,7 @@
       <tbody>
         <tr *ngFor="let request of displayedRequests">
           <td class="name">{{ request.fullName }}</td>
-          <td class="id">{{ request.voterId }}</td>
+          <td class="birthdate">{{ request.birthdate | date:'MM/dd/yyyy' }}</td>
           <td class="purpose">{{ request.purpose }}</td>
           <td class="copies">{{ request.copiesRequested }}</td> <!-- Display the number of copies requested -->
           <td class="actions">
@@ -89,7 +89,8 @@
 
     <div class="details">
       <p><strong>Name:</strong> {{ selectedRequest.fullName }}</p>
-      <p><strong>Precinct Number:</strong> {{ selectedRequest.voterId }}</p>
+      <p><strong>Birthdate:</strong> {{ selectedRequest.birthdate | date:'MM/dd/yyyy' }}</p>
+      <p><strong>Email:</strong> {{ selectedRequest.email }}</p>
       <p><strong>Purpose:</strong> {{ selectedRequest.purpose }}</p>
       <p><strong>No. of Copies:</strong> {{ selectedRequest.copiesRequested }}</p> <!-- Display number of copies -->
     </div>

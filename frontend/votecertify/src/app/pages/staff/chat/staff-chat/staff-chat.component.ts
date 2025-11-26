@@ -95,8 +95,7 @@ export class StaffChatComponent implements OnInit, OnDestroy {
     const term = this.searchTerm.toLowerCase();
     const filterFn = (request: ChatRequest) => {
       const name = (request.fullName || '').toLowerCase();
-      const voterId = (request.voterId || '').toLowerCase();
-      return name.includes(term) || voterId.includes(term);
+      return name.includes(term);
     };
 
     this.filteredActiveRequests = this.activeRequests.filter(filterFn);
