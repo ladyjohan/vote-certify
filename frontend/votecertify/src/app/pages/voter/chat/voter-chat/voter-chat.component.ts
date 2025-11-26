@@ -123,6 +123,15 @@ export class VoterChatComponent implements OnInit, OnDestroy {
 
     this.listenToMessages(requestId);
     this.markMessagesAsRead(requestId);
+    this.refreshUnreadBadge();
+  }
+
+  private refreshUnreadBadge(): void {
+    if (this.user?.email) {
+      this.chatService.refreshUnreadCount(this.user.email, 'voter').catch((error) => {
+        console.error('Error refreshing unread count:', error);
+      });
+    }
   }
 
   private selectFirstRequest(navigate: boolean = true): void {

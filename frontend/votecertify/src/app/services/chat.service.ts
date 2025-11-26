@@ -41,6 +41,7 @@ export interface ChatRequest {
 export class ChatService {
   private unreadCountSubject = new BehaviorSubject<number>(0);
   unreadCount$ = this.unreadCountSubject.asObservable();
+  private currentUserEmail: string = '';
 
   constructor(private firestore: Firestore) {}
 
@@ -124,6 +125,7 @@ export class ChatService {
     return new Observable((observer) => {
       const subscriptions: Subscription[] = [];
       let requestsList: any[] = [];
+      const messageListeners: { [key: string]: Subscription } = {};
 
       const requestsRef = collection(this.firestore, 'requests');
       let requestsQuery;
@@ -134,13 +136,17 @@ export class ChatService {
         requestsQuery = query(requestsRef);
       }
 
-      // Listen to requests
+      // Listen to requests - this will trigger whenever requests change (new request added)
       const requestsSub = collectionData(requestsQuery, { idField: 'id' }).subscribe((requests: any[]) => {
         requestsList = requests;
         
-        // Cleanup old message subscriptions
-        subscriptions.forEach(sub => sub.unsubscribe());
-        subscriptions.length = 0;
+        // Clean up old message listeners for requests that no longer exist
+        Object.keys(messageListeners).forEach((requestId) => {
+          if (!requests.find(r => r.id === requestId)) {
+            messageListeners[requestId].unsubscribe();
+            delete messageListeners[requestId];
+          }
+        });
 
         if (requests.length === 0) {
           observer.next(0);
@@ -148,19 +154,24 @@ export class ChatService {
           return;
         }
 
-        // For each request, listen to messages from sender with readField = false
-        const messageSubscriptions: { [key: string]: Subscription } = {};
-
+        // For each request, set up a listener for ALL messages from sender
         requests.forEach((req: any) => {
+          // Skip if already listening
+          if (messageListeners[req.id]) {
+            return;
+          }
+
           const messagesRef = collection(this.firestore, 'chats', req.id, 'messages');
+          
+          // Listen to ALL messages from sender (not filtered by readField)
           const messagesQuery = query(
             messagesRef,
-            where('sender', '==', senderType),
-            where(readField, '==', false)
+            where('sender', '==', senderType)
           );
 
-          const messageSub = collectionData(messagesQuery, { idField: 'id' }).subscribe(() => {
-            // Recalculate total unread count
+          // Listen to messages for this specific request
+          const messageSub = collectionData(messagesQuery, { idField: 'id' }).subscribe((allMessages: any[]) => {
+            // Recalculate total unread count across ALL requests
             let totalUnread = 0;
 
             const countPromises = requestsList.map((request: any) => {
@@ -180,8 +191,7 @@ export class ChatService {
             });
           });
 
-          messageSubscriptions[req.id] = messageSub;
-          subscriptions.push(messageSub);
+          messageListeners[req.id] = messageSub;
         });
       });
 
@@ -189,6 +199,7 @@ export class ChatService {
 
       return () => {
         subscriptions.forEach((sub) => sub.unsubscribe());
+        Object.values(messageListeners).forEach((sub) => sub.unsubscribe());
       };
     });
   }
@@ -222,5 +233,35 @@ export class ChatService {
     }
 
     return totalUnread;
+  }
+
+  async refreshUnreadCount(email: string, userType: 'voter' | 'staff'): Promise<void> {
+    const readField = userType === 'voter' ? 'readByVoter' : 'readByStaff';
+    const senderType = userType === 'voter' ? 'staff' : 'voter';
+
+    const requestsRef = collection(this.firestore, 'requests');
+    let requestsQuery;
+
+    if (userType === 'voter') {
+      requestsQuery = query(requestsRef, where('email', '==', email));
+    } else {
+      requestsQuery = query(requestsRef);
+    }
+
+    const requestDocs = await getDocs(requestsQuery);
+    let totalUnread = 0;
+
+    for (const reqDoc of requestDocs.docs) {
+      const messagesRef = collection(this.firestore, 'chats', reqDoc.id, 'messages');
+      const msgQuery = query(
+        messagesRef,
+        where('sender', '==', senderType),
+        where(readField, '==', false)
+      );
+      const messageDocs = await getDocs(msgQuery);
+      totalUnread += messageDocs.size;
+    }
+
+    this.unreadCountSubject.next(totalUnread);
   }
 }

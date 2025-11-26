@@ -54,6 +54,13 @@ export class VoterSidenavComponent implements OnInit, OnDestroy {
     this.unreadSub = this.chatService.listenToUnreadCount(email, 'voter').subscribe((count) => {
       this.unreadCount = count;
     });
+
+    // Also refresh every 3 seconds to catch new requests/messages
+    setInterval(() => {
+      this.chatService.refreshUnreadCount(email, 'voter').then(() => {
+        // Count will be updated via the subject
+      });
+    }, 3000);
   }
 
   async fetchVoterFullName(uid: string) {

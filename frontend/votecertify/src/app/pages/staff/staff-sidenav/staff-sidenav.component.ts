@@ -42,8 +42,8 @@ export class StaffSidenavComponent implements OnInit, OnDestroy {
           this.displayName = userData['name'] || 'Staff';
         }
 
-        // Initialize unread listener
-        this.initializeUnreadListener();
+        // Initialize unread listener with user's email
+        this.initializeUnreadListener(user.email || '');
       }
     });
   }
@@ -52,10 +52,17 @@ export class StaffSidenavComponent implements OnInit, OnDestroy {
     this.unreadSub?.unsubscribe();
   }
 
-  private initializeUnreadListener() {
-    this.unreadSub = this.chatService.listenToUnreadCount('', 'staff').subscribe((count) => {
+  private initializeUnreadListener(email: string) {
+    this.unreadSub = this.chatService.listenToUnreadCount(email, 'staff').subscribe((count) => {
       this.unreadCount = count;
     });
+
+    // Also refresh every 3 seconds to catch new requests/messages
+    setInterval(() => {
+      this.chatService.refreshUnreadCount(email, 'staff').then(() => {
+        // Count will be updated via the subject
+      });
+    }, 3000);
   }
 
   staffNavLinks = [

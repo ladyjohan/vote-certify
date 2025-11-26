@@ -170,7 +170,7 @@ export class RequestFormComponent implements OnInit {
       await this.chatService.sendMessage(
         docRef.id,
         'staff',
-        'system',
+        'staff-automated',
         'Good day! Before we proceed with your request, I need to verify your identity. May I ask you to confirm some basic information?'
       );
 

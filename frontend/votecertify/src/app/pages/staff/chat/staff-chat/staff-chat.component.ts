@@ -134,6 +134,15 @@ export class StaffChatComponent implements OnInit, OnDestroy {
 
     this.listenToMessages(requestId);
     this.markMessagesAsRead(requestId);
+    this.refreshUnreadBadge();
+  }
+
+  private refreshUnreadBadge(): void {
+    if (this.user?.email) {
+      this.chatService.refreshUnreadCount(this.user.email, 'staff').catch((error) => {
+        console.error('Error refreshing unread count:', error);
+      });
+    }
   }
 
   private listenToMessages(requestId: string): void {
