@@ -54,17 +54,43 @@ export class AdminRequestOverviewComponent implements OnInit {
     const requestsRef = collection(this.firestore, 'requests');
     const snapshot = await getDocs(requestsRef);
 
-    this.allRequests = snapshot.docs.map(doc => {
+    this.allRequests = await Promise.all(snapshot.docs.map(async doc => {
       const data = doc.data();
+      let completedByName = 'N/A';
+      
+      // If there's a completedBy email, try to fetch the staff member's full name
+      if (data['completedBy']) {
+        completedByName = await this.getStaffNameByEmail(data['completedBy']) || data['completedBy'];
+      }
+
       return {
         id: doc.id,
         ...data,
         submittedAt: data['submittedAt']?.toDate?.() || null,
-        pickupDate: data['pickupDate'] || null
+        pickupDate: data['pickupDate'] || null,
+        completedByName: completedByName
       };
-    });
+    }));
 
     this.applyFilters();
+  }
+
+  async getStaffNameByEmail(email: string): Promise<string | null> {
+    try {
+      const usersRef = collection(this.firestore, 'users');
+      const snapshot = await getDocs(usersRef);
+      
+      for (const doc of snapshot.docs) {
+        const data = doc.data();
+        if (data['email']?.toLowerCase() === email.toLowerCase()) {
+          return data['name'] || null;
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching staff name:', error);
+      return null;
+    }
   }
 
   applyFilters() {
@@ -298,7 +324,7 @@ for (const status of statuses) {
     r.fullName || 'N/A',
     this.formatDate(r.submittedAt),
     this.formatDateString(r.pickupDate),
-    r.completedBy || 'N/A'
+    r.completedByName || r.completedBy || 'N/A'
   ]);
 
   const headerColor = tableHeaderColorMap[status.key as keyof typeof tableHeaderColorMap];

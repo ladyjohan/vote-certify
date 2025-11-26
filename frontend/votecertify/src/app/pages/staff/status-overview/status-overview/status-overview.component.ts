@@ -66,14 +66,14 @@ export class StatusOverviewComponent implements OnInit {
     const term = (this.searchControl.value || '').toLowerCase();
 
     this.filteredRequests = this.allRequests.filter(req => {
-      const matchesSearch = 
+      const matchesSearch =
         (req.fullName?.toLowerCase().includes(term) || '') ||
         (req.birthdate?.toLowerCase().includes(term) || '');
-      
-      const matchesStatus = 
+
+      const matchesStatus =
         this.currentStatusFilter === 'all' ||
         (req.status || '').toLowerCase() === this.currentStatusFilter;
-      
+
       return matchesSearch && matchesStatus;
     });
 
@@ -200,7 +200,7 @@ export class StatusOverviewComponent implements OnInit {
     try {
       const staffEmail = this.auth.currentUser?.email || 'Unknown Staff';
       const requestRef = doc(this.firestore, 'requests', request.id);
-      await updateDoc(requestRef, { 
+      await updateDoc(requestRef, {
         status: 'Completed',
         completedBy: staffEmail,
         completedAt: new Date()
@@ -213,7 +213,7 @@ export class StatusOverviewComponent implements OnInit {
         this.allRequests[index].completedBy = staffEmail;
         this.allRequests[index].completedAt = new Date();
       }
-      
+
       this.applyFilters();
       Swal.fire('Success', 'Request marked as completed!', 'success');
     } catch (error) {

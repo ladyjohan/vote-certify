@@ -15,7 +15,42 @@
     color: #464646;
     font-weight: bold;
     font-size: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0;
+  }
+
+  .header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+  }
+
+  .approval-counter {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.8rem;
+    background: #f0f0f0;
+    border-radius: 6px;
+    border-left: 3px solid #4CAF50;
+
+    .counter-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #4CAF50;
+    }
+
+    .counter-separator {
+      color: #999;
+      font-weight: 600;
+    }
+
+    .counter-limit {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #666;
+    }
   }
 
   .request-card {
@@ -738,5 +773,102 @@
       max-height: 300px;
     }
   }
+}
+
+/* Modern SweetAlert2 Styling */
+:deep(.modern-swal-container) {
+  .modern-swal-popup {
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    padding: 2rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  .modern-swal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 1.5rem;
+  }
+
+  .modern-swal-html {
+    text-align: left;
+    color: #f7d31e;
+  }
+}
+
+/* SweetAlert2 Input & Select Styling */
+:deep(.swal2-input),
+:deep(.swal2-select),
+:deep(.modern-input) {
+  border: 1px solid #ddd !important;
+  border-radius: 6px !important;
+  padding: 10px !important;
+  font-size: 14px !important;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+  transition: border-color 0.3s, box-shadow 0.3s !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  display: block !important;
+
+  &:focus {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+    outline: none !important;
+  }
+}
+
+:deep(select.modern-input) {
+  cursor: pointer;
+}
+
+/* SweetAlert2 Button Styling */
+:deep(.swal2-confirm) {
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%) !important;
+  border-radius: 6px !important;
+  padding: 0.7rem 2rem !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3) !important;
+  transition: transform 0.2s, box-shadow 0.2s !important;
+
+  &:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4) !important;
+  }
+
+  &:active {
+    transform: translateY(0) !important;
+  }
+}
+
+:deep(.swal2-cancel) {
+  background: #e0e0e0 !important;
+  color: #333 !important;
+  border-radius: 6px !important;
+  padding: 0.7rem 2rem !important;
+  font-weight: 600 !important;
+  transition: background 0.2s !important;
+
+  &:hover {
+    background: #d0d0d0 !important;
+  }
+}
+
+:deep(.swal2-confirm[aria-label="Decline"]),
+:deep(.swal2-actions .swal2-confirm[style*="f44336"]) {
+  background: linear-gradient(135deg, #f44336 0%, #e53935 100%) !important;
+  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3) !important;
+
+  &:hover {
+    box-shadow: 0 6px 16px rgba(244, 67, 54, 0.4) !important;
+  }
+}
+
+/* SweetAlert2 Validation Message */
+:deep(.swal2-validation-message) {
+  color: #f44336 !important;
+  font-size: 13px !important;
+  margin-top: 8px !important;
 }
 

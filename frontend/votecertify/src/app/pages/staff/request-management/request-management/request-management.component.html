@@ -1,6 +1,13 @@
 <div class="request-management-container">
   <div class="request-card">
-      <h2 class="title">Voter Request Management</h2>
+      <div class="header-section">
+        <h2 class="title">Voter Request Management</h2>
+        <div class="approval-counter">
+          <span class="counter-value">{{ approvalsToday }}</span>
+          <span class="counter-separator">/</span>
+          <span class="counter-limit">{{ dailyApprovalLimit }}</span>
+        </div>
+      </div>
     <div class="search-bar">
       <i class="fas fa-search search-icon" aria-hidden="true"></i>
       <input
@@ -92,7 +99,8 @@
       <p><strong>Birthdate:</strong> {{ selectedRequest.birthdate | date:'MM/dd/yyyy' }}</p>
       <p><strong>Email:</strong> {{ selectedRequest.email }}</p>
       <p><strong>Purpose:</strong> {{ selectedRequest.purpose }}</p>
-      <p><strong>No. of Copies:</strong> {{ selectedRequest.copiesRequested }}</p> <!-- Display number of copies -->
+      <p><strong>No. of Copies:</strong> {{ selectedRequest.copiesRequested }}</p>
+      <p *ngIf="selectedRequest.claimTimeSlot"><strong>Time of Release:</strong> {{ getTimeSlotLabel(selectedRequest.claimTimeSlot) }}</p>
     </div>
 
     <div class="attachments">

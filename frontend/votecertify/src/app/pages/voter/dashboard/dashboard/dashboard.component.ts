@@ -19,6 +19,12 @@ export class VoterDashboardComponent implements OnInit {
   allRequests: any[] = [];
   private intervalId: any;
 
+  // Time slots
+  timeSlots = [
+    { label: '1:00 PM - 2:00 PM', value: '13:00-14:00' },
+    { label: '2:00 PM - 3:00 PM', value: '14:00-15:00' }
+  ];
+
   constructor(private firestore: Firestore, private auth: Auth) {}
 
   ngOnInit() {
@@ -54,7 +60,7 @@ export class VoterDashboardComponent implements OnInit {
         orderBy('submittedAt', 'desc')
       );
       const allSnapshot = await getDocs(qAll);
-      
+
       // Filter by user email on client side
       const userEmail = user.email?.toLowerCase();
       const filteredDocs = allSnapshot.docs.filter(doc => {
@@ -90,5 +96,10 @@ export class VoterDashboardComponent implements OnInit {
     }
     // ISO string or other
     return new Date(date).toLocaleString();
+  }
+
+  getTimeSlotLabel(timeSlotValue: string): string {
+    const slot = this.timeSlots.find(s => s.value === timeSlotValue);
+    return slot ? slot.label : timeSlotValue;
   }
 }

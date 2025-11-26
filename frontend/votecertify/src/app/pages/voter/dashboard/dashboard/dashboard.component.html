@@ -33,6 +33,7 @@
 
           <ng-container *ngIf="currentRequest.status === 'Approved' || currentRequest.status === 'Ready for Pickup'">
             <p><strong>Pick-up Date:</strong> {{ currentRequest.pickupDate || 'To be scheduled' }}</p>
+            <p *ngIf="currentRequest.claimTimeSlot"><strong>Time of Release:</strong> {{ getTimeSlotLabel(currentRequest.claimTimeSlot) }}</p>
           </ng-container>
 
           <ng-container *ngIf="currentRequest.status === 'Declined'">

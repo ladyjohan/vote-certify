@@ -200,7 +200,7 @@ export class RequestFormComponent implements OnInit {
 
   async checkForPendingOrApprovedRequest() {
     const requestsRef = collection(this.firestore, 'requests');
-    
+
     // Check for pending requests
     const pendingQuery = query(requestsRef, where('email', '==', this.currentUser?.email), where('status', '==', 'Pending'));
     const pendingSnapshot = await getDocs(pendingQuery);
