@@ -27,6 +27,18 @@ export class RequestManagementComponent implements OnInit {
   selectedRequest: any = null;
   isLoadingDetails = false;
   activeAttachment: { type: 'gov_id' | 'selfie', url: string } | null = null;
+  declineReasons = [
+    'Not Registered',
+    'Deactivated',
+    'Multiple Registration Record',
+    'Record Not Found',
+    'Incomplete Voter Information',
+    'Pending Registration',
+    'Transferred to Another City/Municipality',
+    'Under Investigation',
+    'With Legal Case Hold',
+    'Disqualified'
+  ];
 
   constructor(
     private firestore: Firestore,
@@ -164,25 +176,32 @@ export class RequestManagementComponent implements OnInit {
   async declineRequest(request: any) {
     const { value: remarks } = await Swal.fire({
       title: `Decline ${request.fullName}'s request?`,
-      input: 'textarea',
-      inputPlaceholder: 'Enter reason for declining...',
-      inputAttributes: {
-
-      },
+      input: 'select',
+      inputOptions: this.declineReasons.reduce((acc, reason) => {
+        acc[reason] = reason;
+        return acc;
+      }, {} as { [key: string]: string }),
+      inputPlaceholder: 'Select reason for declining...',
       showCancelButton: true,
       confirmButtonText: 'Decline',
-      cancelButtonText: 'Cancel'
+      cancelButtonText: 'Cancel',
+      inputValidator: (value) => {
+        if (!value) {
+          return 'Please select a reason';
+        }
+        return null;
+      }
     });
 
-    if (remarks && remarks.trim()) {
+    if (remarks) {
       const requestRef = doc(this.firestore, 'requests', request.id);
       await updateDoc(requestRef, {
         status: 'Declined',
-        remarks: remarks.trim()
+        remarks: remarks
       });
 
       // Send Email after decline
-      await this.sendDeclineEmail(request, remarks.trim());
+      await this.sendDeclineEmail(request, remarks);
 
       this.pendingRequests = this.pendingRequests.filter(r => r.id !== request.id);
       this.filteredPendingRequests = this.filteredPendingRequests.filter(r => r.id !== request.id);
@@ -190,8 +209,6 @@ export class RequestManagementComponent implements OnInit {
       this.closeDetails();
 
       Swal.fire('Declined!', `${request.fullName}'s request has been declined.`, 'error');
-    } else if (remarks !== undefined) {
-      Swal.fire('Missing Remarks', 'Please enter a remark to decline.', 'warning');
     }
   }
 
