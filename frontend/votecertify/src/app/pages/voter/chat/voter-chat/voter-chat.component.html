@@ -1,0 +1,134 @@
+<div class="chat-page">
+  <section class="requests-panel">
+    <div class="panel-header">
+      <div>
+        <h2>Your Requests</h2>
+        <p>Select a request to start chatting with staff.</p>
+      </div>
+      <button class="archived-toggle" (click)="toggleArchived()">
+        {{ showArchived ? 'Hide Archived' : 'Show Archived' }}
+      </button>
+    </div>
+
+    <div class="requests-list" *ngIf="!isLoadingRequests; else loadingRequests">
+      <div class="list-section" *ngIf="!showArchived">
+        <div class="section-header">
+          <h3>Active Chats</h3>
+          <span class="count-pill">{{ activeRequests.length }}</span>
+        </div>
+
+        <ng-container *ngIf="activeRequests.length > 0; else noActive">
+          <div
+            class="request-card"
+            *ngFor="let request of activeRequests"
+            [class.selected]="request.id === selectedRequest?.id"
+            (click)="selectRequest(request)"
+          >
+            <div class="card-body">
+              <div>
+                <p class="request-name">{{ request.fullName || 'Request' }}</p>
+                <p class="request-id">ID: {{ request.id }}</p>
+              </div>
+              <span class="status" [class]="(request.status || '').toLowerCase()">
+                {{ request.status || 'Pending' }}
+              </span>
+            </div>
+            <button class="chat-btn">Chat</button>
+          </div>
+        </ng-container>
+      </div>
+
+      <div class="list-section archived" *ngIf="showArchived">
+        <div class="section-header">
+          <h3>Archived</h3>
+          <span class="count-pill">{{ archivedRequests.length }}</span>
+        </div>
+
+        <ng-container *ngIf="archivedRequests.length > 0; else noArchived">
+          <div
+            class="request-card"
+            *ngFor="let request of archivedRequests"
+            [class.selected]="request.id === selectedRequest?.id"
+            (click)="selectRequest(request)"
+          >
+            <div class="card-body">
+              <div>
+                <p class="request-name">{{ request.fullName || 'Request' }}</p>
+                <p class="request-id">ID: {{ request.id }}</p>
+              </div>
+              <span class="status archived-status">
+                {{ request.status || 'Completed' }}
+              </span>
+            </div>
+            <button class="chat-btn secondary">View Chat</button>
+          </div>
+        </ng-container>
+      </div>
+
+      <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+    </div>
+
+    <ng-template #noActive>
+      <p class="empty">No active chats right now.</p>
+    </ng-template>
+
+    <ng-template #noArchived>
+      <p class="empty">No archived chats yet.</p>
+    </ng-template>
+  </section>
+
+  <section class="chat-panel" *ngIf="selectedRequest; else noSelection">
+    <header class="chat-header">
+      <div>
+        <h2>Request Chat</h2>
+        <p>{{ selectedRequest!.fullName }} • {{ selectedRequest!.status }}</p>
+      </div>
+      <span class="request-tag">#{{ selectedRequest!.id }}</span>
+    </header>
+
+    <div class="messages" #messagesContainer>
+      <ng-container *ngIf="!isLoadingMessages; else loadingMessages">
+        <div
+          class="message"
+          *ngFor="let message of messages"
+          [class.from-voter]="message.sender === 'voter'"
+          [class.from-staff]="message.sender === 'staff'"
+        >
+          <div class="meta">
+            <span>{{ getSenderLabel(message) }}</span>
+            <span>{{ message.timestamp?.toDate?.() ? (message.timestamp.toDate() | date:'short') : '' }}</span>
+          </div>
+          <p>{{ message.message }}</p>
+        </div>
+
+        <p class="empty" *ngIf="messages.length === 0">No messages yet. Say hi!</p>
+      </ng-container>
+    </div>
+
+    <form class="composer" (ngSubmit)="sendMessage()">
+      <textarea
+        [(ngModel)]="messageText"
+        name="message"
+        rows="2"
+        placeholder="Type your message..."
+        required
+      ></textarea>
+      <button type="submit" [disabled]="isSending || !messageText.trim()">Send</button>
+    </form>
+  </section>
+
+  <ng-template #noSelection>
+    <section class="chat-panel placeholder">
+      <p>Select a request to view messages.</p>
+    </section>
+  </ng-template>
+
+  <ng-template #loadingRequests>
+    <div class="loading">Loading your requests...</div>
+  </ng-template>
+
+  <ng-template #loadingMessages>
+    <div class="loading">Loading chat...</div>
+  </ng-template>
+</div>
+

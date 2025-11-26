@@ -41,6 +41,7 @@ export class StaffSidenavComponent implements OnInit {
     { label: 'Dashboard', icon: 'dashboard', route: '/staff/dashboard' },
     { label: 'Request Management', icon: 'manage_search', route: '/staff/request-management' },
     { label: 'Status Overview', icon: 'assessment', route: '/staff/status-overview' },
+    { label: 'Chat', icon: 'chat', route: '/staff/chat' },
     { label: 'User Settings', icon: 'person', route: '/staff/staff-profile' }
   ];
 

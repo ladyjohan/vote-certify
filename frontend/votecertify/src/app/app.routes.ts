@@ -15,11 +15,13 @@ import { AdminDashboardComponent } from './pages/admin/dashboard/dashboard/dashb
 import { StaffDashboardComponent } from './pages/staff/dashboard/dashboard/dashboard.component';
 import { RequestFormComponent } from './pages/voter/request-form/request-form/request-form.component';
 import { CertificateStatusComponent } from './pages/voter/certificate-status/certificate-status/certificate-status.component';
+import { VoterChatComponent } from './pages/voter/chat/voter-chat/voter-chat.component';
 import { RequestManagementComponent } from './pages/staff/request-management/request-management/request-management.component';
 import { StatusOverviewComponent } from './pages/staff/status-overview/status-overview/status-overview.component';
 import { AdminRequestOverviewComponent } from './pages/admin/request-overview/request-overview/request-overview.component';
 import { AdminUserManagementComponent } from './pages/admin/user-management/user-management/user-management.component';
 import { StaffProfileComponent } from './pages/staff/staff-profile/staff-profile.component';
+import { StaffChatComponent } from './pages/staff/chat/staff-chat/staff-chat.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -46,7 +48,9 @@ export const routes: Routes = [
       { path: 'dashboard', component: StaffDashboardComponent },
       { path: 'request-management', component: RequestManagementComponent },
       { path: 'status-overview', component: StatusOverviewComponent },
-      { path: 'staff-profile', component: StaffProfileComponent }
+      { path: 'staff-profile', component: StaffProfileComponent },
+      { path: 'chat', component: StaffChatComponent },
+      { path: 'chat/:requestId', component: StaffChatComponent }
     ],
   },
 
@@ -58,6 +62,8 @@ export const routes: Routes = [
       { path: 'dashboard', component: VoterDashboardComponent },
       { path: 'request-form', component: RequestFormComponent },
       { path: 'certificate-status', component: CertificateStatusComponent },
+      { path: 'chat', component: VoterChatComponent },
+      { path: 'chat/:requestId', component: VoterChatComponent }
     ],
   },
   

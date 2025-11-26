@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import { debounceTime } from 'rxjs/operators';
 import { SupabaseService } from '../../../../services/supabase.service';
 import emailjs from 'emailjs-com';
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -29,7 +30,8 @@ export class RequestManagementComponent implements OnInit {
 
   constructor(
     private firestore: Firestore,
-    private supabaseService: SupabaseService
+    private supabaseService: SupabaseService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -121,6 +123,10 @@ export class RequestManagementComponent implements OnInit {
   closeDetails() {
     this.selectedRequest = null;   // Close the request details modal
     this.activeAttachment = null; // Ensure the attachment modal is also closed
+  }
+
+  openChat(requestId: string) {
+    this.router.navigate(['/staff/chat', requestId]);
   }
 
   async approveRequest(request: any) {

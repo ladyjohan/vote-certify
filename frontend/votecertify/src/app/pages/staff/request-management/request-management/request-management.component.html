@@ -27,6 +27,7 @@
           <td class="purpose">{{ request.purpose }}</td>
           <td class="copies">{{ request.copiesRequested }}</td> <!-- Display the number of copies requested -->
           <td class="actions">
+            <button class="chat-btn" (click)="openChat(request.id)">Chat</button>
             <button class="view-btn" (click)="openDetails(request)">View Details</button>
           </td>
         </tr>

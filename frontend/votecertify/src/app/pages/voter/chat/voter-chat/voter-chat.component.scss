@@ -1,0 +1,284 @@
+.chat-page {
+  display: flex;
+  gap: 1.5rem;
+  height: calc(100vh - 120px);
+  padding: 1.5rem;
+  background: #f6f7fb;
+}
+
+.requests-panel,
+.chat-panel {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.requests-panel {
+  width: 30%;
+  overflow: hidden;
+}
+
+.list-section {
+  margin-bottom: 1.5rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+
+  h3 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #0f172a;
+  }
+}
+
+.count-pill {
+  background: #e0e7ff;
+  color: #312e81;
+  border-radius: 999px;
+  padding: 0.1rem 0.65rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.chat-panel {
+  flex: 1;
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.panel-header p {
+  margin: 0.25rem 0 1rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.archived-toggle {
+  border: 1px solid #c7d2fe;
+  background: #eef2ff;
+  color: #312e81;
+  border-radius: 999px;
+  padding: 0.4rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.requests-list {
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.request-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.85rem;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+}
+
+.request-card:hover {
+  border-color: #2563eb;
+  transform: translateY(-2px);
+}
+
+.request-card.selected {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.card-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.request-name {
+  font-weight: 600;
+  margin: 0;
+}
+
+.request-id {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.status {
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  text-transform: capitalize;
+}
+
+.status.approved {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.status.pending {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.status.completed {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.archived .request-card {
+  opacity: 0.85;
+}
+
+.archived-status {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.chat-btn {
+  margin-top: 0.75rem;
+  width: 100%;
+  padding: 0.45rem 0.75rem;
+  border-radius: 10px;
+  border: none;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chat-btn.secondary {
+  background: #6b7280;
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.chat-header h2 {
+  margin: 0;
+}
+
+.request-tag {
+  font-size: 0.85rem;
+  background: #e0e7ff;
+  color: #3730a3;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+}
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.message {
+  max-width: 70%;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: #f1f5f9;
+}
+
+.message.from-voter {
+  margin-left: auto;
+  background: #2563eb;
+  color: #fff;
+}
+
+.message.from-staff {
+  margin-right: auto;
+  background: #e5e7eb;
+}
+
+.message .meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  margin-bottom: 0.35rem;
+  opacity: 0.75;
+}
+
+.composer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.composer textarea {
+  border-radius: 12px;
+  border: 1px solid #d1d5db;
+  padding: 0.75rem;
+  resize: none;
+}
+
+.composer button {
+  align-self: flex-end;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.55rem 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.loading,
+.empty,
+.error {
+  text-align: center;
+  color: #6b7280;
+  padding: 1rem 0;
+}
+
+.error {
+  color: #dc2626;
+}
+
+.placeholder {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: #6b7280;
+}
+
+@media (max-width: 1024px) {
+  .chat-page {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .requests-panel,
+  .chat-panel {
+    width: 100%;
+  }
+}
+

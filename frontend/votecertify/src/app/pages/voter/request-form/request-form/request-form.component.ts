@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Firestore, collection, getDocs, query, where, addDoc } from '@angular/fire/firestore';
 import { Auth, User, onAuthStateChanged } from '@angular/fire/auth';
 import { SupabaseService } from '../../../../services/supabase.service';
+import { ChatService } from '../../../../services/chat.service';
 import { v4 as uuidv4 } from 'uuid';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -30,7 +31,8 @@ export class RequestFormComponent implements OnInit {
     private firestore: Firestore,
     private auth: Auth,
     private supabaseService: SupabaseService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private chatService: ChatService
   ) {
     this.requestForm = this.fb.group({
       purpose: ['', Validators.required],
@@ -162,7 +164,15 @@ export class RequestFormComponent implements OnInit {
         submittedAt: new Date()
       };
 
-      await addDoc(collection(this.firestore, 'requests'), requestData);
+      const docRef = await addDoc(collection(this.firestore, 'requests'), requestData);
+
+      // Seed chat with staff greeting so voter immediately sees guidance
+      await this.chatService.sendMessage(
+        docRef.id,
+        'staff',
+        'system',
+        'Good day! Before we proceed with your request, I need to verify your identity. May I ask you to confirm some basic information?'
+      );
 
       await Swal.fire('Success', 'Request submitted successfully!', 'success');
 

@@ -1,0 +1,148 @@
+<div class="chat-page">
+  <section class="requests-panel">
+    <div class="panel-header">
+      <div>
+        <h2>Requests</h2>
+        <p>Open a request to chat with the voter.</p>
+      </div>
+      <button class="archived-toggle" (click)="toggleArchived()">
+        <span class="material-symbol">archive</span>
+        Archived Chats
+      </button>
+    </div>
+
+    <div class="search-box">
+      <input
+        type="text"
+        placeholder="Search by name or voter ID"
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="applyFilter()"
+      />
+    </div>
+
+    <div class="requests-list" *ngIf="!isLoadingRequests; else loadingRequests">
+      <div class="list-section" *ngIf="!showArchived">
+        <div class="section-header">
+          <h3>Active Chats</h3>
+          <span class="count-pill">{{ filteredActiveRequests.length }}</span>
+        </div>
+
+        <ng-container *ngIf="filteredActiveRequests.length > 0; else noActive">
+        <div
+          class="request-card"
+          *ngFor="let request of filteredActiveRequests"
+          [class.selected]="request.id === selectedRequest?.id"
+          [class.unread]="isUnread(request.id)"
+          (click)="selectRequest(request)"
+        >
+            <div class="card-body">
+              <div>
+              <p class="request-name">
+                {{ request.fullName || 'Request' }}
+                <span class="unread-dot" *ngIf="isUnread(request.id)"></span>
+              </p>
+              <p class="request-id">Voter ID: {{ request.voterId || 'N/A' }}</p>
+              </div>
+              <span class="status" [class]="(request.status || '').toLowerCase()">
+                {{ request.status || 'Pending' }}
+              </span>
+            </div>
+            <button class="chat-btn">Open Chat</button>
+          </div>
+        </ng-container>
+      </div>
+
+      <div class="list-section archived" *ngIf="showArchived">
+        <div class="section-header">
+          <h3>Archived</h3>
+          <span class="count-pill">{{ filteredArchivedRequests.length }}</span>
+        </div>
+
+        <ng-container *ngIf="filteredArchivedRequests.length > 0; else noArchived">
+          <div
+            class="request-card"
+            *ngFor="let request of filteredArchivedRequests"
+            [class.selected]="request.id === selectedRequest?.id"
+            (click)="selectRequest(request)"
+          >
+            <div class="card-body">
+              <div>
+                <p class="request-name">{{ request.fullName || 'Request' }}</p>
+                <p class="request-id">Voter ID: {{ request.voterId || 'N/A' }}</p>
+              </div>
+              <span class="status archived-status">
+                {{ request.status || 'Approved' }}
+              </span>
+            </div>
+            <button class="chat-btn secondary">Review Chat</button>
+          </div>
+        </ng-container>
+      </div>
+
+      <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+    </div>
+
+    <ng-template #noActive>
+      <p class="empty">No active chats for pending requests.</p>
+    </ng-template>
+
+    <ng-template #noArchived>
+      <p class="empty">No archived chats yet.</p>
+    </ng-template>
+  </section>
+
+  <section class="chat-panel" *ngIf="selectedRequest; else noSelection">
+    <header class="chat-header">
+      <div>
+        <h2>Chat with {{ selectedRequest!.fullName || 'voter' }}</h2>
+        <p>Status: {{ selectedRequest!.status || 'Pending' }}</p>
+      </div>
+      <span class="request-tag">#{{ selectedRequest!.id }}</span>
+    </header>
+
+    <div class="messages" #messagesContainer>
+      <ng-container *ngIf="!isLoadingMessages; else loadingMessages">
+        <div
+          class="message"
+          *ngFor="let message of messages"
+          [class.from-voter]="message.sender === 'voter'"
+          [class.from-staff]="message.sender === 'staff'"
+        >
+          <div class="meta">
+            <span>{{ message.sender === 'staff' ? 'You' : 'Voter' }}</span>
+            <span>{{ message.timestamp?.toDate?.() ? (message.timestamp.toDate() | date:'short') : '' }}</span>
+          </div>
+          <p>{{ message.message }}</p>
+        </div>
+
+        <p class="empty" *ngIf="messages.length === 0">No messages yet.</p>
+      </ng-container>
+    </div>
+
+    <form class="composer" (ngSubmit)="sendMessage()">
+      <textarea
+        [(ngModel)]="messageText"
+        name="message"
+        rows="2"
+        placeholder="Type your response..."
+        required
+      ></textarea>
+      <button type="submit" [disabled]="isSending || !messageText.trim()">Send</button>
+    </form>
+  </section>
+
+  <ng-template #noSelection>
+    <section class="chat-panel placeholder">
+      <p>Select a request to open the chat room.</p>
+    </section>
+  </ng-template>
+
+  <ng-template #loadingRequests>
+    <div class="loading">Loading requests…</div>
+  </ng-template>
+
+  <ng-template #loadingMessages>
+    <div class="loading">Loading chat…</div>
+  </ng-template>
+</div>
+
