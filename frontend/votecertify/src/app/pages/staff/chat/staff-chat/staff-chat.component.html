@@ -106,6 +106,18 @@
 
     <div class="messages" #messagesContainer>
       <ng-container *ngIf="!isLoadingMessages; else loadingMessages">
+        <!-- Load More Button -->
+        <div class="load-more-container" *ngIf="hasMoreMessages && messages.length > 0">
+          <button
+            class="load-more-btn"
+            (click)="loadMoreMessages()"
+            [disabled]="isLoadingMore"
+          >
+            <span *ngIf="!isLoadingMore">Load More</span>
+            <span *ngIf="isLoadingMore">Loading...</span>
+          </button>
+        </div>
+
         <div
           class="message"
           *ngFor="let message of messages"
@@ -131,12 +143,24 @@
       </ng-container>
     </div>
 
+    <!-- Jump to Latest Button - At Bottom -->
+    <div class="jump-to-latest-container" *ngIf="isViewingOlderMessages">
+      <button
+        class="jump-to-latest-btn"
+        (click)="jumpToLatest()"
+      >
+        <span class="material-icons">arrow_downward</span>
+        Jump to Latest
+      </button>
+    </div>
+
     <form class="composer" (ngSubmit)="sendMessage()" *ngIf="!isChatEnded()">
       <textarea
         [(ngModel)]="messageText"
         name="message"
         rows="2"
         placeholder="Type your response..."
+        (keydown.enter)="handleEnterKey($event)"
         required
       ></textarea>
       <button type="submit" [disabled]="isSending || !messageText.trim()">Send</button>
