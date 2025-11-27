@@ -69,4 +69,11 @@ currentSubtitle = '';
       this.currentSubtitle = '';
     }
   }
+
+  scrollToVideo() {
+    const videoElement = document.getElementById('video');
+    if (videoElement) {
+      videoElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
 }
