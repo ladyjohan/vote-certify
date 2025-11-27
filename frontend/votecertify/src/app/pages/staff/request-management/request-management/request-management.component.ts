@@ -40,10 +40,6 @@ export class RequestManagementComponent implements OnInit {
     'Disqualified'
   ];
 
-  // Daily approval limit tracking
-  approvalsToday: number = 0;
-  dailyApprovalLimit: number = 10;
-
   // Time slots (30-minute intervals from 9:00 AM to 2:30 PM, 1 person per slot, excluding 12:00 PM - 1:00 PM)
   timeSlots = [
     { label: '9:00 AM - 9:30 AM', value: '09:00-09:30', capacity: 1 },
@@ -66,7 +62,6 @@ export class RequestManagementComponent implements OnInit {
 
   ngOnInit() {
     this.getPendingRequests();
-    this.loadTodayApprovalsCount();
     this.searchControl.valueChanges.pipe(debounceTime(300)).subscribe(text => {
       const term = (text || '').toString().toLowerCase();
       this.filteredPendingRequests = this.pendingRequests.filter(r =>
@@ -161,9 +156,10 @@ export class RequestManagementComponent implements OnInit {
   }
 
   async approveRequest(request: any) {
-    // Check daily limit
-    if (this.approvalsToday >= this.dailyApprovalLimit) {
-      Swal.fire('Approval Limit Reached', `You can only approve ${this.dailyApprovalLimit} requests per day. Remaining: 0`, 'warning');
+    // Find first available date and slot
+    const firstAvailable = await this.findFirstAvailableDateAndSlot();
+    if (!firstAvailable) {
+      Swal.fire('No Available Slots', 'All time slots are full for the next 90 days. Please try again later.', 'warning');
       return;
     }
 
@@ -171,30 +167,9 @@ export class RequestManagementComponent implements OnInit {
       title: 'Approve Certificate Request',
       html: `
         <div style="text-align: left; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 100%; box-sizing: border-box;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 24px; position: relative; overflow: hidden;">
-            <div style="position: absolute; top: 0; right: 0; opacity: 0.1; font-size: 80px; line-height: 1;">✓</div>
-            <div style="position: relative; z-index: 1;">
-              <p style="margin: 0 0 12px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9;">Daily Quota</p>
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="flex: 1;">
-                  <div style="font-size: 28px; font-weight: 800; line-height: 1;">${this.dailyApprovalLimit - this.approvalsToday}</div>
-                  <div style="font-size: 12px; opacity: 0.85; margin-top: 4px;">Remaining</div>
-                </div>
-                <div style="font-size: 24px; opacity: 0.6;">/</div>
-                <div style="text-align: right;">
-                  <div style="font-size: 20px; font-weight: 700;">${this.dailyApprovalLimit}</div>
-                  <div style="font-size: 12px; opacity: 0.85; margin-top: 4px;">Total</div>
-                </div>
-              </div>
-              <div style="margin-top: 12px; height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; overflow: hidden;">
-                <div style="height: 100%; width: ${((this.dailyApprovalLimit - this.approvalsToday) / this.dailyApprovalLimit * 100)}%; background: #4CAF50; transition: width 0.3s ease;"></div>
-              </div>
-            </div>
-          </div>
-
           <div style="margin-bottom: 20px; box-sizing: border-box;">
             <label for="pickupDate" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px;">Select Pickup Date</label>
-            <input type="date" id="pickupDate" class="swal2-input modern-input" style="width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; margin: 0;">
+            <input type="date" id="pickupDate" class="swal2-input modern-input" style="width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; margin: 0;" value="${firstAvailable.date}">
             <small style="color: #666; display: block; margin-top: 5px; font-size: 12px;">Date must be today or later</small>
           </div>
 
@@ -218,7 +193,7 @@ export class RequestManagementComponent implements OnInit {
         title: 'modern-swal-title',
         htmlContainer: 'modern-swal-html'
       },
-      didOpen: () => {
+      didOpen: async () => {
         const pickupDateInput = document.getElementById('pickupDate') as HTMLInputElement;
         const timeSlotSelect = document.getElementById('timeSlot') as HTMLSelectElement;
         
@@ -237,9 +212,12 @@ export class RequestManagementComponent implements OnInit {
           }
         });
 
-        // Initial update
-        if (pickupDateInput.value) {
-          this.updateSlotOptions(timeSlotSelect, pickupDateInput.value);
+        // Initial update with first available date
+        this.updateSlotOptions(timeSlotSelect, pickupDateInput.value);
+        // Auto-select first available slot
+        const availableSlot = await this.findFirstAvailableSlotForDate(pickupDateInput.value);
+        if (availableSlot) {
+          timeSlotSelect.value = availableSlot;
         }
       },
       preConfirm: async () => {
@@ -283,9 +261,6 @@ export class RequestManagementComponent implements OnInit {
           claimTimeSlot: formValues.timeSlot
         });
 
-        // Increment daily count
-        this.approvalsToday++;
-
         // Send Email after approval
         await this.sendApprovalEmail(request, formValues.pickupDate, formValues.timeSlot);
 
@@ -294,7 +269,7 @@ export class RequestManagementComponent implements OnInit {
         this.setupPagination();
         this.closeDetails();
 
-        Swal.fire('Approved!', `${request.fullName}'s request has been approved. Remaining approvals: ${this.dailyApprovalLimit - this.approvalsToday}`, 'success');
+        Swal.fire('Approved!', `${request.fullName}'s request has been approved.`, 'success');
       } catch (error) {
         console.error('Error approving request:', error);
         Swal.fire('Error', 'Failed to approve request.', 'error');
@@ -302,21 +277,40 @@ export class RequestManagementComponent implements OnInit {
     }
   }
 
-  async loadTodayApprovalsCount() {
-    const today = new Date().toISOString().split('T')[0];
-    const requestsRef = collection(this.firestore, 'requests');
-    const approvedQuery = query(
-      requestsRef,
-      where('status', 'in', ['Approved', 'Ready for Pickup', 'Completed'])
-    );
-    const snapshot = await getDocs(approvedQuery);
+  async findFirstAvailableDateAndSlot(): Promise<{ date: string; slot: string } | null> {
+    // Check up to 90 days ahead
+    const today = new Date();
+    for (let i = 0; i < 90; i++) {
+      const checkDate = new Date(today);
+      checkDate.setDate(checkDate.getDate() + i);
+      const dateString = this.formatDateForInput(checkDate);
 
-    // Count approvals made today (all approved records regardless of later status)
-    this.approvalsToday = snapshot.docs.filter(doc => {
-      const data = doc.data();
-      const pickupDate = data['pickupDate'];
-      return pickupDate === today;
-    }).length;
+      // Check if this date has any available slots
+      for (const slot of this.timeSlots) {
+        const available = await this.getSlotCapacityForDate(dateString, slot.value);
+        if (available > 0) {
+          return { date: dateString, slot: slot.value };
+        }
+      }
+    }
+    return null;
+  }
+
+  async findFirstAvailableSlotForDate(dateString: string): Promise<string | null> {
+    for (const slot of this.timeSlots) {
+      const available = await this.getSlotCapacityForDate(dateString, slot.value);
+      if (available > 0) {
+        return slot.value;
+      }
+    }
+    return null;
+  }
+
+  private formatDateForInput(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   getSlotAvailability(timeSlot: string): number {
