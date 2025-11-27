@@ -23,6 +23,8 @@ export class StaffChatComponent implements OnInit, OnDestroy {
   archivedRequests: ChatRequest[] = [];
   filteredActiveRequests: ChatRequest[] = [];
   filteredArchivedRequests: ChatRequest[] = [];
+  displayedActiveRequests: ChatRequest[] = [];
+  displayedArchivedRequests: ChatRequest[] = [];
   searchTerm = '';
   selectedRequest?: ChatRequest;
   messageText = '';
@@ -34,6 +36,14 @@ export class StaffChatComponent implements OnInit, OnDestroy {
   showArchived = false;
   hasMoreMessages = false;
   isViewingOlderMessages = false;  // Track if user is viewing older messages
+
+  // Pagination for requests list
+  activeRequestsCurrentPage = 1;
+  activeRequestsPageSize = 7;
+  activeRequestsTotalPages = 1;
+  archivedRequestsCurrentPage = 1;
+  archivedRequestsPageSize = 7;
+  archivedRequestsTotalPages = 1;
 
   private user: User | null = null;
   private messagesSub?: Subscription;
@@ -115,6 +125,11 @@ export class StaffChatComponent implements OnInit, OnDestroy {
     this.filteredActiveRequests = this.activeRequests.filter(filterFn);
     this.filteredArchivedRequests = this.archivedRequests.filter(filterFn);
 
+    // Reset pagination to first page and setup pages
+    this.activeRequestsCurrentPage = 1;
+    this.archivedRequestsCurrentPage = 1;
+    this.setupRequestsPagination();
+
     if (this.selectedRequest) {
       const stillVisible =
         this.filteredActiveRequests.some((req) => req.id === this.selectedRequest?.id) ||
@@ -123,6 +138,66 @@ export class StaffChatComponent implements OnInit, OnDestroy {
         this.selectFirstAvailable();
       }
     }
+  }
+
+  setupRequestsPagination(): void {
+    this.activeRequestsTotalPages = Math.max(1, Math.ceil(this.filteredActiveRequests.length / this.activeRequestsPageSize));
+    this.archivedRequestsTotalPages = Math.max(1, Math.ceil(this.filteredArchivedRequests.length / this.archivedRequestsPageSize));
+    this.updateDisplayedRequests();
+  }
+
+  updateDisplayedRequests(): void {
+    const activeStart = (this.activeRequestsCurrentPage - 1) * this.activeRequestsPageSize;
+    this.displayedActiveRequests = this.filteredActiveRequests.slice(activeStart, activeStart + this.activeRequestsPageSize);
+
+    const archivedStart = (this.archivedRequestsCurrentPage - 1) * this.archivedRequestsPageSize;
+    this.displayedArchivedRequests = this.filteredArchivedRequests.slice(archivedStart, archivedStart + this.archivedRequestsPageSize);
+  }
+
+  goToActiveRequestsPage(page: number): void {
+    this.activeRequestsCurrentPage = page;
+    this.updateDisplayedRequests();
+  }
+
+  goToArchivedRequestsPage(page: number): void {
+    this.archivedRequestsCurrentPage = page;
+    this.updateDisplayedRequests();
+  }
+
+  nextActiveRequestsPage(): void {
+    if (this.activeRequestsCurrentPage < this.activeRequestsTotalPages) {
+      this.activeRequestsCurrentPage++;
+      this.updateDisplayedRequests();
+    }
+  }
+
+  prevActiveRequestsPage(): void {
+    if (this.activeRequestsCurrentPage > 1) {
+      this.activeRequestsCurrentPage--;
+      this.updateDisplayedRequests();
+    }
+  }
+
+  nextArchivedRequestsPage(): void {
+    if (this.archivedRequestsCurrentPage < this.archivedRequestsTotalPages) {
+      this.archivedRequestsCurrentPage++;
+      this.updateDisplayedRequests();
+    }
+  }
+
+  prevArchivedRequestsPage(): void {
+    if (this.archivedRequestsCurrentPage > 1) {
+      this.archivedRequestsCurrentPage--;
+      this.updateDisplayedRequests();
+    }
+  }
+
+  getActiveRequestsPages(): number[] {
+    return Array.from({ length: this.activeRequestsTotalPages }, (_, i) => i + 1);
+  }
+
+  getArchivedRequestsPages(): number[] {
+    return Array.from({ length: this.archivedRequestsTotalPages }, (_, i) => i + 1);
   }
 
   selectRequest(request: ChatRequest): void {

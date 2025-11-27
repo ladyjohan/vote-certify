@@ -81,11 +81,74 @@
 
 .requests-list {
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .list-section {
   margin-bottom: 1.25rem;
+  flex: 1;
 }
+
+.requests-pagination-wrapper {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+  background: #fff;
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.requests-pagination {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(0,0,0,0.03);
+  padding: 0.5rem;
+  border-radius: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.page-btn {
+  background: #fff;
+  border: 1px solid #e6e8ee;
+  color: #222;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  min-width: 32px;
+  font-size: 0.85rem;
+  transition: background 0.12s, transform 0.08s;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #f4f7ff;
+  transform: translateY(-1px);
+}
+
+.page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.page-btn.active {
+  background: linear-gradient(90deg, #1976d2, #4e8cf5);
+  color: #fff;
+  border-color: transparent;
+}
+
+.pagination-info {
+  font-size: 0.8rem;
+  color: #55606a;
+}
+
 
 .section-header {
   display: flex;
@@ -141,10 +204,6 @@
 }
 
 .status {
-.archived-status {
-  background: #f3f4f6;
-  color: #4b5563;
-}
   padding: 0.25rem 0.6rem;
   border-radius: 999px;
   font-size: 0.75rem;
@@ -166,7 +225,7 @@
   color: #1d4ed8;
 }
 
-.archived .request-card {
+.list-section.archived .request-card {
   opacity: 0.85;
 }
 

@@ -17,10 +17,10 @@
           <span class="count-pill">{{ activeRequests.length }}</span>
         </div>
 
-        <ng-container *ngIf="activeRequests.length > 0; else noActive">
+        <ng-container *ngIf="displayedActiveRequests.length > 0; else noActive">
           <div
             class="request-card"
-            *ngFor="let request of activeRequests"
+            *ngFor="let request of displayedActiveRequests"
             [class.selected]="request.id === selectedRequest?.id"
             (click)="selectRequest(request)"
           >
@@ -34,6 +34,24 @@
             </div>
           </div>
         </ng-container>
+
+        <!-- Pagination for Active Chats -->
+        <div class="requests-pagination-wrapper" *ngIf="activeRequests.length > 0">
+          <div class="requests-pagination">
+            <button class="page-btn prev" [disabled]="activeRequestsCurrentPage === 1" (click)="prevActiveRequestsPage()">‹ Prev</button>
+
+            <ng-container *ngFor="let p of getActiveRequestsPages()">
+              <button
+                class="page-btn"
+                [class.active]="activeRequestsCurrentPage === p"
+                (click)="goToActiveRequestsPage(p)"
+              >{{ p }}</button>
+            </ng-container>
+
+            <button class="page-btn next" [disabled]="activeRequestsCurrentPage === activeRequestsTotalPages" (click)="nextActiveRequestsPage()">Next ›</button>
+          </div>
+          <div class="pagination-info">Page {{ activeRequestsCurrentPage }} of {{ activeRequestsTotalPages }} — {{ activeRequests.length }} requests</div>
+        </div>
       </div>
 
       <div class="list-section archived" *ngIf="showArchived">
@@ -42,10 +60,10 @@
           <span class="count-pill">{{ archivedRequests.length }}</span>
         </div>
 
-        <ng-container *ngIf="archivedRequests.length > 0; else noArchived">
+        <ng-container *ngIf="displayedArchivedRequests.length > 0; else noArchived">
           <div
             class="request-card"
-            *ngFor="let request of archivedRequests"
+            *ngFor="let request of displayedArchivedRequests"
             [class.selected]="request.id === selectedRequest?.id"
             (click)="selectRequest(request)"
           >
@@ -59,6 +77,24 @@
             </div>
           </div>
         </ng-container>
+
+        <!-- Pagination for Archived Chats -->
+        <div class="requests-pagination-wrapper" *ngIf="archivedRequests.length > 0">
+          <div class="requests-pagination">
+            <button class="page-btn prev" [disabled]="archivedRequestsCurrentPage === 1" (click)="prevArchivedRequestsPage()">‹ Prev</button>
+
+            <ng-container *ngFor="let p of getArchivedRequestsPages()">
+              <button
+                class="page-btn"
+                [class.active]="archivedRequestsCurrentPage === p"
+                (click)="goToArchivedRequestsPage(p)"
+              >{{ p }}</button>
+            </ng-container>
+
+            <button class="page-btn next" [disabled]="archivedRequestsCurrentPage === archivedRequestsTotalPages" (click)="nextArchivedRequestsPage()">Next ›</button>
+          </div>
+          <div class="pagination-info">Page {{ archivedRequestsCurrentPage }} of {{ archivedRequestsTotalPages }} — {{ archivedRequests.length }} requests</div>
+        </div>
       </div>
 
     </div>

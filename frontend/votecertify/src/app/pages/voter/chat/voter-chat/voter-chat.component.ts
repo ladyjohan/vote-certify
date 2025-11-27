@@ -20,6 +20,8 @@ export class VoterChatComponent implements OnInit, OnDestroy {
   requests: ChatRequest[] = [];
   activeRequests: ChatRequest[] = [];
   archivedRequests: ChatRequest[] = [];
+  displayedActiveRequests: ChatRequest[] = [];
+  displayedArchivedRequests: ChatRequest[] = [];
   messages: ChatMessage[] = [];
   selectedRequest?: ChatRequest;
   messageText = '';
@@ -31,6 +33,14 @@ export class VoterChatComponent implements OnInit, OnDestroy {
   showArchived = false;
   hasMoreMessages = false;
   isViewingOlderMessages = false;  // Track if user is viewing older messages
+
+  // Pagination for requests list
+  activeRequestsCurrentPage = 1;
+  activeRequestsPageSize = 7;
+  activeRequestsTotalPages = 1;
+  archivedRequestsCurrentPage = 1;
+  archivedRequestsPageSize = 7;
+  archivedRequestsTotalPages = 1;
 
   private user: User | null = null;
   private destroy$ = new Subject<void>();
@@ -95,6 +105,7 @@ export class VoterChatComponent implements OnInit, OnDestroy {
           const visibleRequests = requests.filter((request) => !this.isExcluded(request));
           this.partitionRequests(visibleRequests);
           this.requests = [...this.activeRequests, ...this.archivedRequests];
+          this.setupRequestsPagination();
           this.isLoadingRequests = false;
 
           // If a route param exists, ensure selection stays in sync.
@@ -115,6 +126,66 @@ export class VoterChatComponent implements OnInit, OnDestroy {
 
   selectRequest(request: ChatRequest): void {
     this.trySelectRequest(request.id, false);
+  }
+
+  setupRequestsPagination(): void {
+    this.activeRequestsTotalPages = Math.max(1, Math.ceil(this.activeRequests.length / this.activeRequestsPageSize));
+    this.archivedRequestsTotalPages = Math.max(1, Math.ceil(this.archivedRequests.length / this.archivedRequestsPageSize));
+    this.updateDisplayedRequests();
+  }
+
+  updateDisplayedRequests(): void {
+    const activeStart = (this.activeRequestsCurrentPage - 1) * this.activeRequestsPageSize;
+    this.displayedActiveRequests = this.activeRequests.slice(activeStart, activeStart + this.activeRequestsPageSize);
+
+    const archivedStart = (this.archivedRequestsCurrentPage - 1) * this.archivedRequestsPageSize;
+    this.displayedArchivedRequests = this.archivedRequests.slice(archivedStart, archivedStart + this.archivedRequestsPageSize);
+  }
+
+  goToActiveRequestsPage(page: number): void {
+    this.activeRequestsCurrentPage = page;
+    this.updateDisplayedRequests();
+  }
+
+  goToArchivedRequestsPage(page: number): void {
+    this.archivedRequestsCurrentPage = page;
+    this.updateDisplayedRequests();
+  }
+
+  nextActiveRequestsPage(): void {
+    if (this.activeRequestsCurrentPage < this.activeRequestsTotalPages) {
+      this.activeRequestsCurrentPage++;
+      this.updateDisplayedRequests();
+    }
+  }
+
+  prevActiveRequestsPage(): void {
+    if (this.activeRequestsCurrentPage > 1) {
+      this.activeRequestsCurrentPage--;
+      this.updateDisplayedRequests();
+    }
+  }
+
+  nextArchivedRequestsPage(): void {
+    if (this.archivedRequestsCurrentPage < this.archivedRequestsTotalPages) {
+      this.archivedRequestsCurrentPage++;
+      this.updateDisplayedRequests();
+    }
+  }
+
+  prevArchivedRequestsPage(): void {
+    if (this.archivedRequestsCurrentPage > 1) {
+      this.archivedRequestsCurrentPage--;
+      this.updateDisplayedRequests();
+    }
+  }
+
+  getActiveRequestsPages(): number[] {
+    return Array.from({ length: this.activeRequestsTotalPages }, (_, i) => i + 1);
+  }
+
+  getArchivedRequestsPages(): number[] {
+    return Array.from({ length: this.archivedRequestsTotalPages }, (_, i) => i + 1);
   }
 
   private trySelectRequest(requestId: string, navigate: boolean = true): void {

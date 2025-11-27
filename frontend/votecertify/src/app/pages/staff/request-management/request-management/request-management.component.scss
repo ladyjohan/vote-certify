@@ -1,14 +1,14 @@
 /* Base Styles */
 .request-management-container {
   /* Reduced outer spacing to match app and avoid large empty margins */
-  padding: 1rem; /* smaller outer spacing */
+  padding: 1rem 2rem; /* smaller outer spacing with wider side margins */
   box-sizing: border-box;
   font-family: Arial, sans-serif;
   color: #333;
 
   @media (min-width: 1200px) {
     /* slight increase on very wide screens */
-    padding: 1.5rem;
+    padding: 1.5rem 3rem;
   }
 
   .title {
@@ -58,6 +58,8 @@
     border-radius: 15px;
     padding: 1rem;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 1000px;
+    margin: 0 auto;
 
       .search-bar {
         margin-bottom: 12px;
