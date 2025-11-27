@@ -1,8 +1,8 @@
 <div class="request-management-container">
-  <div class="request-card">
-      <div class="header-section">
-        <h2 class="title">Voter Request Management</h2>
-      </div>
+  <h2 class="title">Voter Request Management</h2>
+
+  <!-- Top Controls: Search -->
+  <div class="top-row">
     <div class="search-bar">
       <i class="fas fa-search search-icon" aria-hidden="true"></i>
       <input
@@ -12,35 +12,43 @@
         aria-label="Search requests"
       />
     </div>
-    <table class="request-table">
-      <thead>
-        <tr>
-          <th>Voter Name</th>
-          <th>Birthdate</th>
-          <th>Purpose</th>
-          <th>No. of Copies</th> <!-- Added Column -->
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let request of displayedRequests">
-          <td class="name">{{ request.fullName }}</td>
-          <td class="birthdate">{{ request.birthdate | date:'MM/dd/yyyy' }}</td>
-          <td class="purpose">{{ request.purpose }}</td>
-          <td class="copies">{{ request.copiesRequested }}</td> <!-- Display the number of copies requested -->
-          <td class="actions">
-            <button class="chat-btn" (click)="openChat(request.id)">Chat</button>
-            <button class="view-btn" (click)="openDetails(request)">View Details</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  </div>
+
+  <div class="request-card">
+    <div class="request-table-wrapper">
+      <table class="request-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Voter Name</th>
+            <th>Birthdate</th>
+            <th>Purpose</th>
+            <th>No. of Copies</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let request of displayedRequests; let i = index">
+            <td class="row-number">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+            <td class="name">{{ request.fullName }}</td>
+            <td class="birthdate">{{ request.birthdate | date:'MM/dd/yyyy' }}</td>
+            <td class="purpose">{{ request.purpose }}</td>
+            <td class="copies">{{ request.copiesRequested }}</td>
+            <td class="actions">
+              <button class="chat-btn" (click)="openChat(request.id)">Chat</button>
+              <button class="view-btn" (click)="openDetails(request)">View Details</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <div *ngIf="pendingRequests.length === 0" class="no-requests">
       No pending requests at the moment.
     </div>
-  <!-- Pagination -->
-  <div class="pagination-wrapper" *ngIf="pendingRequests.length > 0">
+
+    <!-- Pagination -->
+    <div class="pagination-wrapper" *ngIf="pendingRequests.length > 0">
       <div class="pagination">
         <button class="page-btn prev" [disabled]="currentPage === 1" (click)="prevPage()">‹ Prev</button>
 
