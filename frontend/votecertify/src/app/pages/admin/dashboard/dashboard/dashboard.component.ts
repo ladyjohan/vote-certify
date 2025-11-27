@@ -15,6 +15,8 @@ import {
 import jsPDF from 'jspdf';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AppAnalyticsService, AnalyticsOverview } from '../../../../services/app-analytics.service';
+import { Observable } from 'rxjs';
 
 Chart.register(LineController, LineElement, PointElement, CategoryScale, LinearScale, Title, Tooltip, Legend, Filler);
 
@@ -31,6 +33,8 @@ export class AdminDashboardComponent implements OnInit {
   todaysRequests = 0;
   totalVoterAccounts = 0;
 
+  analytics$: Observable<AnalyticsOverview>;
+
   chart: any = null;
   chartTitle = '';
   analyticsTotals = { total: 0, approved: 0, pending: 0, declined: 0 };
@@ -40,10 +44,11 @@ export class AdminDashboardComponent implements OnInit {
   selectedMonth: number;
   selectedYear: number;
 
-  constructor(private firestore: Firestore) {
+  constructor(private firestore: Firestore, private analyticsService: AppAnalyticsService) {
     const now = new Date();
     this.selectedMonth = now.getMonth();
     this.selectedYear = now.getFullYear();
+    this.analytics$ = this.analyticsService.getAnalytics();
   }
 
   async ngOnInit() {
@@ -52,6 +57,14 @@ export class AdminDashboardComponent implements OnInit {
     await this.getTodaysRequests();
     await this.getTotalVoterAccounts();
     await this.loadAnalyticsForRange(this.selectedRange);
+  }
+
+  /**
+   * Calculate bar height for mini chart visualization (0-100%)
+   */
+  getBarHeight(visits: number): number {
+    // This will be calculated based on max visits in the week
+    return visits * 10; // Adjust multiplier based on expected visit counts
   }
 
   async getStaffStats() {

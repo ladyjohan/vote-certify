@@ -12,6 +12,16 @@
 }
 
 /* ===========================
+   WELCOME SECTION (Welcome + Analytics side by side)
+=========================== */
+.welcome-section {
+  display: flex;
+  gap: 1.5rem;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+/* ===========================
    WELCOME CARD
 =========================== */
 .welcome-card {
@@ -21,8 +31,11 @@
   background: #ffffff;
   border-radius: 16px;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-  padding: 1.5rem;
+  padding: 1rem;
+  flex: 1;
+  min-width: 400px;
   flex-wrap: wrap;
+  align-self: stretch;
 }
 
 .icon-area {
@@ -36,14 +49,15 @@
 }
 
 .welcome-content h1 {
-  font-size: 1.6rem;
-  margin-bottom: 0.4rem;
+  font-size: 1.3rem;
+  margin-bottom: 0.3rem;
   color: #222;
 }
 
 .welcome-content p {
   color: #555;
-  line-height: 1.5;
+  line-height: 1.4;
+  font-size: 0.95rem;
 }
 
 .admin-badge {
@@ -52,10 +66,10 @@
   gap: 0.4rem;
   background: #2563eb;
   color: #fff;
-  padding: 0.4rem 0.8rem;
+  padding: 0.3rem 0.6rem;
   border-radius: 8px;
-  margin-top: 0.6rem;
-  font-size: 0.9rem;
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
 }
 
 .badge-icon {
@@ -85,6 +99,11 @@
 
 .card.voters {
   background: linear-gradient(140deg, #ffffff, #ffffff, #26A69A);
+}
+
+.card.analytics {
+  background: linear-gradient(140deg, #ffffff, #ffffff, #7C3AED);
+  grid-column: auto;
 }
 
 .card {
@@ -128,16 +147,151 @@
   margin-bottom: 0.4rem;
 }
 
+.card.analytics .icon {
+  color: #7C3AED;
+}
+
 .card h3 {
   font-size: 1rem;
   color: #444;
   margin-bottom: 0.3rem;
 }
 
+.card.analytics h3 {
+  color: #555;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
 .card p {
   font-size: 1.8rem;
   font-weight: bold;
   color: #283655;
+}
+
+/* Analytics Card Specific Styles */
+.card.analytics {
+  text-align: left;
+  padding: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 280px;
+  flex-shrink: 0;
+  justify-content: space-between;
+  align-self: stretch;
+
+  .analytics-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+
+    .icon {
+      font-size: 1.4rem;
+      color: #7C3AED;
+      margin-bottom: 0;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #1f2937;
+      font-weight: 600;
+    }
+  }
+
+  .analytics-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+    padding: 0.6rem 0;
+    border-top: 1px solid rgba(124, 58, 237, 0.1);
+    border-bottom: 1px solid rgba(124, 58, 237, 0.1);
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+
+      .stat-label {
+        font-size: 0.75rem;
+        color: #6b7280;
+        font-weight: 500;
+      }
+
+      .stat-value {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #7C3AED;
+      }
+    }
+  }
+
+  .trend-indicator {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+
+    .trend-label {
+      font-size: 0.75rem;
+      color: #6b7280;
+      font-weight: 500;
+    }
+
+    .mini-chart {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 0.3rem;
+      height: 40px;
+
+      .bar-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        height: 100%;
+
+        .bar {
+          width: 100%;
+          background: linear-gradient(180deg, #7C3AED 0%, #a78bfa 100%);
+          border-radius: 4px 4px 0 0;
+          min-height: 4px;
+          transition: all 0.2s ease;
+          cursor: pointer;
+
+          &:hover {
+            filter: brightness(1.1);
+            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+          }
+        }
+      }
+    }
+  }
+
+  .refresh-hint {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-top: 0.3rem;
+
+    i {
+      font-size: 0.8rem;
+      animation: spin 2s linear infinite;
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  }
 }
 
 /* ===========================
@@ -244,6 +398,22 @@
 /* ===========================
    RESPONSIVE DESIGN
 =========================== */
+@media (max-width: 1024px) {
+  .welcome-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .welcome-card {
+    min-width: unset;
+    flex: 1;
+  }
+
+  .card.analytics {
+    width: 100%;
+  }
+}
+
 @media (max-width: 768px) {
   .welcome-content h1 {
     font-size: 1.4rem;

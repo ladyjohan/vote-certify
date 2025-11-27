@@ -1,17 +1,57 @@
 <div class="dashboard-container">
-  <!-- Welcome card -->
-  <div class="welcome-card">
-    <div class="icon-area">
-      <i class="fa-solid fa-user-shield"></i>
+  <!-- Welcome section with Analytics card -->
+  <div class="welcome-section">
+    <!-- Welcome card -->
+    <div class="welcome-card">
+      <div class="icon-area">
+        <i class="fa-solid fa-user-shield"></i>
+      </div>
+      <div class="welcome-content">
+        <h1>Welcome, Admin!</h1>
+        <p>
+          This is your control panel for managing the VoteCertify system. Oversee certificate requests, manage COMELEC staff accounts, and monitor system metrics with ease.
+        </p>
+        <div class="admin-badge">
+          <span class="badge-icon">👑</span>
+          <span>Administrator Access</span>
+        </div>
+      </div>
     </div>
-    <div class="welcome-content">
-      <h1>Welcome, Admin!</h1>
-      <p>
-        This is your control panel for managing the VoteCertify system. Oversee certificate requests, manage COMELEC staff accounts, and monitor system metrics with ease. Use the sidebar to navigate through your tools.
-      </p>
-      <div class="admin-badge">
-        <span class="badge-icon">👑</span>
-        <span>Administrator Access</span>
+
+    <!-- Web App Visits Card - Right Side -->
+    <div class="card analytics" *ngIf="analytics$ | async as analytics">
+      <div class="analytics-header">
+        <div class="icon"><i class="fas fa-chart-line"></i></div>
+        <h3>Total Website Views</h3>
+      </div>
+      
+      <div class="analytics-stats">
+        <div class="stat-item">
+          <span class="stat-label">Total Views</span>
+          <span class="stat-value">{{ analytics.totalVisits | number }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Unique Visitors</span>
+          <span class="stat-value">{{ analytics.uniqueUsers | number }}</span>
+        </div>
+      </div>
+
+      <div class="trend-indicator">
+        <span class="trend-label">Last 7 Days</span>
+        <div class="mini-chart">
+          <div class="bar-container" *ngFor="let day of analytics.weeklyTrend">
+            <div 
+              class="bar" 
+              [style.height]="getBarHeight(day.visits) + '%'"
+              [title]="day.date + ': ' + day.visits + ' visits'"
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="refresh-hint">
+        <i class="fas fa-sync-alt"></i>
+        <span>Updates in real-time</span>
       </div>
     </div>
   </div>
