@@ -228,6 +228,7 @@
   max-width: 1400px;
   min-height: 600px;
   animation: slideUp 0.8s ease-out;
+  padding: 0 3rem;
 }
 
 /* Hero Content */
@@ -237,6 +238,9 @@
   flex-direction: column;
   gap: 2rem;
   animation: slideUp 0.8s ease-out;
+  padding: 0 3rem;
+  margin-right: 2rem;
+  margin-left: 2rem;
 }
 
 @keyframes slideUp {
@@ -347,11 +351,12 @@
   align-items: center;
   justify-content: center;
   gap: 2rem;
+  margin-top: 3rem;
 }
 
 .logo-display {
-  width: 280px;
-  height: 280px;
+  width: 320px;
+  height: 320px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -421,7 +426,7 @@
 }
 
 .system-name {
-  font-size: clamp(2.5rem, 8vw, 4.5rem);
+  font-size: clamp(3rem, 10vw, 5.5rem);
   font-weight: 900;
   background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.9) 100%);
   -webkit-background-clip: text;
@@ -463,6 +468,7 @@
   margin-bottom: 0.5rem;
   margin-top: 0;
   animation: slideUp 0.8s ease-out 0.4s both;
+  padding: 0 1rem 0 0.5rem;
 }
 
 .hero-title {
@@ -487,6 +493,7 @@
   gap: 1.5rem;
   margin-top: 2rem;
   animation: slideUp 0.8s ease-out 0.5s both;
+  padding: 0 1rem 0 0.5rem;
 }
 
 /* Buttons */
@@ -744,39 +751,37 @@
   /* Split layout responsive */
   .hero-wrapper {
     flex-direction: column;
-    gap: 2rem;
+    gap: 1.5rem;
     min-height: auto;
+    padding: 2rem 0;
   }
 
   .hero-content {
     width: 100%;
+    order: 2;
+    gap: 0.5rem;
+    padding: 0 1.5rem;
+    align-items: center;
+    text-align: center;
   }
 
   .hero-illustration {
-    height: 400px;
+    height: 280px;
     width: 100%;
     flex-direction: row;
+    order: 1;
+    gap: 1.5rem;
   }
 
   .logo-display {
-    width: 200px;
-    height: 200px;
-    padding: 1.5rem;
+    width: 160px;
+    height: 160px;
   }
 
-  .logo-showcase {
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-  }
-
-  .logo-frame {
-    width: 110px;
-    height: 110px;
-    padding: 15px;
-  }
-
-  .logo-label {
-    font-size: 0.85rem;
+  .system-branding {
+    margin-top: 1rem;
+    margin-bottom: 0;
+    text-align: center;
   }
 
   .system-name {
@@ -784,24 +789,41 @@
   }
 
   .system-tagline {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
+  }
+
+  .hero-text {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    text-align: center;
+    padding: 0;
   }
 
   .hero-title {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
   }
 
   .hero-description {
-    font-size: 0.95rem;
-  }
-
-  .primary-btn {
-    padding: 14px 32px;
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
 
   .button-group {
     flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .primary-btn {
+    padding: 12px 24px;
+    font-size: 0.95rem;
+  }
+
+  .secondary-btn {
+    padding: 12px 24px;
+    font-size: 0.95rem;
   }
 
   .feature-card {
@@ -830,45 +852,91 @@
     padding: 1rem;
   }
 
-  .navbar-container {
-    flex-wrap: wrap;
-    gap: 0.5rem;
+  .navbar-brand {
+    margin-left: 1rem;
   }
 
-  .logo-showcase {
+  .navbar-logo {
+    height: 28px;
+  }
+
+  .brand-name {
+    font-size: 1rem;
+  }
+
+  .hero-wrapper {
     flex-direction: column;
     gap: 1rem;
+    padding: 1.5rem 0;
   }
 
-  .system-divider {
-    flex-direction: column;
-    margin: 0;
+  .hero-content {
+    width: 100%;
+    order: 2;
+    padding: 0 1rem;
+    gap: 0.3rem;
+    align-items: center;
+    text-align: center;
   }
 
-  .divider-line {
-    width: 80px;
-    height: 2px;
+  .system-branding {
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+    text-align: center;
   }
 
   .system-name {
-    font-size: 2rem;
+    font-size: 2.2rem;
   }
 
   .system-tagline {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
+  }
+
+  .hero-text {
+    margin-top: 0;
+    margin-bottom: 0.8rem;
+    text-align: center;
+    padding: 0;
   }
 
   .hero-title {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
+    margin-bottom: 0.3rem;
   }
 
   .hero-description {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+  }
+
+  .button-group {
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-top: 0.8rem;
+    padding: 0;
+    align-items: center;
   }
 
   .primary-btn {
     padding: 12px 24px;
     font-size: 0.95rem;
+  }
+
+  .secondary-btn {
+    padding: 12px 24px;
+    font-size: 0.95rem;
+  }
+
+  .hero-illustration {
+    height: 240px;
+    width: 100%;
+    order: 1;
+    gap: 1rem;
+  }
+
+  .logo-display {
+    width: 130px;
+    height: 130px;
   }
 
   .hero-features {
@@ -890,6 +958,11 @@
 
   .modal-actions {
     flex-direction: column;
+  }
+
+  .scroll-indicator {
+    bottom: 15px;
+    font-size: 0.8rem;
   }
 }
 
@@ -1043,6 +1116,8 @@ video {
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow-x: hidden;
+  width: 100%;
 
   h2 {
     font-size: clamp(1.2rem, 3vw, 2rem);
@@ -1119,10 +1194,13 @@ video {
     @media (max-width: 600px) {
       .video-section {
         padding: 32px 0 20px 0;
+        overflow-x: hidden;
       }
       .video-wrapper {
-        max-width: 100vw;
-        padding: 0 2vw;
+        max-width: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
         border-radius: 10px;
       }
       .video-wrapper video {
