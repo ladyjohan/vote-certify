@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, Injector } from '@angular/core';
 import {
   Firestore,
   collection,
@@ -54,6 +54,7 @@ export interface PaginatedMessages {
 @Injectable({ providedIn: 'root' })
 export class ChatService {
   private firestore = inject(Firestore);
+  private injector: Injector = inject(Injector);
   private unreadCountSubject = new BehaviorSubject<number>(0);
   unreadCount$ = this.unreadCountSubject.asObservable();
   private readonly PAGE_SIZE = 6;

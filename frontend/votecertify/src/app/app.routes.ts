@@ -20,6 +20,7 @@ import { RequestManagementComponent } from './pages/staff/request-management/req
 import { StatusOverviewComponent } from './pages/staff/status-overview/status-overview/status-overview.component';
 import { AdminRequestOverviewComponent } from './pages/admin/request-overview/request-overview/request-overview.component';
 import { AdminUserManagementComponent } from './pages/admin/user-management/user-management/user-management.component';
+import { LoginHistoryComponent } from './pages/admin/login-history/login-history.component';
 import { StaffProfileComponent } from './pages/staff/staff-profile/staff-profile.component';
 import { StaffChatComponent } from './pages/staff/chat/staff-chat/staff-chat.component';
 
@@ -37,6 +38,7 @@ export const routes: Routes = [
       { path: 'dashboard', component: AdminDashboardComponent },
       { path: 'request-overview', component: AdminRequestOverviewComponent },
       { path: 'user-management', component: AdminUserManagementComponent },
+      { path: 'login-history', component: LoginHistoryComponent },
     ],
   },
 

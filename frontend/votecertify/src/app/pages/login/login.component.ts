@@ -3,9 +3,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { CommonModule } from '@angular/common';
-import { Auth, signInWithEmailAndPassword, signOut } from '@angular/fire/auth';
-import { Firestore, doc, getDoc, setDoc } from '@angular/fire/firestore';
-import { AuthService } from '../../services/auth.service';  // Make sure path is correct
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -24,8 +22,6 @@ export class LoginComponent implements OnInit {
     this.showPassword = !this.showPassword;
   }
 
-  private auth: Auth = inject(Auth);
-  private firestore: Firestore = inject(Firestore);
   private activatedRoute: ActivatedRoute = inject(ActivatedRoute);
   private authService: AuthService = inject(AuthService);
 
@@ -71,59 +67,11 @@ export class LoginComponent implements OnInit {
     const { email, password } = this.loginForm.value;
 
     try {
-      const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
-      const user = userCredential.user;
-
-      await user.reload();
-
-      const userDocRef = doc(this.firestore, 'users', user.uid);
-      const userDocSnap = await getDoc(userDocRef);
-
-      if (userDocSnap.exists()) {
-        const userData = userDocSnap.data();
-        const userRole = userData['role'];
-        let userStatus = userData['status'];
-
-        console.log(`🔍 Firestore User Status: ${userStatus}`);
-
-        if (userStatus === 'disabled') {
-          this.toastr.error('Your account has been disabled. Please contact the administrator.', 'Access Denied');
-          await signOut(this.auth);
-          return;
-        }
-
-        if (userRole === 'admin') {
-          console.log('✅ Admin detected. Skipping email verification check.');
-        } else if (userRole === 'staff' || userRole === 'voter') {
-          if (user.emailVerified && userStatus !== 'verified') {
-            console.log('⏳ Updating Firestore status to "verified"...');
-            await setDoc(userDocRef, { status: 'verified' }, { merge: true });
-            userStatus = 'verified';
-          }
-
-          if (userStatus !== 'verified') {
-            this.toastr.warning('Please verify your email before logging in.', 'Email Not Verified');
-            await signOut(this.auth);
-            return;
-          }
-        }
-
-        this.toastr.success('Welcome back!', 'Login Successful');
-
-        if (userRole === 'admin') {
-          this.router.navigate(['/admin/dashboard']);
-        } else if (userRole === 'staff') {
-          this.router.navigate(['/staff/dashboard']);
-        } else if (userRole === 'voter') {
-          this.router.navigate(['/voter/dashboard']);
-        } else {
-          this.toastr.error('Unauthorized role.', 'Login Failed');
-          await signOut(this.auth);
-        }
-      } else {
-        this.toastr.error('User record not found.', 'Login Failed');
-        await signOut(this.auth);
-      }
+      console.log('🔐 Calling authService.login()...');
+      // Use the auth service which handles login history logging
+      await this.authService.login(email, password);
+      this.toastr.success('Welcome back!', 'Login Successful');
+      // Navigation is handled by authService.redirectUser()
     } catch (error: any) {
       console.error('Login Error:', error);
 

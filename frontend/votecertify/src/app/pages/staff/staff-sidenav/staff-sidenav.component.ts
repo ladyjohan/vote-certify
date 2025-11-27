@@ -5,10 +5,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { RouterModule } from '@angular/router';
-import { getAuth, signOut, User } from '@angular/fire/auth';
+import { getAuth, User } from '@angular/fire/auth';
 import { Firestore, doc, getDoc } from '@angular/fire/firestore';
 import Swal from 'sweetalert2';
 import { ChatService } from '../../../services/chat.service';
+import { AuthService } from '../../../services/auth.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -26,7 +27,8 @@ export class StaffSidenavComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private firestore: Firestore,
-    private chatService: ChatService
+    private chatService: ChatService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -56,13 +58,6 @@ export class StaffSidenavComponent implements OnInit, OnDestroy {
     this.unreadSub = this.chatService.listenToUnreadCount(email, 'staff').subscribe((count) => {
       this.unreadCount = count;
     });
-
-    // Also refresh every 3 seconds to catch new requests/messages
-    setInterval(() => {
-      this.chatService.refreshUnreadCount(email, 'staff').then(() => {
-        // Count will be updated via the subject
-      });
-    }, 3000);
   }
 
   staffNavLinks = [
@@ -89,13 +84,7 @@ export class StaffSidenavComponent implements OnInit, OnDestroy {
     });
 
     if (result.isConfirmed) {
-      const auth = getAuth();
-      signOut(auth)
-        .then(() => {
-          console.log('✅ Staff logged out');
-          this.router.navigate(['/login']);
-        })
-        .catch(error => console.error('❌ Logout error:', error));
+      await this.authService.logout();
     }
   }
 }

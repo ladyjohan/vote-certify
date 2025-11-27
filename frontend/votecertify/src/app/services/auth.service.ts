@@ -1,4 +1,4 @@
-import { Injectable, inject, NgZone } from '@angular/core';
+import { Injectable, inject, NgZone, Injector, runInInjectionContext } from '@angular/core';
 import {
   Auth,
   createUserWithEmailAndPassword,
@@ -15,6 +15,7 @@ import { Firestore, doc, setDoc, getDoc, updateDoc } from '@angular/fire/firesto
 import { Router } from '@angular/router';
 import emailjs from 'emailjs-com';
 import { ToastrService } from 'ngx-toastr';
+import { LoginHistoryService } from './login-history.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -23,6 +24,8 @@ export class AuthService {
   private router: Router = inject(Router);
   private zone: NgZone = inject(NgZone);
   private toastr: ToastrService = inject(ToastrService);
+  private loginHistoryService: LoginHistoryService = inject(LoginHistoryService);
+  private injector: Injector = inject(Injector);
   private user: User | null = null;
 
   // EmailJS Configuration
@@ -153,6 +156,31 @@ export class AuthService {
         }
       }
 
+      // 🔴 LOG LOGIN EVENT TO FIRESTORE
+      try {
+        // Use runInInjectionContext to ensure we're in Angular's injection context
+        runInInjectionContext(this.injector, async () => {
+          console.log('🔐 Preparing to log login event...');
+          const userSnap = await getDoc(doc(this.firestore, 'users', user.uid));
+          const userData = userSnap.data();
+          console.log('👤 User data retrieved:', userData);
+          
+          const nameToLog = userData?.['name'] || 'Unknown';
+          console.log('📝 Calling loginHistoryService.logLogin with name:', nameToLog, 'role:', userRole);
+          
+          await this.loginHistoryService.logLogin(
+            user.email || '',
+            nameToLog,
+            userRole as 'admin' | 'staff'
+          );
+          console.log('✅✅ Login event recorded to Firestore successfully');
+        });
+      } catch (logError: any) {
+        console.error('❌ Could not log login event:', logError);
+        console.error('Error details:', logError?.message || logError);
+        // Don't block login if logging fails
+      }
+
       this.redirectUser(userRole);
       return userCredential;
     } catch (error: any) {
@@ -221,6 +249,17 @@ export class AuthService {
   /** Log out user */
   async logout(redirect: boolean = true) {
     try {
+      const user = this.auth.currentUser;
+      
+      // LOG LOGOUT EVENT TO FIRESTORE (before signing out)
+      if (user?.email) {
+        try {
+          await this.loginHistoryService.logLogout(user.email);
+        } catch (logError: any) {
+          console.warn('⚠️ Could not log logout event:', logError?.message);
+        }
+      }
+
       await signOut(this.auth);
       this.user = null;
       localStorage.clear();

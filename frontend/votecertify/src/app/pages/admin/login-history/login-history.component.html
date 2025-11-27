@@ -1,0 +1,144 @@
+<div class="login-history-container">
+  <div class="filters-section">
+    <h2>Login History</h2>
+    
+    <div class="search-box">
+      <span class="material-icons">search</span>
+      <input
+        type="text"
+        placeholder="Search by name or email..."
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="applyFilters()"
+      />
+    </div>
+
+    <select
+      [(ngModel)]="filterRole"
+      (ngModelChange)="applyFilters()"
+      class="role-filter"
+    >
+      <option value="all">All Roles</option>
+      <option value="admin">Admin</option>
+      <option value="staff">Staff</option>
+    </select>
+  </div>
+
+  <div class="stats-section">
+    <div class="stat-card">
+      <span class="stat-icon">👥</span>
+      <div>
+        <p class="stat-label">Total Records</p>
+        <p class="stat-value">{{ filteredHistory.length }}</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">🟢</span>
+      <div>
+        <p class="stat-label">Currently Online</p>
+        <p class="stat-value">{{ totalOnline }}</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">👨‍💼</span>
+      <div>
+        <p class="stat-label">Total Admins</p>
+        <p class="stat-value">{{ totalAdmins }}</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">👨‍💻</span>
+      <div>
+        <p class="stat-label">Total Staff</p>
+        <p class="stat-value">{{ totalStaff }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-section" *ngIf="filteredHistory.length > 0; else noDataState">
+    <div class="table-wrapper">
+      <table class="login-history-table">
+        <thead>
+          <tr>
+            <th class="row-number">#</th>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Login Time</th>
+            <th>Logout Time</th>
+            <th>Duration</th>
+            <th>Device</th>
+            <th>Browser</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let record of displayedHistory; let i = index" [class.active]="record.status === 'online'">
+            <td class="row-number">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+            <td class="name-cell">{{ record.userName }}</td>
+            <td class="email-cell">
+              <a href="mailto:{{ record.userEmail }}">{{ record.userEmail }}</a>
+            </td>
+            <td class="role-cell">
+              <span class="role-badge" [class]="record.role">
+                <span class="material-icons">{{ getRoleIcon(record.role) }}</span>
+                {{ record.role | uppercase }}
+              </span>
+            </td>
+            <td class="status-cell">
+              <span class="status-badge" [class]="record.status">
+                <span class="material-icons">{{ getStatusIcon(record.status) }}</span>
+                {{ record.status | uppercase }}
+              </span>
+            </td>
+            <td class="timestamp-cell">{{ formatTimestamp(record.loginTimestamp) }}</td>
+            <td class="timestamp-cell">{{ formatTimestamp(record.logoutTimestamp) }}</td>
+            <td class="duration-cell">{{ calculateSessionDuration(record.loginTimestamp, record.logoutTimestamp) }}</td>
+            <td class="device-cell">{{ record.deviceInfo }}</td>
+            <td class="browser-cell">{{ record.browserInfo }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-container *ngIf="filteredHistory.length === 0; else paginationSection">
+      <div class="no-data">
+        <span class="material-icons">history</span>
+        <p>No login records found</p>
+      </div>
+    </ng-container>
+
+    <ng-template #paginationSection>
+      <div class="pagination-section">
+        <div class="pagination">
+          <button class="page-btn prev" [disabled]="currentPage === 1" (click)="prevPage()">
+            ‹ Prev
+          </button>
+
+          <ng-container *ngFor="let page of pages">
+            <button
+              class="page-btn"
+              [class.active]="currentPage === page"
+              (click)="goToPage(page)"
+            >
+              {{ page }}
+            </button>
+          </ng-container>
+
+          <button class="page-btn next" [disabled]="currentPage === totalPages" (click)="nextPage()">
+            Next ›
+          </button>
+        </div>
+        <div class="pagination-info">
+          Page {{ currentPage }} of {{ totalPages }} — {{ filteredHistory.length }} total records
+        </div>
+      </div>
+    </ng-template>
+  </div>
+
+  <ng-template #noDataState>
+    <div class="no-data">
+      <span class="material-icons">history</span>
+      <p>No login records found</p>
+    </div>
+  </ng-template>
+</div>

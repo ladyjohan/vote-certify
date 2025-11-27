@@ -5,7 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { RouterModule } from '@angular/router';
-import { getAuth, signOut } from '@angular/fire/auth';
+import { AuthService } from '../../../services/auth.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -16,12 +16,13 @@ import Swal from 'sweetalert2';
   styleUrls: ['./admin-sidenav.component.scss']
 })
 export class AdminSidenavComponent {
-  constructor(private router: Router) {}
+  constructor(private router: Router, private authService: AuthService) {}
 
   adminNavLinks = [
     { label: 'Dashboard', icon: 'dashboard', route: '/admin/dashboard' },
     { label: 'Request Overview', icon: 'visibility', route: '/admin/request-overview' },
-    { label: 'User Management', icon: 'group', route: '/admin/user-management' }  // Updated route
+    { label: 'User Management', icon: 'group', route: '/admin/user-management' },
+    { label: 'Login History', icon: 'history', route: '/admin/login-history' }
   ];
 
 
@@ -41,13 +42,7 @@ async logout() {
   });
 
   if (result.isConfirmed) {
-    const auth = getAuth();
-    signOut(auth)
-      .then(() => {
-        console.log('✅ Admin logged out');
-        this.router.navigate(['/login']);
-      })
-      .catch(error => console.error('❌ Logout error:', error));
+    await this.authService.logout();
   }
 }
 }
