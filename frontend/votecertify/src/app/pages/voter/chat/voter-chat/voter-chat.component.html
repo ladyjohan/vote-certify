@@ -147,6 +147,7 @@
         rows="2"
         placeholder="Type your message..."
         (keydown.enter)="handleEnterKey($event)"
+        (focus)="markMessagesAsRead(selectedRequest!.id)"
         required
       ></textarea>
       <button type="submit" [disabled]="isSending || !messageText.trim()">Send</button>

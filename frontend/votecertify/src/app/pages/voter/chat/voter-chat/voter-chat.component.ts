@@ -343,7 +343,7 @@ export class VoterChatComponent implements OnInit, OnDestroy {
     }
   }
 
-  private async markMessagesAsRead(requestId: string): Promise<void> {
+  async markMessagesAsRead(requestId: string): Promise<void> {
     try {
       await this.chatService.markMessagesAsRead(requestId, 'voter');
     } catch (error) {
