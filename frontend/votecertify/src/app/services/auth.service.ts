@@ -156,29 +156,33 @@ export class AuthService {
         }
       }
 
-      // 🔴 LOG LOGIN EVENT TO FIRESTORE
-      try {
-        // Use runInInjectionContext to ensure we're in Angular's injection context
-        runInInjectionContext(this.injector, async () => {
-          console.log('🔐 Preparing to log login event...');
-          const userSnap = await getDoc(doc(this.firestore, 'users', user.uid));
-          const userData = userSnap.data();
-          console.log('👤 User data retrieved:', userData);
-          
-          const nameToLog = userData?.['name'] || 'Unknown';
-          console.log('📝 Calling loginHistoryService.logLogin with name:', nameToLog, 'role:', userRole);
-          
-          await this.loginHistoryService.logLogin(
-            user.email || '',
-            nameToLog,
-            userRole as 'admin' | 'staff'
-          );
-          console.log('✅✅ Login event recorded to Firestore successfully');
-        });
-      } catch (logError: any) {
-        console.error('❌ Could not log login event:', logError);
-        console.error('Error details:', logError?.message || logError);
-        // Don't block login if logging fails
+      // 🔴 LOG LOGIN EVENT TO FIRESTORE (admin and staff only)
+      if (userRole === 'admin' || userRole === 'staff') {
+        try {
+          // Use runInInjectionContext to ensure we're in Angular's injection context
+          runInInjectionContext(this.injector, async () => {
+            console.log('🔐 Preparing to log login event for', userRole);
+            const userSnap = await getDoc(doc(this.firestore, 'users', user.uid));
+            const userData = userSnap.data();
+            console.log('👤 User data retrieved:', userData);
+            
+            const nameToLog = userData?.['name'] || 'Unknown';
+            console.log('📝 Logging login for:', nameToLog, 'role:', userRole, 'email:', user.email);
+            
+            await this.loginHistoryService.logLogin(
+              user.email || '',
+              nameToLog,
+              userRole as 'admin' | 'staff'
+            );
+            console.log('✅✅ Login event recorded to Firestore successfully');
+          });
+        } catch (logError: any) {
+          console.error('❌ Could not log login event:', logError);
+          console.error('Error details:', logError?.message || logError);
+          // Don't block login if logging fails
+        }
+      } else {
+        console.log('⏭️ Skipping login history for voter role');
       }
 
       this.redirectUser(userRole);

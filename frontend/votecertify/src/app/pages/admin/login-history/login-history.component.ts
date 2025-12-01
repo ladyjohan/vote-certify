@@ -39,8 +39,12 @@ export class LoginHistoryComponent implements OnInit, OnDestroy {
         next: (history) => {
           console.log('✅ Real-time update received. Records:', history.length);
           
+          // Filter out any voter records - only show admin and staff
+          const filtered = history.filter((record: any) => record.role === 'admin' || record.role === 'staff');
+          console.log('🔐 After filtering voters. Records:', filtered.length);
+          
           // Debug: Show logout timestamps for any logged-out users
-          const loggedOut = history.filter(r => r.status === 'logged_out');
+          const loggedOut = filtered.filter(r => r.status === 'logged_out');
           if (loggedOut.length > 0) {
             console.log('📊 Logged out records found:', loggedOut.length);
             loggedOut.forEach(r => {
@@ -48,7 +52,7 @@ export class LoginHistoryComponent implements OnInit, OnDestroy {
             });
           }
           
-          this.loginHistory = history;
+          this.loginHistory = filtered;
           this.applyFilters();
         },
         error: (error) => {
