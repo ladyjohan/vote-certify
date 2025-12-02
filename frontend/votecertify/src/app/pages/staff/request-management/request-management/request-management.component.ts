@@ -431,8 +431,7 @@ export class RequestManagementComponent implements OnInit {
     const templateParams = {
       name: request.fullName,
       pickup_date: pickupDate,
-      claim_time: slotLabel,
-      copies_requested: request.copiesRequested,
+      time_slot: slotLabel,
       email: request.email
     };
 
