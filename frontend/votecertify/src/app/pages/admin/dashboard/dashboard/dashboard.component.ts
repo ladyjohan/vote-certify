@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { Firestore, collection, getDocs, query, where, Timestamp } from '@angular/fire/firestore';
 import {
   Chart,
@@ -44,19 +44,29 @@ export class AdminDashboardComponent implements OnInit {
   selectedMonth: number;
   selectedYear: number;
 
-  constructor(private firestore: Firestore, private analyticsService: AppAnalyticsService) {
+  constructor(private firestore: Firestore, private analyticsService: AppAnalyticsService, private ngZone: NgZone) {
     const now = new Date();
     this.selectedMonth = now.getMonth();
     this.selectedYear = now.getFullYear();
+    // Subscribe to real-time analytics updates
     this.analytics$ = this.analyticsService.getAnalytics();
   }
 
   async ngOnInit() {
-    await this.getStaffStats();
-    await this.getProcessedCertificatesStats();
-    await this.getTodaysRequests();
-    await this.getTotalVoterAccounts();
-    await this.loadAnalyticsForRange(this.selectedRange);
+    this.ngZone.runOutsideAngular(async () => {
+      try {
+        await this.getStaffStats();
+        await this.getProcessedCertificatesStats();
+        await this.getTodaysRequests();
+        await this.getTotalVoterAccounts();
+        await this.loadAnalyticsForRange(this.selectedRange);
+        
+        // Refresh analytics on page load
+        this.analyticsService.refreshAnalytics();
+      } catch (error) {
+        console.error('Dashboard initialization error:', error);
+      }
+    });
   }
 
   /**
@@ -68,39 +78,79 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   async getStaffStats() {
-    const usersRef = collection(this.firestore, 'users');
-    const staffQuery = query(usersRef, where('role', '==', 'staff'));
-    const staffSnapshot = await getDocs(staffQuery);
-    this.totalStaff = staffSnapshot.size;
+    return new Promise((resolve) => {
+      this.ngZone.run(async () => {
+        try {
+          const usersRef = collection(this.firestore, 'users');
+          const staffQuery = query(usersRef, where('role', '==', 'staff'));
+          const staffSnapshot = await getDocs(staffQuery);
+          this.totalStaff = staffSnapshot.size;
+          resolve(undefined);
+        } catch (error) {
+          console.warn('Error fetching staff stats:', error);
+          resolve(undefined);
+        }
+      });
+    });
   }
 
   async getProcessedCertificatesStats() {
-    const requestsRef = collection(this.firestore, 'requests');
-    const processedQuery = query(requestsRef, where('status', '==', 'Completed'));
-    const processedSnapshot = await getDocs(processedQuery);
-    this.totalProcessed = processedSnapshot.size;
+    return new Promise((resolve) => {
+      this.ngZone.run(async () => {
+        try {
+          const requestsRef = collection(this.firestore, 'requests');
+          const processedQuery = query(requestsRef, where('status', '==', 'Completed'));
+          const processedSnapshot = await getDocs(processedQuery);
+          this.totalProcessed = processedSnapshot.size;
+          resolve(undefined);
+        } catch (error) {
+          console.warn('Error fetching processed certificates:', error);
+          resolve(undefined);
+        }
+      });
+    });
   }
 
   async getTodaysRequests() {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(start);
-    end.setDate(end.getDate() + 1);
-    const requestsRef = collection(this.firestore, 'requests');
-    const q = query(
-      requestsRef,
-      where('submittedAt', '>=', Timestamp.fromDate(start)),
-      where('submittedAt', '<', Timestamp.fromDate(end))
-    );
-    const snap = await getDocs(q);
-    this.todaysRequests = snap.size;
+    return new Promise((resolve) => {
+      this.ngZone.run(async () => {
+        try {
+          const start = new Date();
+          start.setHours(0, 0, 0, 0);
+          const end = new Date(start);
+          end.setDate(end.getDate() + 1);
+          const requestsRef = collection(this.firestore, 'requests');
+          const q = query(
+            requestsRef,
+            where('submittedAt', '>=', Timestamp.fromDate(start)),
+            where('submittedAt', '<', Timestamp.fromDate(end))
+          );
+          const snap = await getDocs(q);
+          this.todaysRequests = snap.size;
+          resolve(undefined);
+        } catch (error) {
+          console.warn('Error fetching today requests:', error);
+          resolve(undefined);
+        }
+      });
+    });
   }
 
   async getTotalVoterAccounts() {
-    const usersRef = collection(this.firestore, 'users');
-    const voterQ = query(usersRef, where('role', '==', 'voter'));
-    const snap = await getDocs(voterQ);
-    this.totalVoterAccounts = snap.size;
+    return new Promise((resolve) => {
+      this.ngZone.run(async () => {
+        try {
+          const usersRef = collection(this.firestore, 'users');
+          const voterQ = query(usersRef, where('role', '==', 'voter'));
+          const snap = await getDocs(voterQ);
+          this.totalVoterAccounts = snap.size;
+          resolve(undefined);
+        } catch (error) {
+          console.warn('Error fetching voter accounts:', error);
+          resolve(undefined);
+        }
+      });
+    });
   }
 
   formatDayShort(d: Date) {
@@ -116,83 +166,92 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   async loadAnalyticsForRange(range: 'thisWeek' | 'thisMonth' | 'thisYear') {
-    const now = new Date();
-    let startDate: Date;
-    let endDate: Date;
+    return new Promise((resolve) => {
+      this.ngZone.run(async () => {
+        try {
+          const now = new Date();
+          let startDate: Date;
+          let endDate: Date;
 
-    if (range === 'thisWeek') {
-      const day = now.getDay();
-      const mondayOffset = (day === 0) ? -6 : 1 - day;
-      startDate = new Date(now);
-      startDate.setDate(now.getDate() + mondayOffset);
-      startDate.setHours(0, 0, 0, 0);
-      endDate = new Date(startDate);
-      endDate.setDate(endDate.getDate() + 7);
-      this.chartTitle = `Requests This Week (${this.formatDateShort(startDate)} - ${this.formatDateShort(new Date(endDate.getTime() - 1))})`;
-    } else if (range === 'thisYear') {
-      startDate = new Date(this.selectedYear, 0, 1);
-      endDate = new Date(this.selectedYear + 1, 0, 1);
-      this.chartTitle = `Requests for Year ${this.selectedYear}`;
-    } else {
-      startDate = new Date(this.selectedYear, this.selectedMonth, 1);
-      endDate = new Date(this.selectedYear, this.selectedMonth + 1, 1);
-      this.chartTitle = `Requests for ${this.months[this.selectedMonth]} ${this.selectedYear}`;
-    }
+          if (range === 'thisWeek') {
+            const day = now.getDay();
+            const mondayOffset = (day === 0) ? -6 : 1 - day;
+            startDate = new Date(now);
+            startDate.setDate(now.getDate() + mondayOffset);
+            startDate.setHours(0, 0, 0, 0);
+            endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + 7);
+            this.chartTitle = `Requests This Week (${this.formatDateShort(startDate)} - ${this.formatDateShort(new Date(endDate.getTime() - 1))})`;
+          } else if (range === 'thisYear') {
+            startDate = new Date(this.selectedYear, 0, 1);
+            endDate = new Date(this.selectedYear + 1, 0, 1);
+            this.chartTitle = `Requests for Year ${this.selectedYear}`;
+          } else {
+            startDate = new Date(this.selectedYear, this.selectedMonth, 1);
+            endDate = new Date(this.selectedYear, this.selectedMonth + 1, 1);
+            this.chartTitle = `Requests for ${this.months[this.selectedMonth]} ${this.selectedYear}`;
+          }
 
-    const requestsRef = collection(this.firestore, 'requests');
-    const q = query(
-      requestsRef,
-      where('submittedAt', '>=', Timestamp.fromDate(startDate)),
-      where('submittedAt', '<', Timestamp.fromDate(endDate))
-    );
-    const snap = await getDocs(q);
+          const requestsRef = collection(this.firestore, 'requests');
+          const q = query(
+            requestsRef,
+            where('submittedAt', '>=', Timestamp.fromDate(startDate)),
+            where('submittedAt', '<', Timestamp.fromDate(endDate))
+          );
+          const snap = await getDocs(q);
 
-    const statusCounts = { approved: 0, pending: 0, declined: 0 };
-    const timestamps: Date[] = [];
+          const statusCounts = { approved: 0, pending: 0, declined: 0 };
+          const timestamps: Date[] = [];
 
-    snap.forEach(d => {
-      const data: any = d.data();
-      const sa = data['submittedAt'];
-      const dt = sa?.toDate ? sa.toDate() : new Date(sa);
-      timestamps.push(dt);
-      const st = (data['status'] || '').toLowerCase();
-      if (st.includes('approved') || st.includes('completed')) statusCounts.approved++;
-      else if (st.includes('decline') || st.includes('rejected')) statusCounts.declined++;
-      else statusCounts.pending++;
+          snap.forEach(d => {
+            const data: any = d.data();
+            const sa = data['submittedAt'];
+            const dt = sa?.toDate ? sa.toDate() : new Date(sa);
+            timestamps.push(dt);
+            const st = (data['status'] || '').toLowerCase();
+            if (st.includes('approved') || st.includes('completed')) statusCounts.approved++;
+            else if (st.includes('decline') || st.includes('rejected')) statusCounts.declined++;
+            else statusCounts.pending++;
+          });
+
+          this.analyticsTotals.total = snap.size;
+          this.analyticsTotals.approved = statusCounts.approved;
+          this.analyticsTotals.pending = statusCounts.pending;
+          this.analyticsTotals.declined = statusCounts.declined;
+
+          let labels: string[] = [];
+          let seriesTotal: number[] = [];
+
+          if (range === 'thisYear') {
+            labels = this.months;
+            seriesTotal = new Array(12).fill(0);
+            timestamps.forEach(dt => seriesTotal[dt.getMonth()]++);
+          } else if (range === 'thisWeek') {
+            labels = Array.from({ length: 7 }, (_, i) => {
+              const d = new Date(startDate);
+              d.setDate(startDate.getDate() + i);
+              return this.formatDayShort(d);
+            });
+            seriesTotal = new Array(7).fill(0);
+            timestamps.forEach(dt => {
+              const diff = Math.floor((dt.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+              if (diff >= 0 && diff < 7) seriesTotal[diff]++;
+            });
+          } else {
+            const daysInMonth = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+            labels = Array.from({ length: daysInMonth }, (_, i) => `Day ${i + 1}`);
+            seriesTotal = new Array(daysInMonth).fill(0);
+            timestamps.forEach(dt => seriesTotal[dt.getDate() - 1]++);
+          }
+
+          this.renderChart(labels, seriesTotal);
+          resolve(undefined);
+        } catch (error) {
+          console.warn('Error loading analytics for range:', error);
+          resolve(undefined);
+        }
+      });
     });
-
-    this.analyticsTotals.total = snap.size;
-    this.analyticsTotals.approved = statusCounts.approved;
-    this.analyticsTotals.pending = statusCounts.pending;
-    this.analyticsTotals.declined = statusCounts.declined;
-
-    let labels: string[] = [];
-    let seriesTotal: number[] = [];
-
-    if (range === 'thisYear') {
-      labels = this.months;
-      seriesTotal = new Array(12).fill(0);
-      timestamps.forEach(dt => seriesTotal[dt.getMonth()]++);
-    } else if (range === 'thisWeek') {
-      labels = Array.from({ length: 7 }, (_, i) => {
-        const d = new Date(startDate);
-        d.setDate(startDate.getDate() + i);
-        return this.formatDayShort(d);
-      });
-      seriesTotal = new Array(7).fill(0);
-      timestamps.forEach(dt => {
-        const diff = Math.floor((dt.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-        if (diff >= 0 && diff < 7) seriesTotal[diff]++;
-      });
-    } else {
-      const daysInMonth = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-      labels = Array.from({ length: daysInMonth }, (_, i) => `Day ${i + 1}`);
-      seriesTotal = new Array(daysInMonth).fill(0);
-      timestamps.forEach(dt => seriesTotal[dt.getDate() - 1]++);
-    }
-
-    this.renderChart(labels, seriesTotal);
-    return { labels, seriesTotal, totals: this.analyticsTotals };
   }
 
   renderChart(labels: string[], dataSet: number[]) {

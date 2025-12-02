@@ -15,10 +15,10 @@
    WELCOME SECTION (Welcome + Analytics side by side)
 =========================== */
 .welcome-section {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 1.5rem;
   align-items: stretch;
-  flex-wrap: wrap;
 }
 
 /* ===========================
@@ -32,9 +32,6 @@
   border-radius: 16px;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
   padding: 1rem;
-  flex: 1;
-  min-width: 400px;
-  flex-wrap: wrap;
   align-self: stretch;
 }
 
@@ -45,7 +42,7 @@
 
 .welcome-content {
   flex: 1;
-  min-width: 250px;
+  min-width: 200px;
 }
 
 .welcome-content h1 {
@@ -176,8 +173,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  width: 280px;
-  flex-shrink: 0;
   justify-content: space-between;
   align-self: stretch;
 
@@ -400,17 +395,11 @@
 =========================== */
 @media (max-width: 1024px) {
   .welcome-section {
-    flex-direction: column;
-    align-items: stretch;
+    grid-template-columns: 1fr;
   }
 
   .welcome-card {
-    min-width: unset;
-    flex: 1;
-  }
-
-  .card.analytics {
-    width: 100%;
+    flex-wrap: wrap;
   }
 }
 
@@ -436,6 +425,10 @@
 @media (max-width: 480px) {
   .dashboard-container {
     padding: 1rem;
+  }
+
+  .welcome-section {
+    grid-template-columns: 1fr;
   }
 
   .welcome-card {

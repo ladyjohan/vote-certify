@@ -252,13 +252,17 @@ export class AuthService {
 
   /** Fetch user role from Firestore */
   async getUserRole(uid: string): Promise<string | null> {
-    try {
-      const userSnap = await getDoc(doc(this.firestore, 'users', uid));
-      return userSnap.exists() ? (userSnap.data()['role'] as string) : null;
-    } catch (error) {
-      console.error('❌ Error fetching user role:', error);
-      return null;
-    }
+    return new Promise((resolve) => {
+      this.zone.run(async () => {
+        try {
+          const userSnap = await getDoc(doc(this.firestore, 'users', uid));
+          resolve(userSnap.exists() ? (userSnap.data()['role'] as string) : null);
+        } catch (error) {
+          console.error('❌ Error fetching user role:', error);
+          resolve(null);
+        }
+      });
+    });
   }
 
   /** Verify Email in Firestore */

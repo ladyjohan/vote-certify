@@ -30,6 +30,28 @@ service cloud.firestore {
     }
 
     // =========================
+    // ANALYTICS COLLECTION
+    // =========================
+    // Lightweight visitor tracking - unauthenticated access allowed
+    // Only tracks aggregated daily data to minimize quota usage
+    match /analytics/{date} {
+      // READ: Only admin/staff can read analytics
+      allow read: if request.auth != null && isStaffLike();
+
+      // CREATE/UPDATE: Unauthenticated visitors can track visits
+      // Limited to small data writes: totalVisits, uniqueUsers counts only
+      allow create, update: if 
+        request.resource.data.keys().hasOnly(['date', 'totalVisits', 'uniqueUsers', 'uniqueUserIds']) &&
+        request.resource.data.totalVisits is int &&
+        request.resource.data.uniqueUsers is int &&
+        request.resource.data.uniqueUserIds is list &&
+        request.resource.data.uniqueUserIds.size() <= 1000;
+      
+      // DELETE: Only admin can delete analytics
+      allow delete: if request.auth != null && isStaffLike();
+    }
+
+    // =========================
     // LOGIN HISTORY COLLECTION
     // =========================
     match /login_history/{document=**} {
