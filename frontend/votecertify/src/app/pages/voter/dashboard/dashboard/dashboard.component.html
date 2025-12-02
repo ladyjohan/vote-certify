@@ -48,12 +48,17 @@
         <button routerLink="/voter/certificate-status">View Certificate History</button>
         <button
           routerLink="/voter/request-form"
-          [disabled]="currentRequest && currentRequest.status === 'Pending'"
-          [ngClass]="{'disabled-btn': currentRequest && currentRequest.status === 'Pending'}"
+          [disabled]="(currentRequest && currentRequest.status === 'Pending') || isInCooldown"
+          [ngClass]="{'disabled-btn': (currentRequest && currentRequest.status === 'Pending') || isInCooldown}"
         >Request New Certificate</button>
       </div>
       <div *ngIf="currentRequest && currentRequest.status === 'Pending'" class="pending-msg">
        *You can't request a new one because your request is still <b class="pending-orange">Pending</b>. Please wait until it is Approved or Declined.*
+      </div>
+      <div *ngIf="isInCooldown" class="cooldown-msg">
+        <strong>Request Cooldown Active</strong>
+        <p>You may request again after <strong>{{ daysRemaining }} day{{ daysRemaining !== 1 ? 's' : '' }}</strong>.</p>
+        <p class="small-text">You can only submit one voter certificate request every 3 months.</p>
       </div>
     </div>
     <div class="dashboard-row-card dashboard-info">

@@ -17,6 +17,8 @@ export class VoterDashboardComponent implements OnInit {
   currentDateTime: string = '';
   currentRequest: any = null;
   allRequests: any[] = [];
+  isInCooldown: boolean = false;
+  daysRemaining: number = 0;
   private intervalId: any;
 
   // Time slots (30-minute intervals from 9:00 AM to 2:30 PM, 1 person per slot, excluding 12:00 PM - 1:00 PM)
@@ -40,6 +42,7 @@ export class VoterDashboardComponent implements OnInit {
     this.updateDateTime();
     this.intervalId = setInterval(() => this.updateDateTime(), 1000);
     this.fetchCurrentRequest();
+    this.checkRequestCooldown();
   }
 
   ngOnDestroy() {
@@ -109,5 +112,90 @@ export class VoterDashboardComponent implements OnInit {
   getTimeSlotLabel(timeSlotValue: string): string {
     const slot = this.timeSlots.find(s => s.value === timeSlotValue);
     return slot ? slot.label : timeSlotValue;
+  }
+
+  async checkRequestCooldown() {
+    this.auth.onAuthStateChanged(async (user: any) => {
+      if (!user) {
+        this.isInCooldown = false;
+        this.daysRemaining = 0;
+        return;
+      }
+
+      try {
+        const requestsRef = collection(this.firestore, 'requests');
+        
+        // Get all requests and filter client-side
+        const allSnapshot = await getDocs(requestsRef);
+
+        // Filter by user email and completed status
+        const userEmail = user.email?.toLowerCase();
+        const completedRequests = allSnapshot.docs
+          .filter(doc => {
+            const data = doc.data();
+            return data['email']?.toLowerCase() === userEmail && 
+                   ['Completed', 'Claimed', 'Ready for Pickup'].includes(data['status']);
+          })
+          .map(doc => doc.data());
+
+        if (completedRequests.length === 0) {
+          this.isInCooldown = false;
+          this.daysRemaining = 0;
+          return;
+        }
+
+        // Get the most recent completed request
+        let mostRecentDate: Date | null = null;
+        
+        completedRequests.forEach((data: any) => {
+          const completedAt = data['completedAt'] || data['claimedAt'] || data['approvedAt'] || data['pickupDate'] || data['submittedAt'];
+          
+          if (completedAt) {
+            let dateObj: Date;
+            
+            if (completedAt.toDate) {
+              dateObj = completedAt.toDate();
+            } else if (completedAt instanceof Date) {
+              dateObj = completedAt;
+            } else if (typeof completedAt === 'string') {
+              dateObj = new Date(completedAt);
+            } else {
+              dateObj = new Date(completedAt);
+            }
+
+            if (!mostRecentDate || dateObj > mostRecentDate) {
+              mostRecentDate = dateObj;
+            }
+          }
+        });
+
+        if (!mostRecentDate) {
+          this.isInCooldown = false;
+          this.daysRemaining = 0;
+          return;
+        }
+
+        // Calculate days until next request is allowed (3 months = 90 days)
+        const COOLDOWN_DAYS = 90;
+        const nextRequestDate = new Date(mostRecentDate);
+        nextRequestDate.setDate(nextRequestDate.getDate() + COOLDOWN_DAYS);
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const timeRemaining = nextRequestDate.getTime() - today.getTime();
+        const daysLeft = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24));
+
+        if (daysLeft > 0) {
+          this.isInCooldown = true;
+          this.daysRemaining = daysLeft;
+        } else {
+          this.isInCooldown = false;
+          this.daysRemaining = 0;
+        }
+      } catch (error) {
+        console.error('Error checking request cooldown:', error);
+      }
+    });
   }
 }

@@ -19,6 +19,134 @@ h2 {
   letter-spacing: 0.5px;
 }
 
+/* Cooldown Warning Styles */
+.cooldown-warning {
+  margin-bottom: 20px;
+  padding: 16px;
+  background-color: #ffe6e6;
+  border: 2px solid #dc3545;
+  border-radius: 8px;
+  animation: slideDown 0.3s ease-out;
+}
+
+.cooldown-warning .cooldown-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  
+  i {
+    font-size: 1.5rem;
+    color: #dc3545;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+}
+
+.cooldown-message .message-content {
+  flex: 1;
+  
+  strong {
+    display: block;
+    color: #dc3545;
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+  }
+
+  p {
+    margin: 4px 0;
+    color: #721c24;
+    font-size: 0.95rem;
+    line-height: 1.4;
+
+    strong {
+      display: inline;
+      font-size: 1rem;
+      color: #dc3545;
+    }
+
+    &.small-text {
+      font-size: 0.85rem;
+      color: #853636;
+      margin-top: 8px;
+    }
+  }
+}
+
+/* Pending Request Warning */
+.pending-warning {
+  margin-bottom: 20px;
+  padding: 16px;
+  background-color: #fff3cd;
+  border: 2px solid #ffc107;
+  border-radius: 8px;
+  animation: slideDown 0.3s ease-out;
+}
+
+.pending-warning .warning-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  
+  i {
+    font-size: 1.5rem;
+    color: #ff9800;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+}
+
+/* Approved Request Warning */
+.approved-warning {
+  margin-bottom: 20px;
+  padding: 16px;
+  background-color: #d4edda;
+  border: 2px solid #28a745;
+  border-radius: 8px;
+  animation: slideDown 0.3s ease-out;
+}
+
+.approved-warning .warning-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  
+  i {
+    font-size: 1.5rem;
+    color: #28a745;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+}
+
+.warning-message .message-content {
+  flex: 1;
+  
+  strong {
+    display: block;
+    color: #333;
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+  }
+
+  p {
+    margin: 4px 0;
+    color: #555;
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 label {
   font-size: 1rem;
   font-weight: 500;

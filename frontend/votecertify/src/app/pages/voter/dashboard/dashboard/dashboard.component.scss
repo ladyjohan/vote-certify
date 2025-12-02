@@ -326,6 +326,52 @@
   margin-top: 2px;
   font-weight: 500;
 }
+
+.cooldown-msg {
+  background-color: #ffe6e6;
+  border: 2px solid #dc3545;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 12px;
+  color: #721c24;
+  animation: slideDown 0.3s ease-out;
+
+  strong {
+    display: block;
+    color: #dc3545;
+    font-size: 1.05rem;
+    margin-bottom: 8px;
+  }
+
+  p {
+    margin: 6px 0;
+    font-size: 0.95rem;
+    line-height: 1.4;
+
+    strong {
+      display: inline;
+      font-size: 1rem;
+      color: #dc3545;
+    }
+
+    &.small-text {
+      font-size: 0.85rem;
+      color: #853636;
+      margin-top: 8px;
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 .dashboard-card h2 {
   font-size: 1.3rem;
   font-weight: 700;

@@ -25,6 +25,9 @@ export class RequestFormComponent implements OnInit {
   birthdate: string = '';
   hasPendingRequest: boolean = false;  // Flag to track if the user has a pending or approved request
   hasApprovedRequest: boolean = false;  // Flag to track if the user has an approved but not completed request
+  isInCooldown: boolean = false;  // Flag to track if user is in 3-month cooldown
+  daysRemaining: number = 0;  // Days until user can request again
+  lastCompletedDate: Date | null = null;  // Date when last request was completed
 
   constructor(
     private firestore: Firestore,
@@ -46,6 +49,7 @@ export class RequestFormComponent implements OnInit {
         this.currentUser = user;
         await this.fetchVoterDetails(user.email);
         await this.checkForPendingOrApprovedRequest(); // Check if the user has a pending or approved request
+        await this.checkRequestCooldown(); // Check if user is in 3-month cooldown
       }
     });
   }
@@ -101,11 +105,13 @@ export class RequestFormComponent implements OnInit {
   }
 
   async submitRequest() {
-    if (this.requestForm.invalid || this.voterNotFound || this.hasPendingRequest || this.hasApprovedRequest) {
+    if (this.requestForm.invalid || this.voterNotFound || this.hasPendingRequest || this.hasApprovedRequest || this.isInCooldown) {
       if (this.hasPendingRequest) {
         Swal.fire('Pending Request', 'You already have a pending request. Please wait for it to be processed before submitting a new one.', 'warning');
       } else if (this.hasApprovedRequest) {
         Swal.fire('Approved Request', 'You still haven\'t claimed your voter certificate at the office. Please claim it before requesting a new one.', 'warning');
+      } else if (this.isInCooldown) {
+        Swal.fire('Request Cooldown', `You may request again after ${this.daysRemaining} day${this.daysRemaining !== 1 ? 's' : ''}. You can only submit one request every 3 months.`, 'warning');
       } else {
         Swal.fire('Incomplete Form', 'Please fill in all fields correctly.', 'warning');
       }
@@ -210,5 +216,90 @@ export class RequestFormComponent implements OnInit {
     const approvedQuery = query(requestsRef, where('email', '==', this.currentUser?.email), where('status', '==', 'Approved'));
     const approvedSnapshot = await getDocs(approvedQuery);
     this.hasApprovedRequest = !approvedSnapshot.empty;
+  }
+
+  async checkRequestCooldown() {
+    try {
+      const requestsRef = collection(this.firestore, 'requests');
+      
+      // Check for completed requests (status = 'Completed', 'Claimed', or 'Ready for Pickup')
+      // These statuses indicate the user has received or is ready to receive their certificate
+      const completedQuery = query(
+        requestsRef, 
+        where('email', '==', this.currentUser?.email), 
+        where('status', 'in', ['Completed', 'Claimed', 'Ready for Pickup'])
+      );
+      const completedSnapshot = await getDocs(completedQuery);
+
+      if (completedSnapshot.empty) {
+        // No completed requests, no cooldown
+        this.isInCooldown = false;
+        this.daysRemaining = 0;
+        console.log('✅ No completed requests found - no cooldown');
+        return;
+      }
+
+      // Get the most recent completed request
+      let mostRecentDate: Date | null = null;
+      let mostRecentStatus = '';
+      
+      completedSnapshot.forEach((doc) => {
+        const data = doc.data();
+        const completedAt = data['completedAt'] || data['claimedAt'] || data['approvedAt'] || data['pickupDate'] || data['submittedAt'];
+        
+        if (completedAt) {
+          let dateObj: Date;
+          
+          // Handle both Firestore Timestamp and Date objects
+          if (completedAt.toDate) {
+            dateObj = completedAt.toDate();
+          } else if (completedAt instanceof Date) {
+            dateObj = completedAt;
+          } else if (typeof completedAt === 'string') {
+            dateObj = new Date(completedAt);
+          } else {
+            dateObj = new Date(completedAt);
+          }
+
+          if (!mostRecentDate || dateObj > mostRecentDate) {
+            mostRecentDate = dateObj;
+            mostRecentStatus = data['status'];
+          }
+        }
+      });
+
+      if (!mostRecentDate) {
+        this.isInCooldown = false;
+        this.daysRemaining = 0;
+        console.log('✅ No completed date found - no cooldown');
+        return;
+      }
+
+      this.lastCompletedDate = mostRecentDate;
+      console.log(`📅 Most recent completed request: ${mostRecentStatus} on ${mostRecentDate}`);
+
+      // Calculate days until next request is allowed (3 months = 90 days)
+      const COOLDOWN_DAYS = 90;
+      const nextRequestDate = new Date(mostRecentDate);
+      nextRequestDate.setDate(nextRequestDate.getDate() + COOLDOWN_DAYS);
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Reset to start of day for accurate comparison
+      
+      const timeRemaining = nextRequestDate.getTime() - today.getTime();
+      const daysLeft = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24));
+
+      if (daysLeft > 0) {
+        this.isInCooldown = true;
+        this.daysRemaining = daysLeft;
+        console.log(`📅 User is in cooldown. Days remaining: ${this.daysRemaining}`);
+      } else {
+        this.isInCooldown = false;
+        this.daysRemaining = 0;
+        console.log('✅ Cooldown period has ended');
+      }
+    } catch (error) {
+      console.error('Error checking request cooldown:', error);
+    }
   }
 }
