@@ -141,18 +141,39 @@ export class AuthService {
       // Skip email verification for Admin
       if (userRole !== 'admin') {
         await user.reload(); // Ensure latest verification status
+        console.log('📧 Email verification check - emailVerified:', user.emailVerified);
 
         if (!user.emailVerified) {
-          this.toastr.warning('Please verify your email before logging in.');
-          await this.logout();
-          return;
+          console.warn('⚠️ Email not verified in Firebase Auth');
+          await this.logout(false);
+          throw new Error('Email not verified. Please verify your email before logging in.');
         }
 
+        console.log('✅ Email verified in Firebase Auth, checking Firestore status...');
         const userSnap = await getDoc(doc(this.firestore, 'users', user.uid));
-        if (!userSnap.exists() || userSnap.data()['status'] !== 'verified') {
-          this.toastr.warning('Your account verification is pending.');
-          await this.logout();
-          return;
+        if (!userSnap.exists()) {
+          console.error('❌ User document not found in Firestore');
+          await this.logout(false);
+          throw new Error('User profile not found. Please contact support.');
+        }
+        
+        const userData = userSnap.data();
+        const userStatus = userData['status'];
+        console.log('📄 User status in Firestore:', userStatus);
+        
+        if (userStatus !== 'verified') {
+          console.warn('⚠️ User status is:', userStatus, '- expected "verified". Attempting auto-update...');
+          
+          // If email is verified in Firebase but not in Firestore, auto-update it
+          try {
+            console.log('🔄 Auto-updating Firestore status to "verified"...');
+            await this.verifyEmail(user.uid);
+            console.log('✅ Successfully auto-updated Firestore status');
+          } catch (updateError) {
+            console.error('❌ Failed to auto-update status:', updateError);
+            await this.logout(false);
+            throw new Error('Your account verification is pending. Please check your email.');
+          }
         }
       }
 
@@ -243,10 +264,24 @@ export class AuthService {
   /** Verify Email in Firestore */
   async verifyEmail(uid: string) {
     try {
-      await updateDoc(doc(this.firestore, 'users', uid), { status: 'verified' });
-      console.log('✅ Email verified in Firestore.');
+      console.log('📝 Attempting to update Firestore status for UID:', uid);
+      const userRef = doc(this.firestore, 'users', uid);
+      
+      // First check if document exists
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) {
+        throw new Error(`User document not found for UID: ${uid}`);
+      }
+      
+      console.log('📄 User document found, current status:', userSnap.data()['status']);
+      
+      // Update the status to verified
+      await updateDoc(userRef, { status: 'verified' });
+      console.log('✅ Email verified in Firestore. Status updated to "verified".');
+      return true;
     } catch (error) {
       console.error('❌ Error verifying email:', error);
+      throw error; // Rethrow so caller knows if it failed
     }
   }
 

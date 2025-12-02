@@ -771,11 +771,15 @@
     flex-direction: row;
     order: 1;
     gap: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .logo-display {
     width: 160px;
     height: 160px;
+    flex-shrink: 0;
   }
 
   .system-branding {
@@ -932,11 +936,16 @@
     width: 100%;
     order: 1;
     gap: 1rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
   }
 
   .logo-display {
     width: 130px;
     height: 130px;
+    flex-shrink: 0;
   }
 
   .hero-features {
@@ -963,6 +972,92 @@
   .scroll-indicator {
     bottom: 15px;
     font-size: 0.8rem;
+  }
+}
+
+// Extra small devices (like older iPhones - 375px and below)
+@media (max-width: 375px) {
+  .navbar {
+    padding: 0.8rem;
+  }
+
+  .navbar-brand {
+    margin-left: 0.5rem;
+  }
+
+  .navbar-logo {
+    height: 24px;
+  }
+
+  .brand-name {
+    font-size: 0.9rem;
+  }
+
+  .hero-wrapper {
+    gap: 0.8rem;
+    padding: 1rem 0;
+  }
+
+  .hero-content {
+    padding: 0 0.8rem;
+    gap: 0.2rem;
+  }
+
+  .system-branding {
+    margin-top: 0.3rem;
+  }
+
+  .system-name {
+    font-size: 2rem;
+  }
+
+  .system-tagline {
+    font-size: 0.75rem;
+  }
+
+  .hero-title {
+    font-size: 1rem;
+  }
+
+  .hero-description {
+    font-size: 0.8rem;
+  }
+
+  .button-group {
+    gap: 0.6rem;
+    margin-top: 0.6rem;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+
+  .hero-illustration {
+    height: 200px;
+    gap: 0.8rem;
+  }
+
+  .logo-display {
+    width: 110px;
+    height: 110px;
+  }
+
+  .hero-features {
+    padding: 0;
+  }
+
+  .feature-card {
+    padding: 1rem;
+  }
+
+  .feature-icon {
+    font-size: 1.8rem;
+  }
+
+  .feature-card h3 {
+    font-size: 0.9rem;
   }
 }
 

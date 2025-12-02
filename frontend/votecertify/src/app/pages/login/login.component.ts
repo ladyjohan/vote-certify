@@ -75,17 +75,27 @@ export class LoginComponent implements OnInit {
     } catch (error: any) {
       console.error('Login Error:', error);
 
-      if (error.code === 'auth/user-not-found') {
+      // Check if error is a custom validation error (verification, profile check, etc.)
+      if (error.message && error.message.includes('verification')) {
+        this.errorMessage = error.message;
+        this.toastr.warning(this.errorMessage, 'Verification Required');
+      } else if (error.code === 'auth/user-not-found') {
         this.errorMessage = 'No account found with this email.';
+        this.toastr.error(this.errorMessage, 'Login Failed');
       } else if (error.code === 'auth/wrong-password') {
         this.errorMessage = 'Incorrect password. Please try again.';
+        this.toastr.error(this.errorMessage, 'Login Failed');
       } else if (error.code === 'auth/invalid-email') {
         this.errorMessage = 'Invalid email format.';
+        this.toastr.error(this.errorMessage, 'Login Failed');
+      } else if (error.message) {
+        // Handle other custom errors from auth service
+        this.errorMessage = error.message;
+        this.toastr.error(this.errorMessage, 'Login Failed');
       } else {
         this.errorMessage = 'Login failed. Please check your credentials.';
+        this.toastr.error(this.errorMessage, 'Login Failed');
       }
-
-      this.toastr.error(this.errorMessage, 'Login Failed');
     } finally {
       this.loading = false;
     }
