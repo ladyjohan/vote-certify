@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, NgZone } from '@angular/core';
 import { AuthService } from './services/auth.service';
+import { AppAnalyticsService } from './services/app-analytics.service';
 import { Router, NavigationEnd } from '@angular/router';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -18,6 +19,7 @@ import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
 export class AppComponent implements OnInit {
   title = 'VoteCertify';
   private authService = inject(AuthService);
+  private analyticsService = inject(AppAnalyticsService);
   private router = inject(Router);
   private zone = inject(NgZone);
 

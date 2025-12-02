@@ -39,24 +39,54 @@ export class AppAnalyticsService {
 
   /**
    * Initialize tracking: Record visit on app load
-   * Runs outside Angular zone to avoid excessive change detection
+   * Tracks visits across website, mobile web, and PWA
    */
   private initializeTracking(): void {
-    // Track on page load (wrapped in zone to avoid injection context warnings)
+    // Track on page load (initial visit)
     this.ngZone.run(() => this.trackVisit());
-    // Track periodically (every 5 minutes) - but debounce to prevent quota spam
+    
+    // Track periodically (every 5 minutes) - debounced to prevent quota spam
     setInterval(() => this.ngZone.run(() => this.trackVisit()), 5 * 60 * 1000);
+    
     // Load analytics immediately for dashboard
     this.ngZone.run(() => this.loadAnalytics());
+    
     // Refresh analytics every 60 seconds
     setInterval(() => this.ngZone.run(() => this.loadAnalytics()), 60 * 1000);
-    // Also track on visibility change (when user returns to tab)
+    
+    // Track on visibility change (when user returns to tab or app)
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
           this.ngZone.run(() => this.trackVisit());
         }
       });
+    }
+    
+    // Track on page focus (when PWA or mobile app comes to foreground)
+    if (typeof window !== 'undefined') {
+      window.addEventListener('focus', () => {
+        this.ngZone.run(() => this.trackVisit());
+      });
+      
+      // Track on page beforeunload (before user leaves)
+      window.addEventListener('pagehide', () => {
+        // Silently track that user is leaving (non-blocking)
+        this.trackVisit().catch(() => {});
+      });
+    }
+    
+    // Track PWA installation and app lifecycle events
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready
+        .then(() => {
+          console.log('PWA ready - analytics tracking active');
+          // PWA is active, ensure we track this visit
+          this.ngZone.run(() => this.trackVisit());
+        })
+        .catch(() => {
+          // Service worker not available, continue tracking anyway
+        });
     }
   }
 
@@ -203,6 +233,35 @@ export class AppAnalyticsService {
   }
 
   /**
+   * Public method to manually track a visit
+   * Can be called from components to explicitly track user actions
+   * Automatically called on: page load, tab focus, PWA launch, page visibility change
+   */
+  public recordVisit(): void {
+    if (typeof window !== 'undefined') {
+      this.ngZone.run(() => this.trackVisit());
+    }
+  }
+
+  /**
+   * Get the current analytics overview
+   * Observable that emits analytics data
+   */
+  public getAnalytics(): Observable<AnalyticsOverview> {
+    return this.analytics$;
+  }
+
+  /**
+   * Refresh analytics data immediately
+   * Useful for dashboard components that need fresh data
+   */
+  public refreshAnalytics(): void {
+    if (typeof window !== 'undefined') {
+      this.ngZone.run(() => this.loadAnalytics());
+    }
+  }
+
+  /**
    * Get or create a persistent device ID
    * Uses localStorage to maintain consistent user identification
    */
@@ -274,17 +333,4 @@ export class AppAnalyticsService {
     return date.toISOString().split('T')[0];
   }
 
-  /**
-   * Refresh analytics data (can be called periodically or on demand)
-   */
-  refreshAnalytics(): void {
-    this.loadAnalytics();
-  }
-
-  /**
-   * Get current analytics as observable
-   */
-  getAnalytics(): Observable<AnalyticsOverview> {
-    return this.analytics$;
-  }
 }
