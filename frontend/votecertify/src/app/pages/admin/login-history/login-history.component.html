@@ -34,8 +34,8 @@
     <div class="stat-card">
       <span class="stat-icon">🟢</span>
       <div>
-        <p class="stat-label">Currently Online</p>
-        <p class="stat-value">{{ totalOnline }}</p>
+        <p class="stat-label">Current Login for today</p>
+        <p class="stat-value">{{ todayLogins }}</p>
       </div>
     </div>
     <div class="stat-card">
@@ -63,16 +63,11 @@
             <th>Full Name</th>
             <th>Email</th>
             <th>Role</th>
-            <th>Status</th>
             <th>Login Time</th>
-            <th>Logout Time</th>
-            <th>Duration</th>
-            <th>Device</th>
-            <th>Browser</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let record of displayedHistory; let i = index" [class.active]="record.status === 'online'">
+          <tr *ngFor="let record of displayedHistory; let i = index">
             <td class="row-number">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
             <td class="name-cell">{{ record.userName }}</td>
             <td class="email-cell">
@@ -84,17 +79,7 @@
                 {{ record.role | uppercase }}
               </span>
             </td>
-            <td class="status-cell">
-              <span class="status-badge" [class]="record.status">
-                <span class="material-icons">{{ getStatusIcon(record.status) }}</span>
-                {{ record.status | uppercase }}
-              </span>
-            </td>
             <td class="timestamp-cell">{{ formatTimestamp(record.loginTimestamp) }}</td>
-            <td class="timestamp-cell">{{ formatTimestamp(record.logoutTimestamp) }}</td>
-            <td class="duration-cell">{{ calculateSessionDuration(record.loginTimestamp, record.logoutTimestamp) }}</td>
-            <td class="device-cell">{{ record.deviceInfo }}</td>
-            <td class="browser-cell">{{ record.browserInfo }}</td>
           </tr>
         </tbody>
       </table>

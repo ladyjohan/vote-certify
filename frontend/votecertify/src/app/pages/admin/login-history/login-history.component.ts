@@ -231,8 +231,30 @@ export class LoginHistoryComponent implements OnInit, OnDestroy {
     return status === 'online' ? '#10b981' : '#6b7280';
   }
 
-  get totalOnline(): number {
-    return this.filteredHistory.filter((record) => record.status === 'online').length;
+  get todayLogins(): number {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return this.filteredHistory.filter((record) => {
+      let loginDate: Date;
+      
+      if (record.loginTimestamp instanceof Date) {
+        loginDate = record.loginTimestamp;
+      } else if (record.loginTimestamp?.toDate) {
+        loginDate = record.loginTimestamp.toDate();
+      } else if (typeof record.loginTimestamp === 'object' && 'seconds' in record.loginTimestamp) {
+        loginDate = new Date((record.loginTimestamp as any).seconds * 1000);
+      } else if (typeof record.loginTimestamp === 'number') {
+        loginDate = new Date(record.loginTimestamp);
+      } else {
+        return false;
+      }
+      
+      const recordDate = new Date(loginDate);
+      recordDate.setHours(0, 0, 0, 0);
+      
+      return recordDate.getTime() === today.getTime();
+    }).length;
   }
 
   get totalAdmins(): number {
