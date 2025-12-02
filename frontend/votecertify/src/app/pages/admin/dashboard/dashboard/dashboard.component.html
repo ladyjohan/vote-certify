@@ -94,6 +94,15 @@
       </select>
     </div>
 
+    <div class="controls-middle">
+      <label for="monthSelect">Select Month for Report</label>
+      <select id="monthSelect" [(ngModel)]="selectedMonthYear" (change)="onMonthChange()">
+        <option *ngFor="let month of availableMonths" [value]="month.value">
+          {{ month.label }}
+        </option>
+      </select>
+    </div>
+
     <button class="btn-download" (click)="downloadReport()">Download Report (PDF)</button>
   </div>
 

@@ -43,17 +43,21 @@ export class AuthService {
       await setPersistence(this.auth, browserSessionPersistence);
 
       onAuthStateChanged(this.auth, async (user) => {
-        this.zone.run(async () => {
-          if (user) {
-            console.log('✅ User authenticated:', user.email);
-            this.user = user;
-            const userRole = await this.getUserRole(user.uid);
-            console.log('🔄 User role:', userRole);
-          } else {
-            console.warn('⚠️ No user found.');
-            // Do not redirect to login; let the app handle navigation
-          }
-        });
+        if (user) {
+          this.zone.run(async () => {
+            try {
+              console.log('✅ User authenticated:', user.email);
+              this.user = user;
+              const userRole = await this.getUserRole(user.uid);
+              console.log('🔄 User role:', userRole);
+            } catch (error) {
+              console.error('Error in auth state change handler:', error);
+            }
+          });
+        } else {
+          console.warn('⚠️ No user found.');
+          // Do not redirect to login; let the app handle navigation
+        }
       });
     } catch (error) {
       console.error('❌ Error setting auth persistence:', error);
@@ -252,17 +256,13 @@ export class AuthService {
 
   /** Fetch user role from Firestore */
   async getUserRole(uid: string): Promise<string | null> {
-    return new Promise((resolve) => {
-      this.zone.run(async () => {
-        try {
-          const userSnap = await getDoc(doc(this.firestore, 'users', uid));
-          resolve(userSnap.exists() ? (userSnap.data()['role'] as string) : null);
-        } catch (error) {
-          console.error('❌ Error fetching user role:', error);
-          resolve(null);
-        }
-      });
-    });
+    try {
+      const userSnap = await getDoc(doc(this.firestore, 'users', uid));
+      return userSnap.exists() ? (userSnap.data()['role'] as string) : null;
+    } catch (error) {
+      console.error('❌ Error fetching user role:', error);
+      return null;
+    }
   }
 
   /** Verify Email in Firestore */

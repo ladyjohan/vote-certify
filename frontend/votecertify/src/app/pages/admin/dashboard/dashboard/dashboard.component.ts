@@ -43,30 +43,49 @@ export class AdminDashboardComponent implements OnInit {
   months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   selectedMonth: number;
   selectedYear: number;
+  selectedMonthYear: string; // Format: "YYYY-MM"
+  availableMonths: { value: string; label: string }[] = [];
 
   constructor(private firestore: Firestore, private analyticsService: AppAnalyticsService, private ngZone: NgZone) {
     const now = new Date();
     this.selectedMonth = now.getMonth();
     this.selectedYear = now.getFullYear();
+    // Initialize selectedMonthYear in YYYY-MM format
+    this.selectedMonthYear = `${this.selectedYear}-${String(this.selectedMonth + 1).padStart(2, '0')}`;
     // Subscribe to real-time analytics updates
     this.analytics$ = this.analyticsService.getAnalytics();
+    this.populateAvailableMonths();
+  }
+
+  /**
+   * Populate available months (last 12 months + current month)
+   */
+  populateAvailableMonths() {
+    this.availableMonths = [];
+    const now = new Date();
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const year = d.getFullYear();
+      const month = d.getMonth();
+      const value = `${year}-${String(month + 1).padStart(2, '0')}`;
+      const label = `${this.months[month]} ${year}`;
+      this.availableMonths.push({ value, label });
+    }
   }
 
   async ngOnInit() {
-    this.ngZone.runOutsideAngular(async () => {
-      try {
-        await this.getStaffStats();
-        await this.getProcessedCertificatesStats();
-        await this.getTodaysRequests();
-        await this.getTotalVoterAccounts();
-        await this.loadAnalyticsForRange(this.selectedRange);
-        
-        // Refresh analytics on page load
-        this.analyticsService.refreshAnalytics();
-      } catch (error) {
-        console.error('Dashboard initialization error:', error);
-      }
-    });
+    try {
+      await this.getStaffStats();
+      await this.getProcessedCertificatesStats();
+      await this.getTodaysRequests();
+      await this.getTotalVoterAccounts();
+      await this.loadAnalyticsForRange(this.selectedRange);
+      
+      // Refresh analytics on page load
+      this.analyticsService.refreshAnalytics();
+    } catch (error) {
+      console.error('Dashboard initialization error:', error);
+    }
   }
 
   /**
@@ -78,79 +97,63 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   async getStaffStats() {
-    return new Promise((resolve) => {
-      this.ngZone.run(async () => {
-        try {
-          const usersRef = collection(this.firestore, 'users');
-          const staffQuery = query(usersRef, where('role', '==', 'staff'));
-          const staffSnapshot = await getDocs(staffQuery);
-          this.totalStaff = staffSnapshot.size;
-          resolve(undefined);
-        } catch (error) {
-          console.warn('Error fetching staff stats:', error);
-          resolve(undefined);
-        }
+    try {
+      const usersRef = collection(this.firestore, 'users');
+      const staffQuery = query(usersRef, where('role', '==', 'staff'));
+      const staffSnapshot = await getDocs(staffQuery);
+      this.ngZone.run(() => {
+        this.totalStaff = staffSnapshot.size;
       });
-    });
+    } catch (error) {
+      console.warn('Error fetching staff stats:', error);
+    }
   }
 
   async getProcessedCertificatesStats() {
-    return new Promise((resolve) => {
-      this.ngZone.run(async () => {
-        try {
-          const requestsRef = collection(this.firestore, 'requests');
-          const processedQuery = query(requestsRef, where('status', '==', 'Completed'));
-          const processedSnapshot = await getDocs(processedQuery);
-          this.totalProcessed = processedSnapshot.size;
-          resolve(undefined);
-        } catch (error) {
-          console.warn('Error fetching processed certificates:', error);
-          resolve(undefined);
-        }
+    try {
+      const requestsRef = collection(this.firestore, 'requests');
+      const processedQuery = query(requestsRef, where('status', '==', 'Completed'));
+      const processedSnapshot = await getDocs(processedQuery);
+      this.ngZone.run(() => {
+        this.totalProcessed = processedSnapshot.size;
       });
-    });
+    } catch (error) {
+      console.warn('Error fetching processed certificates:', error);
+    }
   }
 
   async getTodaysRequests() {
-    return new Promise((resolve) => {
-      this.ngZone.run(async () => {
-        try {
-          const start = new Date();
-          start.setHours(0, 0, 0, 0);
-          const end = new Date(start);
-          end.setDate(end.getDate() + 1);
-          const requestsRef = collection(this.firestore, 'requests');
-          const q = query(
-            requestsRef,
-            where('submittedAt', '>=', Timestamp.fromDate(start)),
-            where('submittedAt', '<', Timestamp.fromDate(end))
-          );
-          const snap = await getDocs(q);
-          this.todaysRequests = snap.size;
-          resolve(undefined);
-        } catch (error) {
-          console.warn('Error fetching today requests:', error);
-          resolve(undefined);
-        }
+    try {
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 1);
+      const requestsRef = collection(this.firestore, 'requests');
+      const q = query(
+        requestsRef,
+        where('submittedAt', '>=', Timestamp.fromDate(start)),
+        where('submittedAt', '<', Timestamp.fromDate(end))
+      );
+      const snap = await getDocs(q);
+      this.ngZone.run(() => {
+        this.todaysRequests = snap.size;
       });
-    });
+    } catch (error) {
+      console.warn('Error fetching today requests:', error);
+    }
   }
 
   async getTotalVoterAccounts() {
-    return new Promise((resolve) => {
-      this.ngZone.run(async () => {
-        try {
-          const usersRef = collection(this.firestore, 'users');
-          const voterQ = query(usersRef, where('role', '==', 'voter'));
-          const snap = await getDocs(voterQ);
-          this.totalVoterAccounts = snap.size;
-          resolve(undefined);
-        } catch (error) {
-          console.warn('Error fetching voter accounts:', error);
-          resolve(undefined);
-        }
+    try {
+      const usersRef = collection(this.firestore, 'users');
+      const voterQ = query(usersRef, where('role', '==', 'voter'));
+      const snap = await getDocs(voterQ);
+      this.ngZone.run(() => {
+        this.totalVoterAccounts = snap.size;
       });
-    });
+    } catch (error) {
+      console.warn('Error fetching voter accounts:', error);
+    }
   }
 
   formatDayShort(d: Date) {
@@ -165,93 +168,101 @@ export class AdminDashboardComponent implements OnInit {
     this.loadAnalyticsForRange(this.selectedRange);
   }
 
+  /**
+   * Handle month selection change
+   */
+  onMonthChange() {
+    if (this.selectedMonthYear) {
+      const [year, month] = this.selectedMonthYear.split('-');
+      this.selectedYear = parseInt(year, 10);
+      this.selectedMonth = parseInt(month, 10) - 1;
+      this.loadAnalyticsForRange('thisMonth');
+    }
+  }
+
   async loadAnalyticsForRange(range: 'thisWeek' | 'thisMonth' | 'thisYear') {
-    return new Promise((resolve) => {
-      this.ngZone.run(async () => {
-        try {
-          const now = new Date();
-          let startDate: Date;
-          let endDate: Date;
+    try {
+      const now = new Date();
+      let startDate: Date;
+      let endDate: Date;
 
-          if (range === 'thisWeek') {
-            const day = now.getDay();
-            const mondayOffset = (day === 0) ? -6 : 1 - day;
-            startDate = new Date(now);
-            startDate.setDate(now.getDate() + mondayOffset);
-            startDate.setHours(0, 0, 0, 0);
-            endDate = new Date(startDate);
-            endDate.setDate(endDate.getDate() + 7);
-            this.chartTitle = `Requests This Week (${this.formatDateShort(startDate)} - ${this.formatDateShort(new Date(endDate.getTime() - 1))})`;
-          } else if (range === 'thisYear') {
-            startDate = new Date(this.selectedYear, 0, 1);
-            endDate = new Date(this.selectedYear + 1, 0, 1);
-            this.chartTitle = `Requests for Year ${this.selectedYear}`;
-          } else {
-            startDate = new Date(this.selectedYear, this.selectedMonth, 1);
-            endDate = new Date(this.selectedYear, this.selectedMonth + 1, 1);
-            this.chartTitle = `Requests for ${this.months[this.selectedMonth]} ${this.selectedYear}`;
-          }
+      if (range === 'thisWeek') {
+        const day = now.getDay();
+        const mondayOffset = (day === 0) ? -6 : 1 - day;
+        startDate = new Date(now);
+        startDate.setDate(now.getDate() + mondayOffset);
+        startDate.setHours(0, 0, 0, 0);
+        endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + 7);
+        this.chartTitle = `Requests This Week (${this.formatDateShort(startDate)} - ${this.formatDateShort(new Date(endDate.getTime() - 1))})`;
+      } else if (range === 'thisYear') {
+        startDate = new Date(this.selectedYear, 0, 1);
+        endDate = new Date(this.selectedYear + 1, 0, 1);
+        this.chartTitle = `Requests for Year ${this.selectedYear}`;
+      } else {
+        startDate = new Date(this.selectedYear, this.selectedMonth, 1);
+        endDate = new Date(this.selectedYear, this.selectedMonth + 1, 1);
+        this.chartTitle = `Requests for ${this.months[this.selectedMonth]} ${this.selectedYear}`;
+      }
 
-          const requestsRef = collection(this.firestore, 'requests');
-          const q = query(
-            requestsRef,
-            where('submittedAt', '>=', Timestamp.fromDate(startDate)),
-            where('submittedAt', '<', Timestamp.fromDate(endDate))
-          );
-          const snap = await getDocs(q);
+      const requestsRef = collection(this.firestore, 'requests');
+      const q = query(
+        requestsRef,
+        where('submittedAt', '>=', Timestamp.fromDate(startDate)),
+        where('submittedAt', '<', Timestamp.fromDate(endDate))
+      );
+      const snap = await getDocs(q);
 
-          const statusCounts = { approved: 0, pending: 0, declined: 0 };
-          const timestamps: Date[] = [];
+      const statusCounts = { approved: 0, pending: 0, declined: 0 };
+      const timestamps: Date[] = [];
 
-          snap.forEach(d => {
-            const data: any = d.data();
-            const sa = data['submittedAt'];
-            const dt = sa?.toDate ? sa.toDate() : new Date(sa);
-            timestamps.push(dt);
-            const st = (data['status'] || '').toLowerCase();
-            if (st.includes('approved') || st.includes('completed')) statusCounts.approved++;
-            else if (st.includes('decline') || st.includes('rejected')) statusCounts.declined++;
-            else statusCounts.pending++;
-          });
-
-          this.analyticsTotals.total = snap.size;
-          this.analyticsTotals.approved = statusCounts.approved;
-          this.analyticsTotals.pending = statusCounts.pending;
-          this.analyticsTotals.declined = statusCounts.declined;
-
-          let labels: string[] = [];
-          let seriesTotal: number[] = [];
-
-          if (range === 'thisYear') {
-            labels = this.months;
-            seriesTotal = new Array(12).fill(0);
-            timestamps.forEach(dt => seriesTotal[dt.getMonth()]++);
-          } else if (range === 'thisWeek') {
-            labels = Array.from({ length: 7 }, (_, i) => {
-              const d = new Date(startDate);
-              d.setDate(startDate.getDate() + i);
-              return this.formatDayShort(d);
-            });
-            seriesTotal = new Array(7).fill(0);
-            timestamps.forEach(dt => {
-              const diff = Math.floor((dt.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-              if (diff >= 0 && diff < 7) seriesTotal[diff]++;
-            });
-          } else {
-            const daysInMonth = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-            labels = Array.from({ length: daysInMonth }, (_, i) => `Day ${i + 1}`);
-            seriesTotal = new Array(daysInMonth).fill(0);
-            timestamps.forEach(dt => seriesTotal[dt.getDate() - 1]++);
-          }
-
-          this.renderChart(labels, seriesTotal);
-          resolve(undefined);
-        } catch (error) {
-          console.warn('Error loading analytics for range:', error);
-          resolve(undefined);
-        }
+      snap.forEach(d => {
+        const data: any = d.data();
+        const sa = data['submittedAt'];
+        const dt = sa?.toDate ? sa.toDate() : new Date(sa);
+        timestamps.push(dt);
+        const st = (data['status'] || '').toLowerCase();
+        if (st.includes('approved') || st.includes('completed')) statusCounts.approved++;
+        else if (st.includes('decline') || st.includes('rejected')) statusCounts.declined++;
+        else statusCounts.pending++;
       });
-    });
+
+      this.analyticsTotals.total = snap.size;
+      this.analyticsTotals.approved = statusCounts.approved;
+      this.analyticsTotals.pending = statusCounts.pending;
+      this.analyticsTotals.declined = statusCounts.declined;
+
+      let labels: string[] = [];
+      let seriesTotal: number[] = [];
+
+      if (range === 'thisYear') {
+        labels = this.months;
+        seriesTotal = new Array(12).fill(0);
+        timestamps.forEach(dt => seriesTotal[dt.getMonth()]++);
+      } else if (range === 'thisWeek') {
+        labels = Array.from({ length: 7 }, (_, i) => {
+          const d = new Date(startDate);
+          d.setDate(startDate.getDate() + i);
+          return this.formatDayShort(d);
+        });
+        seriesTotal = new Array(7).fill(0);
+        timestamps.forEach(dt => {
+          const diff = Math.floor((dt.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+          if (diff >= 0 && diff < 7) seriesTotal[diff]++;
+        });
+      } else {
+        const daysInMonth = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+        labels = Array.from({ length: daysInMonth }, (_, i) => `Day ${i + 1}`);
+        seriesTotal = new Array(daysInMonth).fill(0);
+        timestamps.forEach(dt => seriesTotal[dt.getDate() - 1]++);
+      }
+
+      this.ngZone.run(() => {
+        this.renderChart(labels, seriesTotal);
+      });
+    } catch (error) {
+      console.warn('Error loading analytics for range:', error);
+    }
   }
 
   renderChart(labels: string[], dataSet: number[]) {
@@ -406,132 +417,63 @@ const drawHeader = (yStart: number = 30) => {
   doc.text(`VoteCertify • Generated ${new Date().toLocaleDateString()}`, margin, pageHeight - 30);
   doc.text(`Page 1`, pageWidth - margin - 40, pageHeight - 30);
 
-  // Charts - continuous placement
-  const ranges: ('thisWeek' | 'thisMonth' | 'thisYear')[] = ['thisWeek', 'thisMonth', 'thisYear'];
-  let pageIndex = 2;
-  y += 50; // spacing before charts
+  // Generate chart only for the selected month
+  const startDate = new Date(this.selectedYear, this.selectedMonth, 1);
+  const endDate = new Date(this.selectedYear, this.selectedMonth + 1, 1);
 
-  for (const range of ranges) {
-    // Calculate date range for this specific period
-    const now = new Date();
-    let startDate: Date;
-    let endDate: Date;
+  // Fetch requests for the selected month
+  const requestsRef = collection(this.firestore, 'requests');
+  const q = query(
+    requestsRef,
+    where('submittedAt', '>=', Timestamp.fromDate(startDate)),
+    where('submittedAt', '<', Timestamp.fromDate(endDate))
+  );
+  const snap = await getDocs(q);
 
-    if (range === 'thisWeek') {
-      const day = now.getDay();
-      const mondayOffset = (day === 0) ? -6 : 1 - day;
-      startDate = new Date(now);
-      startDate.setDate(now.getDate() + mondayOffset);
-      startDate.setHours(0, 0, 0, 0);
-      endDate = new Date(startDate);
-      endDate.setDate(endDate.getDate() + 7);
-    } else if (range === 'thisYear') {
-      startDate = new Date(this.selectedYear, 0, 1);
-      endDate = new Date(this.selectedYear + 1, 0, 1);
-    } else {
-      startDate = new Date(this.selectedYear, this.selectedMonth, 1);
-      endDate = new Date(this.selectedYear, this.selectedMonth + 1, 1);
-    }
+  // Calculate status counts and collect timestamps
+  const statusCounts = { approved: 0, pending: 0, declined: 0 };
+  const timestamps: Date[] = [];
 
-    // Fetch requests for this range
-    const requestsRef = collection(this.firestore, 'requests');
-    const q = query(
-      requestsRef,
-      where('submittedAt', '>=', Timestamp.fromDate(startDate)),
-      where('submittedAt', '<', Timestamp.fromDate(endDate))
-    );
-    const snap = await getDocs(q);
+  snap.forEach(d => {
+    const data: any = d.data();
+    const sa = data['submittedAt'];
+    const dt = sa?.toDate ? sa.toDate() : new Date(sa);
+    timestamps.push(dt);
+    const st = (data['status'] || '').toLowerCase();
+    if (st.includes('approved') || st.includes('completed')) statusCounts.approved++;
+    else if (st.includes('decline') || st.includes('rejected')) statusCounts.declined++;
+    else statusCounts.pending++;
+  });
 
-    // Calculate status counts and collect timestamps
-    const statusCounts = { approved: 0, pending: 0, declined: 0 };
-    const timestamps: Date[] = [];
+  // Calculate chart data for the month
+  const daysInMonth = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+  const labels = Array.from({ length: daysInMonth }, (_, i) => `Day ${i + 1}`);
+  const seriesTotal = new Array(daysInMonth).fill(0);
+  timestamps.forEach(dt => {
+    const dayIndex = dt.getDate() - 1;
+    if (dayIndex >= 0 && dayIndex < daysInMonth) seriesTotal[dayIndex]++;
+  });
 
-    snap.forEach(d => {
-      const data: any = d.data();
-      const sa = data['submittedAt'];
-      const dt = sa?.toDate ? sa.toDate() : new Date(sa);
-      timestamps.push(dt);
-      const st = (data['status'] || '').toLowerCase();
-      if (st.includes('approved') || st.includes('completed')) statusCounts.approved++;
-      else if (st.includes('decline') || st.includes('rejected')) statusCounts.declined++;
-      else statusCounts.pending++;
-    });
+  // Calculate total requests from the chart data
+  const totalRequests = seriesTotal.reduce((a, b) => a + b, 0);
+  
+  // Calculate max value for Y-axis
+  const maxValue = Math.max(...seriesTotal, 0);
+  const yAxisMax = maxValue === 0 ? 5 : Math.max(maxValue, 5);
 
-    // Calculate chart data (labels and seriesTotal) directly from the fetched data
-    let labels: string[] = [];
-    let seriesTotal: number[] = [];
-
-    if (range === 'thisYear') {
-      labels = this.months;
-      seriesTotal = new Array(12).fill(0);
-      timestamps.forEach(dt => {
-        const monthIndex = dt.getMonth();
-        if (monthIndex >= 0 && monthIndex < 12) seriesTotal[monthIndex]++;
-      });
-    } else if (range === 'thisWeek') {
-      labels = Array.from({ length: 7 }, (_, i) => {
-        const d = new Date(startDate);
-        d.setDate(startDate.getDate() + i);
-        return this.formatDayShort(d);
-      });
-      seriesTotal = new Array(7).fill(0);
-      timestamps.forEach(dt => {
-        const diff = Math.floor((dt.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-        if (diff >= 0 && diff < 7) seriesTotal[diff]++;
-      });
-    } else {
-      // For month, calculate days in the month
-      const daysInMonth = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-      labels = Array.from({ length: daysInMonth }, (_, i) => `Day ${i + 1}`);
-      seriesTotal = new Array(daysInMonth).fill(0);
-      timestamps.forEach(dt => {
-        const dayIndex = dt.getDate() - 1;
-        if (dayIndex >= 0 && dayIndex < daysInMonth) seriesTotal[dayIndex]++;
-      });
-    }
-
-    // Calculate total requests from the chart data
-    const totalRequests = seriesTotal.reduce((a, b) => a + b, 0);
-    
-    // Calculate max value for Y-axis (round up to next integer, minimum 5)
-    const maxValue = Math.max(...seriesTotal, 0);
-    const yAxisMax = maxValue === 0 ? 5 : Math.max(maxValue, 5); // Use actual max or 5, whichever is higher
-
-    // Debug: Log the data to verify it's correct
-    console.log(`PDF Chart Data for ${range}:`, {
-      labels,
-      seriesTotal,
-      maxValue,
-      yAxisMax,
-      totalRequests
-    });
-
-    const chartCanvas = document.createElement('canvas');
-    const displayWidth = 800;
-    const displayHeight = 350;
-    
-    // Set canvas size - Chart.js will handle the rendering
-    chartCanvas.width = displayWidth;
-    chartCanvas.height = displayHeight;
-    
-    // Ensure data is properly formatted as numbers
-    const chartData = seriesTotal.map(val => Number(val) || 0);
-    
-    // Verify data before rendering
-    console.log('Chart rendering with data:', {
-      range,
-      chartData,
-      maxInData: Math.max(...chartData),
-      yAxisMax,
-      labels
-    });
-    
-    const ctx = chartCanvas.getContext('2d');
-    if (!ctx) {
-      console.error('Failed to get canvas context');
-      continue;
-    }
-    
+  const chartCanvas = document.createElement('canvas');
+  const displayWidth = 800;
+  const displayHeight = 350;
+  
+  chartCanvas.width = displayWidth;
+  chartCanvas.height = displayHeight;
+  
+  const chartData = seriesTotal.map(val => Number(val) || 0);
+  
+  const ctx = chartCanvas.getContext('2d');
+  if (!ctx) {
+    console.error('Failed to get canvas context');
+  } else {
     const tempChart = new Chart(ctx, {
       type: 'line',
       data: {
@@ -554,9 +496,9 @@ const drawHeader = (yStart: number = 30) => {
         responsive: false,
         maintainAspectRatio: false,
         animation: {
-          duration: 0 // Disable animation to ensure accurate rendering
+          duration: 0
         },
-        devicePixelRatio: 1, // Force 1:1 pixel ratio for accurate rendering
+        devicePixelRatio: 1,
         plugins: { 
           legend: { display: false },
           tooltip: {
@@ -599,7 +541,7 @@ const drawHeader = (yStart: number = 30) => {
       }
     });
 
-    // Wait longer to ensure chart is fully rendered
+    // Wait for chart to render
     await new Promise(res => setTimeout(res, 500));
     const chartImg = tempChart.toBase64Image();
     tempChart.destroy();
@@ -607,41 +549,23 @@ const drawHeader = (yStart: number = 30) => {
     const imgWidth = pageWidth - margin * 2;
     const imgHeight = imgWidth * 0.45;
 
-    // Check if there is enough space; otherwise, add page
-    if (y + imgHeight + 60 > pageHeight - margin) {
-      doc.addPage();
-      await drawHeader();
-      y = 110;
-      doc.setFontSize(9);
-      doc.text(`Page ${pageIndex}`, pageWidth - margin - 40, pageHeight - 30);
-      pageIndex++;
-    }
+    // Add new page for the chart
+    doc.addPage();
+    await drawHeader();
+    y = 110;
 
-    // Determine chart title
-    let chartTitle = '';
-
-    if (range === 'thisMonth') chartTitle = `Requests for ${this.months[this.selectedMonth]} ${this.selectedYear}`;
-    else if (range === 'thisWeek') {
-      const day = now.getDay();
-      const mondayOffset = (day === 0) ? -6 : 1 - day;
-      const weekStart = new Date();
-      weekStart.setDate(now.getDate() + mondayOffset);
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekEnd.getDate() + 6);
-      chartTitle = `Requests This Week (${this.formatDateShort(weekStart)} - ${this.formatDateShort(weekEnd)})`;
-    } else if (range === 'thisYear') chartTitle = `Requests for Year ${this.selectedYear}`;
-
-    // Add title above chart
+    // Chart title
+    const chartTitle = `Certificate Requests for ${this.months[this.selectedMonth]} ${this.selectedYear}`;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
     doc.text(chartTitle, margin, y);
     y += 20;
 
-
+    // Add chart image
     doc.addImage(chartImg, 'PNG', margin, y, imgWidth, imgHeight);
     y += imgHeight + 40;
 
-    // Use the accurate status counts calculated for this specific range
+    // Chart insights
     const chartInsight = this.generateInsightText({
       total: totalRequests,
       approved: statusCounts.approved,
@@ -652,10 +576,15 @@ const drawHeader = (yStart: number = 30) => {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(11);
     doc.text(chartInsight, margin, y, { maxWidth: pageWidth - margin * 2, lineHeightFactor: 1.4 });
-    y += 40;
+
+    // Page footer
+    doc.setFontSize(9);
+    doc.text(`VoteCertify • Generated ${new Date().toLocaleDateString()}`, margin, pageHeight - 30);
+    doc.text(`Page 2`, pageWidth - margin - 40, pageHeight - 30);
   }
 
-  doc.save(`VoteCertify_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
+  // Save with month-specific filename
+  doc.save(`VoteCertify_Report_${this.months[this.selectedMonth]}_${this.selectedYear}.pdf`);
 }
 
 }
