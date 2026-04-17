@@ -4,6 +4,8 @@ import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
+import { LoadingService } from '../../services/loading.service';
+
 
 @Component({
   selector: 'app-login',
@@ -28,7 +30,8 @@ export class LoginComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private loadingService: LoadingService
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -63,7 +66,7 @@ export class LoginComponent implements OnInit {
     }
 
     this.errorMessage = '';
-    this.loading = true;
+    this.loadingService.show('Signing in...');
     const { email, password } = this.loginForm.value;
 
     try {
@@ -97,7 +100,7 @@ export class LoginComponent implements OnInit {
         this.toastr.error(this.errorMessage, 'Login Failed');
       }
     } finally {
-      this.loading = false;
+      await this.loadingService.hide();
     }
   }
 }

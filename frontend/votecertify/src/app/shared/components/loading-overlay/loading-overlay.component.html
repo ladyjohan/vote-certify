@@ -1,0 +1,26 @@
+<div class="loading-overlay" *ngIf="loadingService.loading$ | async" @fadeInOut>
+  <div class="loading-content">
+    <div class="spinner-container">
+      <div class="flawless-dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </div>
+
+
+
+    <div class="loading-text">
+      {{ loadingService.message$ | async }}
+    </div>
+  </div>
+</div>

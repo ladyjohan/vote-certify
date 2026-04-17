@@ -3,7 +3,9 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { LoadingService } from '../../services/loading.service';
 import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { Timestamp } from '@angular/fire/firestore';
@@ -110,7 +112,8 @@ export class RegisterComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private loadingService: LoadingService
   ) {
     this.registerForm = this.fb.group({
       fullName: ['', [Validators.required]],
@@ -141,6 +144,7 @@ export class RegisterComponent {
     }
 
     this.errorMessage = '';
+    this.loadingService.show('Creating your account...');
     const { fullName, birthdate, email, password } = this.registerForm.value;
 
     try {
@@ -173,6 +177,8 @@ export class RegisterComponent {
         errorMsg = 'Password must be at least 6 characters.';
       }
       this.toastr.error(errorMsg, 'Registration Failed');
+    } finally {
+      await this.loadingService.hide();
     }
   }
 

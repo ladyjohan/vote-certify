@@ -9,10 +9,12 @@ import { filter } from 'rxjs/operators';
 // Firebase Auth imports
 import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
 
+import { LoadingOverlayComponent } from './shared/components/loading-overlay/loading-overlay.component';
+
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterModule, CommonModule],
+  imports: [RouterModule, CommonModule, LoadingOverlayComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
