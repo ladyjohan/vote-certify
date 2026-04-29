@@ -73,7 +73,7 @@ export class RequestManagementComponent implements OnInit {
     });
   }
 
-  // Fetch pending requests with the number of copies requested
+  // Fetch pending requests
   async getPendingRequests() {
     const requestsRef = collection(this.firestore, 'requests');
     const pendingQuery = query(requestsRef, where('status', '==', 'Pending'));

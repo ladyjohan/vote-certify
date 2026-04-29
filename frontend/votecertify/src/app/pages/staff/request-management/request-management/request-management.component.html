@@ -23,7 +23,6 @@
             <th>Voter Name</th>
             <th>Birthdate</th>
             <th>Purpose</th>
-            <th>No. of Copies</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -33,7 +32,6 @@
             <td class="name">{{ request.fullName }}</td>
             <td class="birthdate">{{ request.birthdate | date:'MM/dd/yyyy' }}</td>
             <td class="purpose">{{ request.purpose }}</td>
-            <td class="copies">{{ request.copiesRequested }}</td>
             <td class="actions">
               <button class="chat-btn" (click)="openChat(request.id)">Chat</button>
               <button class="view-btn" (click)="openDetails(request)">View Details</button>
@@ -102,7 +100,6 @@
       <p><strong>Birthdate:</strong> {{ selectedRequest.birthdate | date:'MM/dd/yyyy' }}</p>
       <p><strong>Email:</strong> {{ selectedRequest.email }}</p>
       <p><strong>Purpose:</strong> {{ selectedRequest.purpose }}</p>
-      <p><strong>No. of Copies:</strong> {{ selectedRequest.copiesRequested }}</p>
       <p *ngIf="selectedRequest.claimTimeSlot"><strong>Time of Release:</strong> {{ getTimeSlotLabel(selectedRequest.claimTimeSlot) }}</p>
     </div>
 
