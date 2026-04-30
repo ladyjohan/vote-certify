@@ -20,8 +20,21 @@ import { Auth } from '@angular/fire/auth';
 export class CertificateStatusComponent implements OnInit {
   requests: any[] = [];
   selectedStatus: string = '';
+  selectedPurpose: string = '';
   sortOrder: 'asc' | 'desc' = 'desc';
+  searchTerm: string = '';
 
+  availablePurposes: string[] = [
+    'Employment Requirement',
+    'Passport Application',
+    'Government Application',
+    'Financial Transactions',
+    'Court Requirements',
+    'Educational Application',
+    'Proof of Residency',
+    'Government Transactions',
+    'General Identification Purposes'
+  ];
   // Time slots (30-minute intervals from 9:00 AM to 2:30 PM, 1 person per slot, excluding 12:00 PM - 1:00 PM)
   timeSlots = [
     { label: '9:00 AM - 9:30 AM', value: '09:00-09:30', capacity: 1 },
@@ -67,6 +80,18 @@ export class CertificateStatusComponent implements OnInit {
 
     if (this.selectedStatus) {
       filtered = filtered.filter(r => r.status === this.selectedStatus);
+    }
+
+    if (this.selectedPurpose) {
+      filtered = filtered.filter(r => r.purpose === this.selectedPurpose);
+    }
+
+    if (this.searchTerm) {
+      const term = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(r => 
+        (r.purpose || '').toLowerCase().includes(term) ||
+        (r.status || '').toLowerCase().includes(term)
+      );
     }
 
     return filtered.sort((a, b) => {

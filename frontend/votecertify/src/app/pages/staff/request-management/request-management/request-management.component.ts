@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import Swal from 'sweetalert2';
 import { debounceTime } from 'rxjs/operators';
+import { combineLatest, startWith } from 'rxjs';
 import { SupabaseService } from '../../../../services/supabase.service';
 import emailjs from 'emailjs-com';
 import { Router } from '@angular/router';
@@ -24,6 +25,19 @@ export class RequestManagementComponent implements OnInit {
   currentPage = 1;
   totalPages = 1;
   searchControl = new FormControl('');
+  purposeFilterControl = new FormControl('');
+  sortControl = new FormControl('');
+  availablePurposes: string[] = [
+    'Employment Requirement',
+    'Passport Application',
+    'Government Application',
+    'Financial Transactions',
+    'Court Requirements',
+    'Educational Application',
+    'Proof of Residency',
+    'Government Transactions',
+    'General Identification Purposes'
+  ];
   selectedRequest: any = null;
   isLoadingDetails = false;
   activeAttachment: { type: 'gov_id' | 'selfie', url: string } | null = null;
@@ -62,14 +76,13 @@ export class RequestManagementComponent implements OnInit {
 
   ngOnInit() {
     this.getPendingRequests();
-    this.searchControl.valueChanges.pipe(debounceTime(300)).subscribe(text => {
-      const term = (text || '').toString().toLowerCase();
-      this.filteredPendingRequests = this.pendingRequests.filter(r =>
-        (r.fullName || '').toString().toLowerCase().includes(term) ||
-        (r.birthdate || '').toString().toLowerCase().includes(term)
-      );
-      this.currentPage = 1;
-      this.setupPagination();
+
+    combineLatest([
+      this.searchControl.valueChanges.pipe(startWith(''), debounceTime(300)),
+      this.purposeFilterControl.valueChanges.pipe(startWith('')),
+      this.sortControl.valueChanges.pipe(startWith(''))
+    ]).subscribe(([searchTerm, purpose, sortOption]) => {
+      this.applyFiltersAndSort(searchTerm, purpose, sortOption);
     });
   }
 
@@ -83,9 +96,43 @@ export class RequestManagementComponent implements OnInit {
       id: doc.id,
       ...doc.data()
     }));
+    
     // initialize filtered list and pagination
-    this.filteredPendingRequests = [...this.pendingRequests];
+    this.applyFiltersAndSort(this.searchControl.value, this.purposeFilterControl.value, this.sortControl.value);
+  }
+
+  applyFiltersAndSort(searchTerm: string | null | undefined, purpose: string | null | undefined, sortOption: string | null | undefined) {
+    const term = (searchTerm || '').toString().toLowerCase();
+    
+    // Filter
+    let filtered = this.pendingRequests.filter(r => {
+      const matchesSearch = (r.fullName || '').toString().toLowerCase().includes(term) ||
+                            (r.birthdate || '').toString().toLowerCase().includes(term);
+      const matchesPurpose = purpose ? r.purpose === purpose : true;
+      return matchesSearch && matchesPurpose;
+    });
+
+    // Sort
+    if (sortOption === 'az') {
+      filtered.sort((a, b) => (a.fullName || '').localeCompare(b.fullName || ''));
+    } else if (sortOption === 'za') {
+      filtered.sort((a, b) => (b.fullName || '').localeCompare(a.fullName || ''));
+    } else if (sortOption === 'newest') {
+      filtered.sort((a, b) => this.getDateValue(b.submittedAt) - this.getDateValue(a.submittedAt));
+    } else if (sortOption === 'oldest') {
+      filtered.sort((a, b) => this.getDateValue(a.submittedAt) - this.getDateValue(b.submittedAt));
+    }
+
+    this.filteredPendingRequests = filtered;
+    this.currentPage = 1;
     this.setupPagination();
+  }
+
+  getDateValue(dateObj: any): number {
+    if (!dateObj) return 0;
+    if (dateObj.toDate) return dateObj.toDate().getTime();
+    if (dateObj instanceof Date) return dateObj.getTime();
+    return new Date(dateObj).getTime();
   }
 
   setupPagination() {

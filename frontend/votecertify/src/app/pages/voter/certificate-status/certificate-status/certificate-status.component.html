@@ -1,8 +1,21 @@
 <div *ngIf="requests.length > 0; else noRequest" class="status-history">
   <h3>Your Certificate Request History</h3>
 
-  <!-- Filters -->
+  <!-- Filters & Search -->
   <div class="filters">
+    <div class="search-bar">
+      <i class="fas fa-search search-icon" aria-hidden="true"></i>
+      <input type="text" [(ngModel)]="searchTerm" placeholder="Search by purpose or status..." />
+    </div>
+
+    <label>
+      Filter by Purpose:
+      <select [(ngModel)]="selectedPurpose">
+        <option value="">All Purposes</option>
+        <option *ngFor="let purpose of availablePurposes" [value]="purpose">{{ purpose }}</option>
+      </select>
+    </label>
+
     <label>
       Filter by Status:
       <select [(ngModel)]="selectedStatus">

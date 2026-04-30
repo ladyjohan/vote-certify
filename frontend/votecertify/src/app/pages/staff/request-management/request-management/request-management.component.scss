@@ -66,38 +66,43 @@
     }
   }
 
-  .filter-container {
-    flex-shrink: 0;
+  .filter-controls {
     display: flex;
+    gap: 1rem;
     align-items: center;
-    gap: 0.5rem;
+    flex-wrap: wrap;
 
-    label {
-      margin-right: 0.5rem;
-      font-weight: 600;
-      font-size: 0.95rem;
-      color: #374151;
-    }
+    .filter-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
 
-    .filter-select {
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      border: 1px solid #d1d5db;
-      background: #fff;
-      font-size: 0.95rem;
-      cursor: pointer;
-      transition: border-color 0.3s, box-shadow 0.3s;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-
-      &:focus {
-        outline: none;
-        border-color: #4f46e5;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+      label {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: #374151;
       }
 
-      option {
-        background: white;
-        color: #1f2937;
+      .modern-select {
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+        background: #fff;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: border-color 0.3s, box-shadow 0.3s;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+
+        &:focus {
+          outline: none;
+          border-color: #4f46e5;
+          box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        option {
+          background: white;
+          color: #1f2937;
+        }
       }
     }
   }
@@ -678,15 +683,21 @@
       width: 100%;
     }
 
-    .filter-container {
+    .filter-controls {
       width: 100%;
+      flex-direction: column;
+      align-items: stretch;
 
-      label {
-        display: none;
-      }
-
-      .filter-select {
+      .filter-item {
         width: 100%;
+
+        label {
+          display: none;
+        }
+
+        .modern-select {
+          width: 100%;
+        }
       }
     }
 
@@ -735,15 +746,21 @@
       width: 100%;
     }
 
-    .filter-container {
+    .filter-controls {
       width: 100%;
+      flex-direction: column;
+      align-items: stretch;
 
-      label {
-        display: none;
-      }
-
-      .filter-select {
+      .filter-item {
         width: 100%;
+
+        label {
+          display: none;
+        }
+
+        .modern-select {
+          width: 100%;
+        }
       }
     }
 

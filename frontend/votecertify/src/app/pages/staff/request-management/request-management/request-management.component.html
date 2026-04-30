@@ -1,7 +1,7 @@
 <div class="request-management-container">
   <h2 class="title">Voter Request Management</h2>
 
-  <!-- Top Controls: Search -->
+  <!-- Top Controls: Search and Filters -->
   <div class="top-row">
     <div class="search-bar">
       <i class="fas fa-search search-icon" aria-hidden="true"></i>
@@ -11,6 +11,27 @@
         placeholder="Search by Voter Name or Birthdate"
         aria-label="Search requests"
       />
+    </div>
+
+    <div class="filter-controls">
+      <div class="filter-item">
+        <label for="purposeFilter">Purpose:</label>
+        <select id="purposeFilter" [formControl]="purposeFilterControl" class="modern-select">
+          <option value="">All Purposes</option>
+          <option *ngFor="let p of availablePurposes" [value]="p">{{ p }}</option>
+        </select>
+      </div>
+
+      <div class="filter-item">
+        <label for="sortControl">Sort By:</label>
+        <select id="sortControl" [formControl]="sortControl" class="modern-select">
+          <option value="">Default (Date)</option>
+          <option value="newest">Newest to Oldest</option>
+          <option value="oldest">Oldest to Newest</option>
+          <option value="az">Alphabetical (A-Z)</option>
+          <option value="za">Alphabetical (Z-A)</option>
+        </select>
+      </div>
     </div>
   </div>
 
