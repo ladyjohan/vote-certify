@@ -22,6 +22,7 @@ export class RequestManagementComponent implements OnInit {
   filteredPendingRequests: any[] = [];
   // Pagination
   pageSize = 10;
+  pageSizeOptions = [10, 20, 30];
   currentPage = 1;
   totalPages = 1;
   searchControl = new FormControl('');
@@ -162,7 +163,31 @@ export class RequestManagementComponent implements OnInit {
     if (this.currentPage > 1) this.currentPage--;
   }
 
-  // pageSize is fixed to 10 per user's request; selector removed from template.
+  onPageSizeChange() {
+    this.currentPage = 1;
+    this.setupPagination();
+  }
+
+  get rangeStart() {
+    return this.filteredPendingRequests.length === 0 ? 0 : (this.currentPage - 1) * this.pageSize + 1;
+  }
+
+  get rangeEnd() {
+    return Math.min(this.currentPage * this.pageSize, this.filteredPendingRequests.length);
+  }
+
+  get visiblePages(): number[] {
+    const total = this.totalPages;
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    const pages: number[] = [];
+    const cur = this.currentPage;
+    pages.push(1);
+    if (cur > 3) pages.push(-1);
+    for (let p = Math.max(2, cur - 1); p <= Math.min(total - 1, cur + 1); p++) pages.push(p);
+    if (cur < total - 2) pages.push(-1);
+    pages.push(total);
+    return pages;
+  }
 
   openDetails(request: any) {
     this.selectedRequest = request;

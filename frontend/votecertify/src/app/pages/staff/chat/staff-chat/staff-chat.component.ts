@@ -38,11 +38,12 @@ export class StaffChatComponent implements OnInit, OnDestroy {
   isViewingOlderMessages = false;  // Track if user is viewing older messages
 
   // Pagination for requests list
+  pageSizeOptions = [10, 20, 30];
   activeRequestsCurrentPage = 1;
-  activeRequestsPageSize = 7;
+  activeRequestsPageSize = 10;
   activeRequestsTotalPages = 1;
   archivedRequestsCurrentPage = 1;
-  archivedRequestsPageSize = 7;
+  archivedRequestsPageSize = 10;
   archivedRequestsTotalPages = 1;
 
   private user: User | null = null;
@@ -154,42 +155,56 @@ export class StaffChatComponent implements OnInit, OnDestroy {
     this.displayedArchivedRequests = this.filteredArchivedRequests.slice(archivedStart, archivedStart + this.archivedRequestsPageSize);
   }
 
-  goToActiveRequestsPage(page: number): void {
-    this.activeRequestsCurrentPage = page;
-    this.updateDisplayedRequests();
+  onActivePageSizeChange(): void {
+    this.activeRequestsCurrentPage = 1;
+    this.setupRequestsPagination();
   }
 
-  goToArchivedRequestsPage(page: number): void {
-    this.archivedRequestsCurrentPage = page;
-    this.updateDisplayedRequests();
+  onArchivedPageSizeChange(): void {
+    this.archivedRequestsCurrentPage = 1;
+    this.setupRequestsPagination();
   }
 
-  nextActiveRequestsPage(): void {
-    if (this.activeRequestsCurrentPage < this.activeRequestsTotalPages) {
-      this.activeRequestsCurrentPage++;
-      this.updateDisplayedRequests();
-    }
+  get activeRangeStart(): number {
+    return this.filteredActiveRequests.length === 0 ? 0 : (this.activeRequestsCurrentPage - 1) * this.activeRequestsPageSize + 1;
   }
 
-  prevActiveRequestsPage(): void {
-    if (this.activeRequestsCurrentPage > 1) {
-      this.activeRequestsCurrentPage--;
-      this.updateDisplayedRequests();
-    }
+  get activeRangeEnd(): number {
+    return Math.min(this.activeRequestsCurrentPage * this.activeRequestsPageSize, this.filteredActiveRequests.length);
   }
 
-  nextArchivedRequestsPage(): void {
-    if (this.archivedRequestsCurrentPage < this.archivedRequestsTotalPages) {
-      this.archivedRequestsCurrentPage++;
-      this.updateDisplayedRequests();
-    }
+  get archivedRangeStart(): number {
+    return this.filteredArchivedRequests.length === 0 ? 0 : (this.archivedRequestsCurrentPage - 1) * this.archivedRequestsPageSize + 1;
   }
 
-  prevArchivedRequestsPage(): void {
-    if (this.archivedRequestsCurrentPage > 1) {
-      this.archivedRequestsCurrentPage--;
-      this.updateDisplayedRequests();
-    }
+  get archivedRangeEnd(): number {
+    return Math.min(this.archivedRequestsCurrentPage * this.archivedRequestsPageSize, this.filteredArchivedRequests.length);
+  }
+
+  get activeVisiblePages(): number[] {
+    const total = this.activeRequestsTotalPages;
+    if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1);
+    const pages: number[] = [];
+    const cur = this.activeRequestsCurrentPage;
+    pages.push(1);
+    if (cur > 3) pages.push(-1);
+    for (let p = Math.max(2, cur - 1); p <= Math.min(total - 1, cur + 1); p++) pages.push(p);
+    if (cur < total - 2) pages.push(-1);
+    pages.push(total);
+    return pages;
+  }
+
+  get archivedVisiblePages(): number[] {
+    const total = this.archivedRequestsTotalPages;
+    if (total <= 5) return Array.from({ length: total }, (_, i) => i + 1);
+    const pages: number[] = [];
+    const cur = this.archivedRequestsCurrentPage;
+    pages.push(1);
+    if (cur > 3) pages.push(-1);
+    for (let p = Math.max(2, cur - 1); p <= Math.min(total - 1, cur + 1); p++) pages.push(p);
+    if (cur < total - 2) pages.push(-1);
+    pages.push(total);
+    return pages;
   }
 
   getActiveRequestsPages(): number[] {

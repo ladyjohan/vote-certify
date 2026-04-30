@@ -80,37 +80,23 @@
   </div>
 
   <!-- Pagination -->
-  <div class="pagination-wrapper" *ngIf="filteredRequests.length > 0">
-    <div class="pagination">
-      <button
-        class="page-btn prev"
-        [disabled]="currentPage === 1"
-        (click)="prevPage()"
-      >
-        ‹ Prev
-      </button>
-
-      <ng-container *ngFor="let p of pages">
-        <button
-          class="page-btn"
-          [class.active]="currentPage === p"
-          (click)="goToPage(p)"
-        >
-          {{ p }}
-        </button>
-      </ng-container>
-
-      <button
-        class="page-btn next"
-        [disabled]="currentPage === totalPages"
-        (click)="nextPage()"
-      >
-        Next ›
-      </button>
+  <div class="pagination-bar" *ngIf="filteredRequests.length > 0">
+    <div class="rows-per-page">
+      <label for="ro_pageSize">Rows per page:</label>
+      <select id="ro_pageSize" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+        <option *ngFor="let s of pageSizeOptions" [value]="s">{{ s }}</option>
+      </select>
     </div>
-
-    <div class="pagination-info">
-      Page {{ currentPage }} of {{ totalPages }} — {{ filteredRequests.length }} requests
+    <span class="page-info">{{ rangeStart }}–{{ rangeEnd }} of {{ filteredRequests.length }}</span>
+    <div class="pagination-btns">
+      <button class="pg-btn" [disabled]="currentPage === 1" (click)="goToPage(1)" title="First">«</button>
+      <button class="pg-btn" [disabled]="currentPage === 1" (click)="prevPage()" title="Previous">‹</button>
+      <ng-container *ngFor="let p of visiblePages">
+        <span *ngIf="p === -1" class="pg-ellipsis">…</span>
+        <button *ngIf="p !== -1" class="pg-btn" [class.active]="currentPage === p" (click)="goToPage(p)">{{ p }}</button>
+      </ng-container>
+      <button class="pg-btn" [disabled]="currentPage === totalPages" (click)="nextPage()" title="Next">›</button>
+      <button class="pg-btn" [disabled]="currentPage === totalPages" (click)="goToPage(totalPages)" title="Last">»</button>
     </div>
   </div>
 </div>

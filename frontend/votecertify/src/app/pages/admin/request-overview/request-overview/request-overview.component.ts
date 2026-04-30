@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Firestore, collection, getDocs } from '@angular/fire/firestore';
 import { debounceTime } from 'rxjs/operators';
 import { jsPDF } from 'jspdf';
@@ -9,7 +9,7 @@ import autoTable from 'jspdf-autotable';
 @Component({
   selector: 'app-admin-request-overview',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   providers: [DatePipe],
   templateUrl: './request-overview.component.html',
   styleUrls: ['./request-overview.component.scss']
@@ -28,6 +28,7 @@ export class AdminRequestOverviewComponent implements OnInit {
 
   currentPage = 1;
   pageSize = 10;
+  pageSizeOptions = [10, 20, 30];
   totalPages = 1;
   pages: number[] = [];
 
@@ -425,5 +426,31 @@ for (const status of statuses) {
       this.currentPage--;
       this.updatePagedRequests();
     }
+  }
+
+  onPageSizeChange() {
+    this.currentPage = 1;
+    this.setupPagination();
+  }
+
+  get rangeStart() {
+    return this.filteredRequests.length === 0 ? 0 : (this.currentPage - 1) * this.pageSize + 1;
+  }
+
+  get rangeEnd() {
+    return Math.min(this.currentPage * this.pageSize, this.filteredRequests.length);
+  }
+
+  get visiblePages(): number[] {
+    const total = this.totalPages;
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    const pages: number[] = [];
+    const cur = this.currentPage;
+    pages.push(1);
+    if (cur > 3) pages.push(-1);
+    for (let p = Math.max(2, cur - 1); p <= Math.min(total - 1, cur + 1); p++) pages.push(p);
+    if (cur < total - 2) pages.push(-1);
+    pages.push(total);
+    return pages;
   }
 }

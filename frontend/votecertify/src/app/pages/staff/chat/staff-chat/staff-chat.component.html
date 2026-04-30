@@ -49,21 +49,24 @@
         </ng-container>
 
         <!-- Pagination for Active Chats -->
-        <div class="requests-pagination-wrapper" *ngIf="filteredActiveRequests.length > 0">
-          <div class="requests-pagination">
-            <button class="page-btn prev" [disabled]="activeRequestsCurrentPage === 1" (click)="prevActiveRequestsPage()">‹ Prev</button>
-
-            <ng-container *ngFor="let p of getActiveRequestsPages()">
-              <button
-                class="page-btn"
-                [class.active]="activeRequestsCurrentPage === p"
-                (click)="goToActiveRequestsPage(p)"
-              >{{ p }}</button>
-            </ng-container>
-
-            <button class="page-btn next" [disabled]="activeRequestsCurrentPage === activeRequestsTotalPages" (click)="nextActiveRequestsPage()">Next ›</button>
+        <div class="pagination-bar" *ngIf="filteredActiveRequests.length > 0">
+          <div class="rows-per-page">
+            <label for="s_active_pageSize">Rows:</label>
+            <select id="s_active_pageSize" [(ngModel)]="activeRequestsPageSize" (change)="onActivePageSizeChange()">
+              <option *ngFor="let s of pageSizeOptions" [value]="s">{{ s }}</option>
+            </select>
           </div>
-          <div class="pagination-info">Page {{ activeRequestsCurrentPage }} of {{ activeRequestsTotalPages }} — {{ filteredActiveRequests.length }} requests</div>
+          <span class="page-info">{{ activeRangeStart }}–{{ activeRangeEnd }} of {{ filteredActiveRequests.length }}</span>
+          <div class="pagination-btns">
+            <button class="pg-btn" [disabled]="activeRequestsCurrentPage === 1" (click)="goToActiveRequestsPage(1)" title="First">«</button>
+            <button class="pg-btn" [disabled]="activeRequestsCurrentPage === 1" (click)="prevActiveRequestsPage()" title="Previous">‹</button>
+            <ng-container *ngFor="let p of activeVisiblePages">
+              <span *ngIf="p === -1" class="pg-ellipsis">…</span>
+              <button *ngIf="p !== -1" class="pg-btn" [class.active]="activeRequestsCurrentPage === p" (click)="goToActiveRequestsPage(p)">{{ p }}</button>
+            </ng-container>
+            <button class="pg-btn" [disabled]="activeRequestsCurrentPage === activeRequestsTotalPages" (click)="nextActiveRequestsPage()" title="Next">›</button>
+            <button class="pg-btn" [disabled]="activeRequestsCurrentPage === activeRequestsTotalPages" (click)="goToActiveRequestsPage(activeRequestsTotalPages)" title="Last">»</button>
+          </div>
         </div>
       </div>
 
@@ -92,21 +95,24 @@
         </ng-container>
 
         <!-- Pagination for Archived Chats -->
-        <div class="requests-pagination-wrapper" *ngIf="filteredArchivedRequests.length > 0">
-          <div class="requests-pagination">
-            <button class="page-btn prev" [disabled]="archivedRequestsCurrentPage === 1" (click)="prevArchivedRequestsPage()">‹ Prev</button>
-
-            <ng-container *ngFor="let p of getArchivedRequestsPages()">
-              <button
-                class="page-btn"
-                [class.active]="archivedRequestsCurrentPage === p"
-                (click)="goToArchivedRequestsPage(p)"
-              >{{ p }}</button>
-            </ng-container>
-
-            <button class="page-btn next" [disabled]="archivedRequestsCurrentPage === archivedRequestsTotalPages" (click)="nextArchivedRequestsPage()">Next ›</button>
+        <div class="pagination-bar" *ngIf="filteredArchivedRequests.length > 0">
+          <div class="rows-per-page">
+            <label for="s_archived_pageSize">Rows:</label>
+            <select id="s_archived_pageSize" [(ngModel)]="archivedRequestsPageSize" (change)="onArchivedPageSizeChange()">
+              <option *ngFor="let s of pageSizeOptions" [value]="s">{{ s }}</option>
+            </select>
           </div>
-          <div class="pagination-info">Page {{ archivedRequestsCurrentPage }} of {{ archivedRequestsTotalPages }} — {{ filteredArchivedRequests.length }} requests</div>
+          <span class="page-info">{{ archivedRangeStart }}–{{ archivedRangeEnd }} of {{ filteredArchivedRequests.length }}</span>
+          <div class="pagination-btns">
+            <button class="pg-btn" [disabled]="archivedRequestsCurrentPage === 1" (click)="goToArchivedRequestsPage(1)" title="First">«</button>
+            <button class="pg-btn" [disabled]="archivedRequestsCurrentPage === 1" (click)="prevArchivedRequestsPage()" title="Previous">‹</button>
+            <ng-container *ngFor="let p of archivedVisiblePages">
+              <span *ngIf="p === -1" class="pg-ellipsis">…</span>
+              <button *ngIf="p !== -1" class="pg-btn" [class.active]="archivedRequestsCurrentPage === p" (click)="goToArchivedRequestsPage(p)">{{ p }}</button>
+            </ng-container>
+            <button class="pg-btn" [disabled]="archivedRequestsCurrentPage === archivedRequestsTotalPages" (click)="nextArchivedRequestsPage()" title="Next">›</button>
+            <button class="pg-btn" [disabled]="archivedRequestsCurrentPage === archivedRequestsTotalPages" (click)="goToArchivedRequestsPage(archivedRequestsTotalPages)" title="Last">»</button>
+          </div>
         </div>
       </div>
 

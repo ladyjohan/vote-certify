@@ -646,54 +646,83 @@
   }
 }
 
-/* Pagination styles (copied from request-management for consistent look) */
-.pagination-wrapper {
-  margin-top: 18px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  position: relative;
-  z-index: 5; /* make sure pagination sits above nearby elements */
-}
-.pagination {
+/* Pagination */
+.pagination-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: rgba(0,0,0,0.03);
-  padding: 8px;
-  border-radius: 8px;
-}
-.page-btn {
-  background: #fff;
-  border: 1px solid #e6e8ee;
-  color: #222;
-  padding: 6px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  min-width: 36px;
-  transition: background 0.12s, transform 0.08s;
-}
-.page-btn:hover:not(:disabled) {
-  background: #f4f7ff;
-  transform: translateY(-1px);
-}
-.page-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-.page-btn.active {
-  background: linear-gradient(90deg, #1976d2, #4e8cf5);
-  color: #fff;
-  border-color: transparent;
-}
-.pagination-info {
-  font-size: 0.95rem;
-  color: #55606a;
-}
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 12px 0;
+  margin-top: 16px;
+  flex-wrap: wrap;
 
-@media (max-width: 640px) {
-  .pagination { gap: 6px; padding: 6px; }
-  .page-btn { padding: 6px 8px; min-width: 32px; font-size: 0.9rem; }
-  .pagination-info { font-size: 0.85rem; }
+  .rows-per-page {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #6b7280;
+
+    select {
+      padding: 4px 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      background: #fff;
+      cursor: pointer;
+    }
+  }
+
+  .page-info {
+    font-size: 0.85rem;
+    color: #6b7280;
+    white-space: nowrap;
+  }
+
+  .pagination-btns {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .pg-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: #fff;
+    color: #374151;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+
+    &:hover:not(:disabled) {
+      background: #f3f4f6;
+      border-color: #6366f1;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    &.active {
+      background: #6366f1;
+      color: #fff;
+      border-color: #6366f1;
+      font-weight: 600;
+    }
+  }
+
+  .pg-ellipsis {
+    padding: 0 4px;
+    color: #9ca3af;
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 640px) {
+    justify-content: center;
+    gap: 10px;
+  }
 }

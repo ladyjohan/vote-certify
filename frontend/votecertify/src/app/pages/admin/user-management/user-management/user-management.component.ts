@@ -45,7 +45,8 @@ export class AdminUserManagementComponent implements OnInit {
 
   // Pagination
   currentPage: number = 1;
-  itemsPerPage: number = 5;
+  itemsPerPage: number = 10;
+  pageSizeOptions = [10, 20, 30];
   totalPages: number = 1;
   paginatedUsers: User[] = [];
   pages: number[] = [];
@@ -255,6 +256,32 @@ export class AdminUserManagementComponent implements OnInit {
       this.currentPage--;
       this.updatePaginatedUsers();
     }
+  }
+
+  onPageSizeChange() {
+    this.currentPage = 1;
+    this.setupPagination();
+  }
+
+  get rangeStart() {
+    return this.filteredUsers.length === 0 ? 0 : (this.currentPage - 1) * this.itemsPerPage + 1;
+  }
+
+  get rangeEnd() {
+    return Math.min(this.currentPage * this.itemsPerPage, this.filteredUsers.length);
+  }
+
+  get visiblePages(): number[] {
+    const total = this.totalPages;
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    const pages: number[] = [];
+    const cur = this.currentPage;
+    pages.push(1);
+    if (cur > 3) pages.push(-1);
+    for (let p = Math.max(2, cur - 1); p <= Math.min(total - 1, cur + 1); p++) pages.push(p);
+    if (cur < total - 2) pages.push(-1);
+    pages.push(total);
+    return pages;
   }
 
   searchUsers() {

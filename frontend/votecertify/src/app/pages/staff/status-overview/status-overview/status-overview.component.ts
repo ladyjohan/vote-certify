@@ -1,6 +1,6 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { Firestore, collection, getDocs, doc, updateDoc } from '@angular/fire/firestore';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { debounceTime } from 'rxjs/operators';
 import Swal from 'sweetalert2';
@@ -9,7 +9,7 @@ import { Auth } from '@angular/fire/auth';
 @Component({
   selector: 'app-status-overview',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './status-overview.component.html',
   styleUrls: ['./status-overview.component.scss']
 })
@@ -23,6 +23,7 @@ export class StatusOverviewComponent implements OnInit {
   currentSortDirection: 'asc' | 'desc' = 'desc';
   // Pagination
   pageSize = 10;
+  pageSizeOptions = [10, 20, 30];
   currentPage = 1;
   totalPages = 1;
   pages: number[] = [];
@@ -186,6 +187,32 @@ export class StatusOverviewComponent implements OnInit {
       this.currentPage--;
       this.updatePagedRequests();
     }
+  }
+
+  onPageSizeChange() {
+    this.currentPage = 1;
+    this.setupPagination();
+  }
+
+  get rangeStart() {
+    return this.filteredRequests.length === 0 ? 0 : (this.currentPage - 1) * this.pageSize + 1;
+  }
+
+  get rangeEnd() {
+    return Math.min(this.currentPage * this.pageSize, this.filteredRequests.length);
+  }
+
+  get visiblePages(): number[] {
+    const total = this.totalPages;
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    const pages: number[] = [];
+    const cur = this.currentPage;
+    pages.push(1);
+    if (cur > 3) pages.push(-1);
+    for (let p = Math.max(2, cur - 1); p <= Math.min(total - 1, cur + 1); p++) pages.push(p);
+    if (cur < total - 2) pages.push(-1);
+    pages.push(total);
+    return pages;
   }
 
   getStatusClass(status: string): string {
