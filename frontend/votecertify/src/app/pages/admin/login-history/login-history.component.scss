@@ -1,8 +1,8 @@
 .login-history-container {
-  padding: 2rem;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e8eef7 100%);
+  padding: 2.5rem;
+  background: #f8fafc;
   min-height: 100vh;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 /* Header Section */
@@ -18,9 +18,10 @@
 
   h2 {
     margin: 0;
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #1f2937;
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.025em;
   }
 }/* Filters Section */
 .filters-section {
@@ -355,58 +356,97 @@
   }
 }
 
-/* Pagination Section */
-.pagination-section {
-  padding: 1.5rem;
-  border-top: 1px solid #f3f4f6;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-
-.pagination {
+/* Pagination */
+.pagination-bar {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 16px 24px;
+  border-top: 1px solid #f1f5f9;
   flex-wrap: wrap;
-  justify-content: center;
 
-  .page-btn {
-    background: white;
-    border: 1px solid #e5e7eb;
-    color: #374151;
-    padding: 0.6rem 0.9rem;
+  .rows-per-page {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    color: #64748b;
+
+    select {
+      padding: 4px 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      background: #fff;
+      cursor: pointer;
+      color: #1e293b;
+      transition: all 0.2s;
+
+      &:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+      }
+    }
+  }
+
+  .page-info {
+    font-size: 0.875rem;
+    color: #64748b;
+    white-space: nowrap;
+  }
+
+  .pagination-btns {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .pg-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid #e2e8f0;
     border-radius: 6px;
+    background: #fff;
+    color: #475569;
+    font-size: 0.875rem;
     cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
-    min-width: 36px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     &:hover:not(:disabled) {
-      background: #f3f4f6;
-      border-color: #d1d5db;
-      transform: translateY(-2px);
-    }
-
-    &.active {
-      background: linear-gradient(135deg, #003FCB 0%, #001F6D 100%);
-      color: white;
-      border-color: transparent;
+      background: #f8fafc;
+      border-color: #6366f1;
+      color: #6366f1;
     }
 
     &:disabled {
-      opacity: 0.5;
+      opacity: 0.4;
       cursor: not-allowed;
     }
-  }
-}
 
-.pagination-info {
-  font-size: 0.9rem;
-  color: #6b7280;
-  font-weight: 500;
+    &.active {
+      background: #6366f1;
+      color: #fff;
+      border-color: #6366f1;
+      font-weight: 600;
+    }
+  }
+
+  .pg-ellipsis {
+    padding: 0 4px;
+    color: #94a3b8;
+    font-size: 0.875rem;
+  }
+
+  @media (max-width: 640px) {
+    justify-content: center;
+    gap: 12px;
+  }
 }
 
 /* Loading State */

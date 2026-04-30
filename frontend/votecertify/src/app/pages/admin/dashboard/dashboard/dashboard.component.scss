@@ -4,11 +4,14 @@
 .dashboard-container {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  padding: 1.5rem;
+  gap: 2rem;
+  padding: 2.5rem;
   max-width: 1600px;
   margin: 0 auto;
   box-sizing: border-box;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #f8fafc;
+  min-height: 100vh;
 }
 
 /* ===========================
@@ -27,12 +30,13 @@
 .welcome-card {
   display: flex;
   align-items: center;
-  gap: 1.2rem;
+  gap: 1.5rem;
   background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-  padding: 1rem;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
   align-self: stretch;
+  border: 1px solid rgba(226, 232, 240, 0.8);
 }
 
 .icon-area {
@@ -46,9 +50,11 @@
 }
 
 .welcome-content h1 {
-  font-size: 1.3rem;
-  margin-bottom: 0.3rem;
-  color: #222;
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  color: #0f172a;
+  letter-spacing: -0.025em;
 }
 
 .welcome-content p {
@@ -105,13 +111,14 @@
 
 .card {
   position: relative;
-  background: #ffffff; /* fallback */
-  border-radius: 16px;
-  padding: 1.2rem;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   text-align: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  overflow: hidden; /* ensures gradient stays inside card */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  border: 1px solid rgba(226, 232, 240, 0.8);
 }
 
 .card::before {

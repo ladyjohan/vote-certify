@@ -18,8 +18,9 @@ export class LoginHistoryComponent implements OnInit, OnDestroy {
   searchTerm = '';
   filterRole: 'all' | 'admin' | 'staff' = 'all';
 
-  // Pagination - changed to 5 items per page
-  pageSize = 5;
+  // Pagination
+  pageSizeOptions = [10, 20, 30];
+  pageSize = 10;
   currentPage = 1;
   totalPages = 1;
 
@@ -110,6 +111,32 @@ export class LoginHistoryComponent implements OnInit, OnDestroy {
 
   get pages(): number[] {
     return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  onPageSizeChange(): void {
+    this.currentPage = 1;
+    this.setupPagination();
+  }
+
+  get rangeStart(): number {
+    return this.filteredHistory.length === 0 ? 0 : (this.currentPage - 1) * this.pageSize + 1;
+  }
+
+  get rangeEnd(): number {
+    return Math.min(this.currentPage * this.pageSize, this.filteredHistory.length);
+  }
+
+  get visiblePages(): number[] {
+    const total = this.totalPages;
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    const pages: number[] = [];
+    const cur = this.currentPage;
+    pages.push(1);
+    if (cur > 3) pages.push(-1);
+    for (let p = Math.max(2, cur - 1); p <= Math.min(total - 1, cur + 1); p++) pages.push(p);
+    if (cur < total - 2) pages.push(-1);
+    pages.push(total);
+    return pages;
   }
 
   goToPage(page: number): void {

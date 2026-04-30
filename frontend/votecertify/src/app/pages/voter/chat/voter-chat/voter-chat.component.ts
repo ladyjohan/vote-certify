@@ -203,6 +203,44 @@ export class VoterChatComponent implements OnInit, OnDestroy {
     return Array.from({ length: this.archivedRequestsTotalPages }, (_, i) => i + 1);
   }
 
+  goToActiveRequestsPage(page: number): void {
+    this.activeRequestsCurrentPage = page;
+    this.updateDisplayedRequests();
+  }
+
+  nextActiveRequestsPage(): void {
+    if (this.activeRequestsCurrentPage < this.activeRequestsTotalPages) {
+      this.activeRequestsCurrentPage++;
+      this.updateDisplayedRequests();
+    }
+  }
+
+  prevActiveRequestsPage(): void {
+    if (this.activeRequestsCurrentPage > 1) {
+      this.activeRequestsCurrentPage--;
+      this.updateDisplayedRequests();
+    }
+  }
+
+  goToArchivedRequestsPage(page: number): void {
+    this.archivedRequestsCurrentPage = page;
+    this.updateDisplayedRequests();
+  }
+
+  nextArchivedRequestsPage(): void {
+    if (this.archivedRequestsCurrentPage < this.archivedRequestsTotalPages) {
+      this.archivedRequestsCurrentPage++;
+      this.updateDisplayedRequests();
+    }
+  }
+
+  prevArchivedRequestsPage(): void {
+    if (this.archivedRequestsCurrentPage > 1) {
+      this.archivedRequestsCurrentPage--;
+      this.updateDisplayedRequests();
+    }
+  }
+
   private trySelectRequest(requestId: string, navigate: boolean = true): void {
     const request = this.findRequestById(requestId);
 

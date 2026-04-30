@@ -85,39 +85,48 @@
       </table>
     </div>
 
-    <ng-container *ngIf="filteredHistory.length === 0; else paginationSection">
-      <div class="no-data">
-        <span class="material-icons">history</span>
-        <p>No login records found</p>
+
+
+    <div class="pagination-bar" *ngIf="filteredHistory.length > 0">
+      <div class="rows-per-page">
+        <label for="pageSize">Rows per page:</label>
+        <select id="pageSize" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+          <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+        </select>
       </div>
-    </ng-container>
+      
+      <span class="page-info">
+        {{ rangeStart }}–{{ rangeEnd }} of {{ filteredHistory.length }}
+      </span>
 
-    <ng-template #paginationSection>
-      <div class="pagination-section">
-        <div class="pagination">
-          <button class="page-btn prev" [disabled]="currentPage === 1" (click)="prevPage()">
-            ‹ Prev
+      <div class="pagination-btns">
+        <button class="pg-btn" [disabled]="currentPage === 1" (click)="goToPage(1)" title="First Page">
+          «
+        </button>
+        <button class="pg-btn" [disabled]="currentPage === 1" (click)="prevPage()" title="Previous Page">
+          ‹
+        </button>
+
+        <ng-container *ngFor="let p of visiblePages">
+          <span *ngIf="p === -1" class="pg-ellipsis">…</span>
+          <button
+            *ngIf="p !== -1"
+            class="pg-btn"
+            [class.active]="currentPage === p"
+            (click)="goToPage(p)"
+          >
+            {{ p }}
           </button>
+        </ng-container>
 
-          <ng-container *ngFor="let page of pages">
-            <button
-              class="page-btn"
-              [class.active]="currentPage === page"
-              (click)="goToPage(page)"
-            >
-              {{ page }}
-            </button>
-          </ng-container>
-
-          <button class="page-btn next" [disabled]="currentPage === totalPages" (click)="nextPage()">
-            Next ›
-          </button>
-        </div>
-        <div class="pagination-info">
-          Page {{ currentPage }} of {{ totalPages }} — {{ filteredHistory.length }} total records
-        </div>
+        <button class="pg-btn" [disabled]="currentPage === totalPages" (click)="nextPage()" title="Next Page">
+          ›
+        </button>
+        <button class="pg-btn" [disabled]="currentPage === totalPages" (click)="goToPage(totalPages)" title="Last Page">
+          »
+        </button>
       </div>
-    </ng-template>
+    </div>
   </div>
 
   <ng-template #noDataState>

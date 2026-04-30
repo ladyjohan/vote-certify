@@ -9,10 +9,11 @@ h2 {
   margin: 0;
   width: 100%;
   box-sizing: border-box;
-  padding: 1rem 2rem;
-  background-color: #ffffff;
+  padding: 2.5rem;
+  background-color: #f8fafc;
   border-radius: 12px;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
 }
 
 
@@ -23,10 +24,11 @@ h2 {
 
 .container-header h2 {
   margin: 0;
-  text-align: left; /* left-aligned */
-  font-size: 1.75rem;
-    font-weight: 700;
-  color: #2c3e50;
+  text-align: left;
+  font-size: 1.875rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.025em;
 }
 
 .user-management-wrapper {

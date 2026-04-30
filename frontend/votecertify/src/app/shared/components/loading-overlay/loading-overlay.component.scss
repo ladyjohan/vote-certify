@@ -1,3 +1,5 @@
+@use "sass:map";
+
 .loading-overlay {
   position: fixed;
   top: 0;
@@ -82,7 +84,7 @@
           12: #d97706  // Dark Yellow / Amber
         );
 
-        $dot-color: map-get($spectrum, $i);
+        $dot-color: map.get($spectrum, $i);
         background-color: $dot-color;
         box-shadow: 0 0 10px rgba($dot-color, 0.45);
       }
