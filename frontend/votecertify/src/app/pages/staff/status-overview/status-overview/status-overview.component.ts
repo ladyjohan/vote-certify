@@ -1,10 +1,11 @@
 import { Component, OnInit, HostListener } from '@angular/core';
-import { Firestore, collection, getDocs, doc, updateDoc } from '@angular/fire/firestore';
+import { Firestore, collection, getDocs, doc, updateDoc, getDoc } from '@angular/fire/firestore';
 import { FormControl, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { debounceTime } from 'rxjs/operators';
 import Swal from 'sweetalert2';
-import { Auth } from '@angular/fire/auth';
+import { AuthService } from '../../../../services/auth.service';
+import { ActivityLogService } from '../../../../services/activity-log.service';
 
 @Component({
   selector: 'app-status-overview',
@@ -42,7 +43,11 @@ export class StatusOverviewComponent implements OnInit {
     { label: '2:30 PM - 3:00 PM', value: '14:30-15:00' }
   ];
 
-  constructor(private firestore: Firestore, private auth: Auth) {}
+  constructor(
+    private firestore: Firestore,
+    private authService: AuthService,
+    private activityLogService: ActivityLogService
+  ) {}
 
   async ngOnInit() {
     this.setPageSizeForViewport();
@@ -239,13 +244,29 @@ export class StatusOverviewComponent implements OnInit {
     if (!confirm.isConfirmed) return;
 
     try {
-      const staffEmail = this.auth.currentUser?.email || 'Unknown Staff';
+      const currentUser = await this.authService.getCurrentUser();
+      const staffEmail = currentUser?.email || 'Unknown Staff';
       const requestRef = doc(this.firestore, 'requests', request.id);
       await updateDoc(requestRef, {
         status: 'Completed',
         completedBy: staffEmail,
         completedAt: new Date()
       });
+
+      // 🔴 Log Activity
+      if (currentUser) {
+        const userSnap = await getDoc(doc(this.firestore, 'users', currentUser.uid));
+        const userData = userSnap.data();
+        await this.activityLogService.logActivity({
+          userEmail: staffEmail,
+          userName: userData?.['fullName'] || userData?.['name'] || 'Staff',
+          role: 'staff',
+          action: 'complete',
+          description: `Marked request for ${request.fullName} as completed/released`,
+          targetId: request.id,
+          targetName: request.fullName
+        });
+      }
 
       // Update local state
       const index = this.allRequests.findIndex(r => r.id === request.id);

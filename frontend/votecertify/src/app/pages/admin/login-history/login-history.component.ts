@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LoginHistoryService, LoginHistoryRecord } from '../../../services/login-history.service';
+import { ActivityLogService, ActivityLog } from '../../../services/activity-log.service';
 import { Subject, takeUntil, interval } from 'rxjs';
 
 @Component({
@@ -14,6 +15,10 @@ import { Subject, takeUntil, interval } from 'rxjs';
 export class LoginHistoryComponent implements OnInit, OnDestroy {
   loginHistory: LoginHistoryRecord[] = [];
   filteredHistory: LoginHistoryRecord[] = [];
+  activityLogs: ActivityLog[] = [];
+  filteredActivityLogs: ActivityLog[] = [];
+  
+  activeTab: 'login' | 'activity' = 'login';
   isLoading = false;
   searchTerm = '';
   filterRole: 'all' | 'admin' | 'staff' = 'all';
@@ -21,44 +26,46 @@ export class LoginHistoryComponent implements OnInit, OnDestroy {
   // Pagination
   pageSizeOptions = [10, 20, 30];
   pageSize = 10;
-  currentPage = 1;
-  totalPages = 1;
+  
+  loginCurrentPage = 1;
+  loginTotalPages = 1;
+  
+  activityCurrentPage = 1;
+  activityTotalPages = 1;
 
   // For real-time duration updates
   currentTime = new Date();
 
   private destroy$ = new Subject<void>();
 
-  constructor(private loginHistoryService: LoginHistoryService) {}
+  constructor(
+    private loginHistoryService: LoginHistoryService,
+    private activityLogService: ActivityLogService
+  ) {}
 
   ngOnInit(): void {
-    // Subscribe to real-time updates
+    // Subscribe to Login History real-time updates
     this.loginHistoryService
-      .getLoginHistoryRealtime(500)
+      .getLoginHistoryRealtime(1000)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (history) => {
-          console.log('✅ Real-time update received. Records:', history.length);
-          
-          // Filter out any voter records - only show admin and staff
-          const filtered = history.filter((record: any) => record.role === 'admin' || record.role === 'staff');
-          console.log('🔐 After filtering voters. Records:', filtered.length);
-          
-          // Debug: Show logout timestamps for any logged-out users
-          const loggedOut = filtered.filter(r => r.status === 'logged_out');
-          if (loggedOut.length > 0) {
-            console.log('📊 Logged out records found:', loggedOut.length);
-            loggedOut.forEach(r => {
-              console.log('  -', r.userEmail, 'logoutTimestamp:', r.logoutTimestamp, 'type:', typeof r.logoutTimestamp);
-            });
-          }
-          
-          this.loginHistory = filtered;
+          this.loginHistory = history.filter((r: any) => r.role === 'admin' || r.role === 'staff');
           this.applyFilters();
         },
-        error: (error) => {
-          console.error('❌ Error in real-time listener:', error);
+        error: (error) => console.error('❌ Login history error:', error),
+      });
+
+    // Subscribe to Activity Logs real-time updates
+    this.activityLogService
+      .getActivityLogsRealtime(1000)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (logs) => {
+          this.activityLogs = logs;
+          this.applyFilters();
         },
+        error: (error) => console.error('❌ Activity logs error:', error),
       });
 
     // Update current time every second for ongoing session durations
@@ -74,56 +81,84 @@ export class LoginHistoryComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  applyFilters(): void {
-    let filtered = [...this.loginHistory];
-
-    // Filter by search term
-    if (this.searchTerm.trim()) {
-      const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        (record) =>
-          record.userName.toLowerCase().includes(term) ||
-          record.userEmail.toLowerCase().includes(term)
-      );
-    }
-
-    // Filter by role
-    if (this.filterRole !== 'all') {
-      filtered = filtered.filter((record) => record.role === this.filterRole);
-    }
-
-    this.filteredHistory = filtered;
-    this.currentPage = 1;
-    this.setupPagination();
+  switchTab(tab: 'login' | 'activity'): void {
+    this.activeTab = tab;
+    this.searchTerm = '';
+    this.filterRole = 'all';
+    this.loginCurrentPage = 1;
+    this.activityCurrentPage = 1;
+    this.applyFilters();
   }
 
-  setupPagination(): void {
-    this.totalPages = Math.max(1, Math.ceil(this.filteredHistory.length / this.pageSize));
-    if (this.currentPage > this.totalPages) {
-      this.currentPage = this.totalPages;
+  applyFilters(): void {
+    const term = this.searchTerm.toLowerCase().trim();
+    
+    // Apply filters to Login History
+    let filteredLogin = [...this.loginHistory];
+    if (term) {
+      filteredLogin = filteredLogin.filter(r => 
+        r.userName.toLowerCase().includes(term) || r.userEmail.toLowerCase().includes(term)
+      );
     }
+    if (this.filterRole !== 'all') {
+      filteredLogin = filteredLogin.filter(r => r.role === this.filterRole);
+    }
+    this.filteredHistory = filteredLogin;
+    this.loginTotalPages = Math.max(1, Math.ceil(this.filteredHistory.length / this.pageSize));
+
+    // Apply filters to Activity Logs
+    let filteredActivity = [...this.activityLogs];
+    if (term) {
+      filteredActivity = filteredActivity.filter(r => 
+        r.userName.toLowerCase().includes(term) || 
+        r.userEmail.toLowerCase().includes(term) ||
+        r.description.toLowerCase().includes(term) ||
+        r.targetName?.toLowerCase().includes(term)
+      );
+    }
+    if (this.filterRole !== 'all') {
+      filteredActivity = filteredActivity.filter(r => r.role === this.filterRole);
+    }
+    this.filteredActivityLogs = filteredActivity;
+    this.activityTotalPages = Math.max(1, Math.ceil(this.filteredActivityLogs.length / this.pageSize));
   }
 
   get displayedHistory(): LoginHistoryRecord[] {
-    const start = (this.currentPage - 1) * this.pageSize;
+    const start = (this.loginCurrentPage - 1) * this.pageSize;
     return this.filteredHistory.slice(start, start + this.pageSize);
   }
 
-  get pages(): number[] {
-    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  get displayedActivity(): ActivityLog[] {
+    const start = (this.activityCurrentPage - 1) * this.pageSize;
+    return this.filteredActivityLogs.slice(start, start + this.pageSize);
+  }
+
+  get currentPage(): number {
+    return this.activeTab === 'login' ? this.loginCurrentPage : this.activityCurrentPage;
+  }
+
+  get totalPages(): number {
+    return this.activeTab === 'login' ? this.loginTotalPages : this.activityTotalPages;
   }
 
   onPageSizeChange(): void {
-    this.currentPage = 1;
-    this.setupPagination();
+    this.loginCurrentPage = 1;
+    this.activityCurrentPage = 1;
+    this.applyFilters();
   }
 
   get rangeStart(): number {
-    return this.filteredHistory.length === 0 ? 0 : (this.currentPage - 1) * this.pageSize + 1;
+    const count = this.activeTab === 'login' ? this.filteredHistory.length : this.filteredActivityLogs.length;
+    return count === 0 ? 0 : (this.currentPage - 1) * this.pageSize + 1;
   }
 
   get rangeEnd(): number {
-    return Math.min(this.currentPage * this.pageSize, this.filteredHistory.length);
+    const count = this.activeTab === 'login' ? this.filteredHistory.length : this.filteredActivityLogs.length;
+    return Math.min(this.currentPage * this.pageSize, count);
+  }
+
+  get totalFilteredCount(): number {
+    return this.activeTab === 'login' ? this.filteredHistory.length : this.filteredActivityLogs.length;
   }
 
   get visiblePages(): number[] {
@@ -140,18 +175,41 @@ export class LoginHistoryComponent implements OnInit, OnDestroy {
   }
 
   goToPage(page: number): void {
-    this.currentPage = page;
+    if (this.activeTab === 'login') this.loginCurrentPage = page;
+    else this.activityCurrentPage = page;
   }
 
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
-      this.currentPage++;
+      if (this.activeTab === 'login') this.loginCurrentPage++;
+      else this.activityCurrentPage++;
     }
   }
 
   prevPage(): void {
     if (this.currentPage > 1) {
-      this.currentPage--;
+      if (this.activeTab === 'login') this.loginCurrentPage--;
+      else this.activityCurrentPage--;
+    }
+  }
+
+  getActionIcon(action: string): string {
+    switch (action) {
+      case 'approve': return 'check_circle';
+      case 'decline': return 'cancel';
+      case 'complete': return 'verified';
+      case 'release': return 'assignment_turned_in';
+      default: return 'history';
+    }
+  }
+
+  getActionColor(action: string): string {
+    switch (action) {
+      case 'approve': return '#10b981';
+      case 'decline': return '#f44336';
+      case 'complete': return '#6366f1';
+      case 'release': return '#3b82f6';
+      default: return '#64748b';
     }
   }
 

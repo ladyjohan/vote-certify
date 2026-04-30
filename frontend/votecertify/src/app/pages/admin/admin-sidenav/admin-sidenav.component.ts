@@ -22,7 +22,7 @@ export class AdminSidenavComponent {
     { label: 'Dashboard', icon: 'dashboard', route: '/admin/dashboard' },
     { label: 'Request Overview', icon: 'visibility', route: '/admin/request-overview' },
     { label: 'User Management', icon: 'group', route: '/admin/user-management' },
-    { label: 'Login History', icon: 'history', route: '/admin/login-history' }
+    { label: 'System Logs', icon: 'assessment', route: '/admin/login-history' }
   ];
 
 

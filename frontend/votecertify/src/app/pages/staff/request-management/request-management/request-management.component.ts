@@ -8,6 +8,8 @@ import { combineLatest, startWith } from 'rxjs';
 import { SupabaseService } from '../../../../services/supabase.service';
 import emailjs from 'emailjs-com';
 import { Router } from '@angular/router';
+import { ActivityLogService } from '../../../../services/activity-log.service';
+import { AuthService } from '../../../../services/auth.service';
 
 
 @Component({
@@ -72,7 +74,9 @@ export class RequestManagementComponent implements OnInit {
   constructor(
     private firestore: Firestore,
     private supabaseService: SupabaseService,
-    private router: Router
+    private router: Router,
+    private activityLogService: ActivityLogService,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -333,6 +337,22 @@ export class RequestManagementComponent implements OnInit {
           claimTimeSlot: formValues.timeSlot
         });
 
+        // 🔴 Log Activity
+        const currentUser = await this.authService.getCurrentUser();
+        if (currentUser) {
+          const userSnap = await getDoc(doc(this.firestore, 'users', currentUser.uid));
+          const userData = userSnap.data();
+          await this.activityLogService.logActivity({
+            userEmail: currentUser.email || '',
+            userName: userData?.['fullName'] || userData?.['name'] || 'Staff',
+            role: 'staff',
+            action: 'approve',
+            description: `Approved request for ${request.fullName}`,
+            targetId: request.id,
+            targetName: request.fullName
+          });
+        }
+
         // Send Email after approval
         await this.sendApprovalEmail(request, formValues.pickupDate, formValues.timeSlot);
 
@@ -485,6 +505,22 @@ export class RequestManagementComponent implements OnInit {
         status: 'Declined',
         remarks: remarks
       });
+
+      // 🔴 Log Activity
+      const currentUser = await this.authService.getCurrentUser();
+      if (currentUser) {
+        const userSnap = await getDoc(doc(this.firestore, 'users', currentUser.uid));
+        const userData = userSnap.data();
+        await this.activityLogService.logActivity({
+          userEmail: currentUser.email || '',
+          userName: userData?.['fullName'] || userData?.['name'] || 'Staff',
+          role: 'staff',
+          action: 'decline',
+          description: `Declined request for ${request.fullName}. Reason: ${remarks}`,
+          targetId: request.id,
+          targetName: request.fullName
+        });
+      }
 
       // Send Email after decline
       await this.sendDeclineEmail(request, remarks);

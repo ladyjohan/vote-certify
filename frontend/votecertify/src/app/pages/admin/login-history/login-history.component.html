@@ -1,138 +1,226 @@
 <div class="login-history-container">
+  
+  <!-- Tabs Section -->
+  <div class="tabs-container">
+    <button class="tab-btn" [class.active]="activeTab === 'login'" (click)="switchTab('login')">
+      <i class="fas fa-sign-in-alt"></i> Login History
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'activity'" (click)="switchTab('activity')">
+      <i class="fas fa-clipboard-list"></i> Activity Logs
+    </button>
+  </div>
+
   <div class="filters-section">
-    <h2>Login History</h2>
+    <h2>{{ activeTab === 'login' ? 'Login History' : 'Activity Logs' }}</h2>
     
     <div class="search-box">
       <span class="material-icons">search</span>
-      <input
-        type="text"
-        placeholder="Search by name or email..."
-        [(ngModel)]="searchTerm"
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
         (ngModelChange)="applyFilters()"
+        [placeholder]="activeTab === 'login' ? 'Search by name or email...' : 'Search activity, staff, or voter...'" 
       />
     </div>
 
-    <select
-      [(ngModel)]="filterRole"
-      (ngModelChange)="applyFilters()"
-      class="role-filter"
-    >
+    <select class="role-filter" [(ngModel)]="filterRole" (change)="applyFilters()">
       <option value="all">All Roles</option>
-      <option value="admin">Admin</option>
-      <option value="staff">Staff</option>
+      <option value="admin">Admins Only</option>
+      <option value="staff">Staff Only</option>
     </select>
   </div>
 
-  <div class="stats-section">
-    <div class="stat-card">
-      <span class="stat-icon">👥</span>
-      <div>
+  <div class="stats-section" *ngIf="activeTab === 'login'">
+    <div class="stat-card total">
+      <div class="stat-icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="stat-content">
         <p class="stat-label">Total Records</p>
         <p class="stat-value">{{ filteredHistory.length }}</p>
       </div>
     </div>
-    <div class="stat-card">
-      <span class="stat-icon">🟢</span>
-      <div>
-        <p class="stat-label">Current Login for today</p>
+    <div class="stat-card today">
+      <div class="stat-icon">
+        <i class="fas fa-calendar-check"></i>
+      </div>
+      <div class="stat-content">
+        <p class="stat-label">Today's Logins</p>
         <p class="stat-value">{{ todayLogins }}</p>
       </div>
     </div>
-    <div class="stat-card">
-      <span class="stat-icon">👨‍💼</span>
-      <div>
+    <div class="stat-card admins">
+      <div class="stat-icon">
+        <i class="fas fa-user-shield"></i>
+      </div>
+      <div class="stat-content">
         <p class="stat-label">Total Admins</p>
         <p class="stat-value">{{ totalAdmins }}</p>
       </div>
     </div>
-    <div class="stat-card">
-      <span class="stat-icon">👨‍💻</span>
-      <div>
+    <div class="stat-card staff">
+      <div class="stat-icon">
+        <i class="fas fa-user-tie"></i>
+      </div>
+      <div class="stat-content">
         <p class="stat-label">Total Staff</p>
         <p class="stat-value">{{ totalStaff }}</p>
       </div>
     </div>
   </div>
 
-  <div class="table-section" *ngIf="filteredHistory.length > 0; else noDataState">
-    <div class="table-wrapper">
-      <table class="login-history-table">
+  <!-- Login History Table -->
+  <div class="table-section" *ngIf="activeTab === 'login'">
+    <div class="table-wrapper" *ngIf="filteredHistory.length > 0; else noDataState">
+      <table>
         <thead>
           <tr>
-            <th class="row-number">#</th>
-            <th>Full Name</th>
-            <th>Email</th>
+            <th>#</th>
+            <th>User</th>
             <th>Role</th>
             <th>Login Time</th>
+            <th>Logout Time</th>
+            <th>Duration</th>
+            <th>Device/Browser</th>
+            <th>Status</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let record of displayedHistory; let i = index">
-            <td class="row-number">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
-            <td class="name-cell">{{ record.userName }}</td>
-            <td class="email-cell">
-              <a href="mailto:{{ record.userEmail }}">{{ record.userEmail }}</a>
+            <td class="row-number">{{ (loginCurrentPage - 1) * pageSize + i + 1 }}</td>
+            <td>
+              <div class="user-info">
+                <span class="user-name">{{ record.userName }}</span>
+                <span class="user-email">{{ record.userEmail }}</span>
+              </div>
             </td>
-            <td class="role-cell">
-              <span class="role-badge" [class]="record.role">
+            <td>
+              <span class="role-badge" [class.admin]="record.role === 'admin'">
                 <span class="material-icons">{{ getRoleIcon(record.role) }}</span>
                 {{ record.role | uppercase }}
               </span>
             </td>
-            <td class="timestamp-cell">{{ formatTimestamp(record.loginTimestamp) }}</td>
+            <td>{{ formatTimestamp(record.loginTimestamp) }}</td>
+            <td>{{ formatTimestamp(record.logoutTimestamp) }}</td>
+            <td>
+              <span class="duration-badge">
+                <span class="material-icons">timer</span>
+                {{ calculateSessionDuration(record.loginTimestamp, record.logoutTimestamp) }}
+              </span>
+            </td>
+            <td>
+              <div class="device-info">
+                <span class="info-item">
+                  <span class="material-icons">devices</span>
+                  {{ record.deviceInfo }}
+                </span>
+                <span class="info-item">
+                  <span class="material-icons">open_in_browser</span>
+                  {{ record.browserInfo }}
+                </span>
+              </div>
+            </td>
+            <td>
+              <span class="status-indicator" [style.color]="getStatusColor(record.status)">
+                <span class="material-icons">{{ getStatusIcon(record.status) }}</span>
+                {{ record.status === 'online' ? 'Online' : 'Offline' }}
+              </span>
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
+  </div>
 
+  <!-- Activity Logs Table -->
+  <div class="table-section" *ngIf="activeTab === 'activity'">
+    <div class="table-wrapper" *ngIf="filteredActivityLogs.length > 0; else noDataState">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Staff Member</th>
+            <th>Action</th>
+            <th>Description</th>
+            <th>Voter/Target</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of displayedActivity; let i = index">
+            <td class="row-number">{{ (activityCurrentPage - 1) * pageSize + i + 1 }}</td>
+            <td>
+              <div class="user-info">
+                <span class="user-name">{{ log.userName }}</span>
+                <span class="user-email">{{ log.userEmail }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="action-badge" [style.background-color]="getActionColor(log.action) + '15'" [style.color]="getActionColor(log.action)">
+                <span class="material-icons">{{ getActionIcon(log.action) }}</span>
+                {{ log.action }}
+              </span>
+            </td>
+            <td class="description-cell">{{ log.description }}</td>
+            <td>
+              <div class="target-info" *ngIf="log.targetName">
+                <span class="target-name">{{ log.targetName }}</span>
+                <span class="target-id" *ngIf="log.targetId">ID: {{ log.targetId }}</span>
+              </div>
+              <span class="no-target" *ngIf="!log.targetName">-</span>
+            </td>
+            <td>
+              <div class="timestamp-cell">
+                <span class="material-icons">schedule</span>
+                {{ formatTimestamp(log.timestamp) }}
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-
-    <div class="pagination-bar" *ngIf="filteredHistory.length > 0">
-      <div class="rows-per-page">
-        <label for="pageSize">Rows per page:</label>
-        <select id="pageSize" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
-          <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
-        </select>
-      </div>
+  <!-- Unified Pagination Bar -->
+  <div class="pagination-bar" *ngIf="totalFilteredCount > 0">
+    <div class="rows-per-page">
+      <label for="pageSize">Rows per page:</label>
+      <select id="pageSize" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+        <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+      </select>
+    </div>
+    <span class="page-info">{{ rangeStart }}–{{ rangeEnd }} of {{ totalFilteredCount }}</span>
+    <div class="pagination-btns">
+      <button class="pg-btn" [disabled]="currentPage === 1" (click)="goToPage(1)" title="First Page">
+        «
+      </button>
+      <button class="pg-btn" [disabled]="currentPage === 1" (click)="prevPage()" title="Previous Page">
+        ‹
+      </button>
       
-      <span class="page-info">
-        {{ rangeStart }}–{{ rangeEnd }} of {{ filteredHistory.length }}
-      </span>
+      <ng-container *ngFor="let p of visiblePages">
+        <span *ngIf="p === -1" class="pg-ellipsis">…</span>
+        <button 
+          *ngIf="p !== -1" 
+          class="pg-btn" 
+          [class.active]="currentPage === p"
+          (click)="goToPage(p)"
+        >{{ p }}</button>
+      </ng-container>
 
-      <div class="pagination-btns">
-        <button class="pg-btn" [disabled]="currentPage === 1" (click)="goToPage(1)" title="First Page">
-          «
-        </button>
-        <button class="pg-btn" [disabled]="currentPage === 1" (click)="prevPage()" title="Previous Page">
-          ‹
-        </button>
-
-        <ng-container *ngFor="let p of visiblePages">
-          <span *ngIf="p === -1" class="pg-ellipsis">…</span>
-          <button
-            *ngIf="p !== -1"
-            class="pg-btn"
-            [class.active]="currentPage === p"
-            (click)="goToPage(p)"
-          >
-            {{ p }}
-          </button>
-        </ng-container>
-
-        <button class="pg-btn" [disabled]="currentPage === totalPages" (click)="nextPage()" title="Next Page">
-          ›
-        </button>
-        <button class="pg-btn" [disabled]="currentPage === totalPages" (click)="goToPage(totalPages)" title="Last Page">
-          »
-        </button>
-      </div>
+      <button class="pg-btn" [disabled]="currentPage === totalPages" (click)="nextPage()" title="Next Page">
+        ›
+      </button>
+      <button class="pg-btn" [disabled]="currentPage === totalPages" (click)="goToPage(totalPages)" title="Last Page">
+        »
+      </button>
     </div>
   </div>
 
   <ng-template #noDataState>
     <div class="no-data">
       <span class="material-icons">history</span>
-      <p>No login records found</p>
+      <p>{{ activeTab === 'login' ? 'No login records found' : 'No activity logs found' }}</p>
     </div>
   </ng-template>
 </div>
