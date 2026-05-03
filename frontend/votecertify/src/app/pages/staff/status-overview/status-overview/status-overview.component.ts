@@ -285,7 +285,7 @@ export class StatusOverviewComponent implements OnInit {
   }
 
   getTimeSlotLabel(timeSlotValue: string | null): string {
-    if (!timeSlotValue) return 'N/A';
+    if (!timeSlotValue) return '-';
     const slot = this.timeSlots.find(s => s.value === timeSlotValue);
     return slot ? slot.label : timeSlotValue;
   }

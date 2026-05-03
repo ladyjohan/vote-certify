@@ -103,7 +103,7 @@ export class CertificateStatusComponent implements OnInit {
 
   formatDate(timestamp: any): string {
     const date = timestamp?.toDate?.();
-    return date ? date.toLocaleString() : 'N/A';
+    return date ? date.toLocaleString() : '-';
   }
 
   getTimeSlotLabel(timeSlotValue: string): string {

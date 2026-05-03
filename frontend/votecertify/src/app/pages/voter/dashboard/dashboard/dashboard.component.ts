@@ -21,6 +21,7 @@ export class VoterDashboardComponent implements OnInit {
   daysRemaining: number = 0;
   private intervalId: any;
   videoSrc = 'assets/videos/votecertify_process.mp4';
+  dropdownOpen = false;
 
   subtitles = {
     en: [
@@ -122,7 +123,7 @@ export class VoterDashboardComponent implements OnInit {
   }
 
   formatDate(date: any): string {
-    if (!date) return 'N/A';
+    if (!date) return '-';
     // Firestore Timestamp object
     if (typeof date.toDate === 'function') {
       return date.toDate().toLocaleString();
@@ -232,13 +233,18 @@ export class VoterDashboardComponent implements OnInit {
       this.currentSubtitle = '';
       return;
     }
-    const subs = this.subtitles[this.subtitleLang];
-    const found = subs.find(s => time >= s.start && time < s.end);
+    const subs = this.subtitles[this.subtitleLang as keyof typeof this.subtitles];
+    const found = subs?.find(s => time >= s.start && time < s.end);
     this.currentSubtitle = found ? found.text : '';
+  }
+
+  toggleDropdown() {
+    this.dropdownOpen = !this.dropdownOpen;
   }
 
   setSubtitleLang(lang: 'en' | 'tl' | 'off') {
     this.subtitleLang = lang;
+    this.dropdownOpen = false;
     if (lang === 'off') {
       this.currentSubtitle = '';
     }

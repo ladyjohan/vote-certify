@@ -215,7 +215,7 @@ export class LoginHistoryComponent implements OnInit, OnDestroy {
 
   formatTimestamp(timestamp: any): string {
     if (!timestamp || timestamp === null || timestamp === undefined) {
-      return 'N/A';
+      return '-';
     }
 
     let date: Date;
@@ -226,7 +226,7 @@ export class LoginHistoryComponent implements OnInit, OnDestroy {
         date = timestamp.toDate();
       } catch (e) {
         console.error('Error calling toDate():', e);
-        return 'N/A';
+        return '-';
       }
     }
     // Handle Date instance
@@ -243,12 +243,12 @@ export class LoginHistoryComponent implements OnInit, OnDestroy {
       date = new Date(timestamp);
     }
     else {
-      return 'N/A';
+      return '-';
     }
 
     // Validate the date
     if (isNaN(date.getTime())) {
-      return 'N/A';
+      return '-';
     }
 
     // Format like login timestamp - simple and consistent

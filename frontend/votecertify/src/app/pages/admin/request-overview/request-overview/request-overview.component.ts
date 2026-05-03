@@ -71,7 +71,7 @@ export class AdminRequestOverviewComponent implements OnInit {
 
     this.allRequests = await Promise.all(snapshot.docs.map(async doc => {
       const data = doc.data();
-      let completedByName = 'N/A';
+      let completedByName = '-';
 
       // If there's a completedBy email, try to fetch the staff member's full name
       if (data['completedBy']) {
@@ -181,7 +181,7 @@ export class AdminRequestOverviewComponent implements OnInit {
         return `${diff} day(s)`;
       }
     }
-    return 'N/A';
+    return '-';
   }
 
   getStatusClass(status: string): string {
@@ -336,12 +336,12 @@ export class AdminRequestOverviewComponent implements OnInit {
       const columns = ['#', 'Voter Name', 'Date Requested', 'Time Requested', 'Pickup Date', 'Time of Release', 'Completed By'];
       const rows = reqs.map((r, idx) => [
         idx + 1,
-        r.fullName || 'N/A',
+        r.fullName || '-',
         this.formatDate(r.submittedAt),
-        r.submittedAt ? this.formatTimeWithAMPM(r.submittedAt) : 'N/A',
+        r.submittedAt ? this.formatTimeWithAMPM(r.submittedAt) : '-',
         this.formatDateString(r.pickupDate),
         this.getTimeSlotLabel(r.claimTimeSlot),
-        r.completedByName || r.completedBy || 'N/A'
+        r.completedByName || r.completedBy || '-'
       ]);
 
       const headerColor = tableHeaderColorMap[status.key as keyof typeof tableHeaderColorMap];
@@ -375,22 +375,22 @@ export class AdminRequestOverviewComponent implements OnInit {
 
 
   formatDate(date: Date | null): string {
-    return date ? this.datePipe.transform(date, 'MM/dd/yyyy') ?? 'N/A' : 'N/A';
+    return date ? this.datePipe.transform(date, 'MM/dd/yyyy') ?? '-' : '-';
   }
 
   formatDateString(dateStr: string | null): string {
-    if (!dateStr) return 'N/A';
+    if (!dateStr) return '-';
     const date = new Date(dateStr);
-    return isNaN(date.getTime()) ? 'N/A' : this.formatDate(date);
+    return isNaN(date.getTime()) ? '-' : this.formatDate(date);
   }
 
   formatTimeWithAMPM(date: Date | null): string {
-    if (!date) return 'N/A';
-    return this.datePipe.transform(date, 'hh:mm:ss a') ?? 'N/A';
+    if (!date) return '-';
+    return this.datePipe.transform(date, 'hh:mm:ss a') ?? '-';
   }
 
   getTimeSlotLabel(timeSlotValue: string | null): string {
-    if (!timeSlotValue) return 'N/A';
+    if (!timeSlotValue) return '-';
     const slot = this.timeSlots.find(s => s.value === timeSlotValue);
     return slot ? slot.label : timeSlotValue;
   }

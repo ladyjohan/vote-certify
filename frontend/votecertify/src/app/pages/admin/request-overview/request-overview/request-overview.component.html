@@ -62,15 +62,15 @@
     </div>
 
     <div class="request-item" *ngFor="let request of pagedRequests">
-  <span>{{ request.fullName || 'N/A' }}</span>
+  <span>{{ request.fullName || '-' }}</span>
   <span class="status-badge" [ngClass]="getStatusClass(request.status)">
-    {{ request.status || 'N/A' }}
+    {{ request.status || '-' }}
   </span>
-  <span>{{ request.submittedAt ? (request.submittedAt | date: 'MM/dd/yyyy') : 'N/A' }}</span>
+  <span>{{ request.submittedAt ? (request.submittedAt | date: 'MM/dd/yyyy') : '-' }}</span>
   <span>{{ formatTimeWithAMPM(request.submittedAt) }}</span>
   <span>{{ formatDateString(request.pickupDate) }}</span>
   <span>{{ getTimeSlotLabel(request.claimTimeSlot) }}</span>
-  <span>{{ request.completedByName || request.completedBy || 'N/A' }}</span>
+  <span>{{ request.completedByName || request.completedBy || '-' }}</span>
 </div>
 
 
