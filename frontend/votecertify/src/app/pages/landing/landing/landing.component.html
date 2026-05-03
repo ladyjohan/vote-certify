@@ -19,10 +19,10 @@
 
         <!-- Main Hero Text -->
         <div class="hero-text">
-                    <h1 class="system-name">Vote<span class="certify-highlight">Certify</span></h1>
-          <p class="system-tagline">Official Voter Certificate Platform</p>
+          <h1 class="system-name">Vote<span class="certify-highlight">Certify</span></h1>
           <h2 class="hero-title">Request Your Voter's Certificate Online</h2>
-          <p class="hero-description">Fast, secure, and official. Request your voter certificate through the trusted COMELEC platform in just minutes. Complete your application anytime, anywhere.</p>
+          <p class="hero-description">Fast, secure, and official. Request your voter certificate through the trusted
+            COMELEC platform in just minutes. Complete your application anytime, anywhere.</p>
         </div>
 
         <!-- CTA Buttons -->
@@ -67,30 +67,21 @@
   <section class="video-section" id="video">
     <h2>Step-by-Step Guide: Requesting a Voter’s Certificate</h2>
     <div class="video-wrapper">
-      <video
-        #videoPlayer
-        controls
-        preload="auto"
-        muted
-        loop
-        autoplay
-        playsinline
-        poster="assets/videos/poster.jpg"
-        (timeupdate)="onVideoTimeUpdate($event)"
-      >
+      <video #videoPlayer controls preload="auto" muted loop autoplay playsinline poster="assets/videos/poster.jpg"
+        (timeupdate)="onVideoTimeUpdate($event)">
         <source [src]="videoSrc" type="video/mp4" />
         Sorry, your browser does not support embedded videos.
       </video>
-        <div class="video-inner-container">
-          <div class="subtitle-lang-switch video-top-right">
-            <button [class.active]="subtitleLang === 'en'" (click)="setSubtitleLang('en')">English</button>
-            <button [class.active]="subtitleLang === 'tl'" (click)="setSubtitleLang('tl')">Tagalog</button>
-            <button [class.active]="subtitleLang === 'off'" (click)="setSubtitleLang('off')">Off</button>
-          </div>
-          <div class="subtitle-overlay" *ngIf="currentSubtitle">
-            {{ currentSubtitle }}
-          </div>
+      <div class="video-inner-container">
+        <div class="subtitle-lang-switch video-top-right">
+          <button [class.active]="subtitleLang === 'en'" (click)="setSubtitleLang('en')">English</button>
+          <button [class.active]="subtitleLang === 'tl'" (click)="setSubtitleLang('tl')">Tagalog</button>
+          <button [class.active]="subtitleLang === 'off'" (click)="setSubtitleLang('off')">Off</button>
         </div>
+        <div class="subtitle-overlay" *ngIf="currentSubtitle">
+          {{ currentSubtitle }}
+        </div>
+      </div>
     </div>
   </section>
 
@@ -125,3 +116,45 @@
     </div>
   </section>
 
+  <!-- FOOTER -->
+  <footer class="main-footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <img src="assets/logo2.png" alt="VoteCertify Logo" />
+          <span class="footer-brand-text">Vote<span class="certify-highlight">Certify</span></span>
+        </div>
+        <p class="footer-tagline">Making voter certificate requests simple and secure.</p>
+      </div>
+
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Platform</h4>
+          <ul>
+            <li><a (click)="scrollToVideo()" style="cursor: pointer;">How it Works</a></li>
+            <li><a (click)="showModal = true" style="cursor: pointer;">Start Request</a></li>
+            <li><a (click)="goToLogin()" style="cursor: pointer;">Voter Login</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Organization</h4>
+          <ul>
+            <li><a href="https://www.comelec.gov.ph/" target="_blank">COMELEC Official</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="footer-bottom-container">
+        <p>&copy; 2026 VoteCertify. In partnership with the Commission on Elections Olongapo City.</p>
+        <div class="social-icons">
+          <a href="https://www.facebook.com/profile.php?id=61563167454360" target="_blank" aria-label="Facebook"><i
+              class="fab fa-facebook"></i></a>
+          <a href="https://mail.google.com/mail/?view=cm&fs=1&to=votecertify@gmail.com" target="_blank"
+            aria-label="Email"><i class="fas fa-envelope"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>

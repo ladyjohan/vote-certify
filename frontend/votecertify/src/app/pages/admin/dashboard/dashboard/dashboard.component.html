@@ -3,55 +3,43 @@
   <div class="welcome-section">
     <!-- Welcome card -->
     <div class="welcome-card">
-      <div class="icon-area">
-        <i class="fa-solid fa-user-shield"></i>
-      </div>
       <div class="welcome-content">
-        <h1>Welcome, Admin!</h1>
+        <div class="welcome-header">
+          <div class="icon-area">
+            <i class="fa-solid fa-user-shield"></i>
+          </div>
+          <div class="header-text">
+            <h1>Welcome, Admin!</h1>
+            <div class="admin-badge">
+              <span class="badge-icon">👑</span>
+              <span>Administrator Access</span>
+            </div>
+          </div>
+        </div>
         <p>
           This is your control panel for managing the VoteCertify system. Oversee certificate requests, manage COMELEC staff accounts, and monitor system metrics with ease.
         </p>
-        <div class="admin-badge">
-          <span class="badge-icon">👑</span>
-          <span>Administrator Access</span>
-        </div>
       </div>
     </div>
 
     <!-- Web App Visits Card - Right Side -->
     <div class="card analytics" *ngIf="analytics$ | async as analytics">
       <div class="analytics-header">
-        <div class="icon"><i class="fas fa-chart-line"></i></div>
-        <h3>Total Website Views</h3>
+        <div class="icon"><i class="fas fa-users"></i></div>
+        <h3>Visitor Analytics</h3>
       </div>
       
       <div class="analytics-stats">
-        <div class="stat-item">
-          <span class="stat-label">Total Views</span>
-          <span class="stat-value">{{ analytics.totalVisits | number }}</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">Unique Visitors</span>
-          <span class="stat-value">{{ analytics.uniqueUsers | number }}</span>
-        </div>
-      </div>
-
-      <div class="trend-indicator">
-        <span class="trend-label">Last 7 Days</span>
-        <div class="mini-chart">
-          <div class="bar-container" *ngFor="let day of analytics.weeklyTrend">
-            <div 
-              class="bar" 
-              [style.height]="getBarHeight(day.visits) + '%'"
-              [title]="day.date + ': ' + day.visits + ' visits'"
-            ></div>
-          </div>
+        <div class="stat-item full-width">
+          <span class="stat-label">Total Unique Visitors</span>
+          <span class="stat-value highlight">{{ analytics.uniqueUsers | number }}</span>
+          <span class="stat-subtitle">All-time tracking active</span>
         </div>
       </div>
 
       <div class="refresh-hint">
         <i class="fas fa-sync-alt"></i>
-        <span>Updates in real-time</span>
+        <span>Live Updates</span>
       </div>
     </div>
   </div>

@@ -33,7 +33,7 @@ export class VoterProfileComponent implements OnInit {
   showConfirmPassword = false;
   loading = false;
 
-  constructor(private firestore: Firestore, private toastr: ToastrService) {}
+  constructor(private firestore: Firestore, private toastr: ToastrService) { }
 
   ngOnInit() {
     const auth = getAuth();

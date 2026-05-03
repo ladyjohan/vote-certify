@@ -45,14 +45,8 @@ export class AppAnalyticsService {
     // Track on page load (initial visit)
     this.ngZone.run(() => this.trackVisit());
     
-    // Track periodically (every 5 minutes) - debounced to prevent quota spam
-    setInterval(() => this.ngZone.run(() => this.trackVisit()), 5 * 60 * 1000);
-    
-    // Load analytics immediately for dashboard
-    this.ngZone.run(() => this.loadAnalytics());
-    
-    // Refresh analytics every 60 seconds
-    setInterval(() => this.ngZone.run(() => this.loadAnalytics()), 60 * 1000);
+    // Track periodically (every 10 minutes) - reduced frequency for regular users
+    setInterval(() => this.ngZone.run(() => this.trackVisit()), 10 * 60 * 1000);
     
     // Track on visibility change (when user returns to tab or app)
     if (typeof document !== 'undefined') {
@@ -168,59 +162,50 @@ export class AppAnalyticsService {
    */
   async loadAnalytics(): Promise<void> {
     try {
-      const weeklyData: { date: string; visits: number; uniqueUsers: number }[] = [];
+      const analyticsRef = collection(this.firestore, 'analytics');
+      const allDocsSnap = await getDocs(analyticsRef);
+      
       let totalVisits = 0;
       let totalUniqueUsers = 0;
+      
+      // Get the date strings for the last 7 days to build the trend
+      const last7DaysStrings = Array.from({ length: 7 }, (_, i) => this.getDateString(i));
+      const trendMap = new Map<string, { date: string; visits: number; uniqueUsers: number }>();
+      
+      // Initialize trend map with zeros
+      last7DaysStrings.forEach(date => {
+        trendMap.set(date, { date, visits: 0, uniqueUsers: 0 });
+      });
 
-      // Fetch last 7 days of analytics
-      for (let i = 6; i >= 0; i--) {
-        const date = this.getDateString(i);
-        try {
-          const analyticsRef = collection(this.firestore, 'analytics');
-          const dailyDocRef = doc(analyticsRef, date);
+      allDocsSnap.forEach(docSnap => {
+        const docId = docSnap.id;
+        
+        // Only process documents that look like date strings (YYYY-MM-DD)
+        if (/^\d{4}-\d{2}-\d{2}$/.test(docId)) {
+          const data = docSnap.data() as any;
+          const visits = data.totalVisits || 0;
+          const uniqueUsers = data.uniqueUsers || 0;
           
-          try {
-            const dailySnap = await getDoc(dailyDocRef);
-
-            if (dailySnap.exists()) {
-              const data = dailySnap.data() as DailyAnalytics;
-              weeklyData.push({
-                date,
-                visits: data.totalVisits || 0,
-                uniqueUsers: data.uniqueUsers || 0
-              });
-              totalVisits += data.totalVisits || 0;
-              totalUniqueUsers += data.uniqueUsers || 0;
-            } else {
-              weeklyData.push({
-                date,
-                visits: 0,
-                uniqueUsers: 0
-              });
-            }
-          } catch (readError: any) {
-            // If permission denied or document doesn't exist, add zero data
-            console.warn(`Could not read analytics for ${date}:`, readError?.message);
-            weeklyData.push({
-              date,
-              visits: 0,
-              uniqueUsers: 0
+          totalVisits += visits;
+          totalUniqueUsers += uniqueUsers;
+          
+          if (trendMap.has(docId)) {
+            trendMap.set(docId, {
+              date: docId,
+              visits,
+              uniqueUsers
             });
           }
-        } catch (err) {
-          // Fallback for any other errors
-          weeklyData.push({
-            date,
-            visits: 0,
-            uniqueUsers: 0
-          });
         }
-      }
+      });
+
+      // Convert map to array and sort chronologically (oldest first for chart)
+      const weeklyTrend = Array.from(trendMap.values()).reverse();
 
       const overview: AnalyticsOverview = {
         totalVisits,
         uniqueUsers: totalUniqueUsers,
-        weeklyTrend: weeklyData
+        weeklyTrend
       };
 
       this.ngZone.run(() => {
@@ -228,7 +213,6 @@ export class AppAnalyticsService {
       });
     } catch (error) {
       console.warn('Analytics loading error:', (error as any)?.message);
-      // Keep previous value or default empty state
     }
   }
 
