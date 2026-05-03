@@ -78,6 +78,7 @@ export class VoterSidenavComponent implements OnInit, OnDestroy {
     { label: 'Request Form', icon: 'post_add', route: '/voter/request-form' },
     { label: 'Certificate Status', icon: 'assignment', route: '/voter/certificate-status' },
     { label: 'Chat', icon: 'chat', route: '/voter/chat' },
+    { label: 'User Settings', icon: 'settings', route: '/voter/voter-profile' },
   ];
 
   async logout() {

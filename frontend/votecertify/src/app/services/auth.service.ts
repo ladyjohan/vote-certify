@@ -160,14 +160,14 @@ export class AuthService {
           await this.logout(false);
           throw new Error('User profile not found. Please contact support.');
         }
-        
+
         const userData = userSnap.data();
         const userStatus = userData['status'];
         console.log('📄 User status in Firestore:', userStatus);
-        
+
         if (userStatus !== 'verified') {
           console.warn('⚠️ User status is:', userStatus, '- expected "verified". Attempting auto-update...');
-          
+
           // If email is verified in Firebase but not in Firestore, auto-update it
           try {
             console.log('🔄 Auto-updating Firestore status to "verified"...');
@@ -190,10 +190,10 @@ export class AuthService {
             const userSnap = await getDoc(doc(this.firestore, 'users', user.uid));
             const userData = userSnap.data();
             console.log('👤 User data retrieved:', userData);
-            
+
             const nameToLog = userData?.['name'] || 'Unknown';
             console.log('📝 Logging login for:', nameToLog, 'role:', userRole, 'email:', user.email);
-            
+
             await this.loginHistoryService.logLogin(
               user.email || '',
               nameToLog,
@@ -270,15 +270,15 @@ export class AuthService {
     try {
       console.log('📝 Attempting to update Firestore status for UID:', uid);
       const userRef = doc(this.firestore, 'users', uid);
-      
+
       // First check if document exists
       const userSnap = await getDoc(userRef);
       if (!userSnap.exists()) {
         throw new Error(`User document not found for UID: ${uid}`);
       }
-      
+
       console.log('📄 User document found, current status:', userSnap.data()['status']);
-      
+
       // Update the status to verified
       await updateDoc(userRef, { status: 'verified' });
       console.log('✅ Email verified in Firestore. Status updated to "verified".');
@@ -293,7 +293,7 @@ export class AuthService {
   async logout(redirect: boolean = true) {
     try {
       const user = this.auth.currentUser;
-      
+
       // LOG LOGOUT EVENT TO FIRESTORE (before signing out)
       if (user?.email) {
         try {

@@ -87,7 +87,6 @@
          *You can't request a new one because your request is still <b class="pending-orange">Pending</b>. Please wait until it is Approved or Declined.*
         </div>
         <div *ngIf="isInCooldown" class="cooldown-msg">
-          <strong>Request Cooldown Active</strong>
           <p>You may request again after <strong>{{ daysRemaining }} day{{ daysRemaining !== 1 ? 's' : '' }}</strong>.</p>
           <p class="small-text">You can only submit one voter certificate request every 3 months.</p>
         </div>

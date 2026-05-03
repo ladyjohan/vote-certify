@@ -28,7 +28,7 @@ export class AdminRequestOverviewComponent implements OnInit {
 
   currentPage = 1;
   pageSize = 10;
-  pageSizeOptions = [10, 20, 30];
+  pageSizeOptions = [5, 10, 20, 50];
   totalPages = 1;
   pages: number[] = [];
 
@@ -72,7 +72,7 @@ export class AdminRequestOverviewComponent implements OnInit {
     this.allRequests = await Promise.all(snapshot.docs.map(async doc => {
       const data = doc.data();
       let completedByName = 'N/A';
-      
+
       // If there's a completedBy email, try to fetch the staff member's full name
       if (data['completedBy']) {
         completedByName = await this.getStaffNameByEmail(data['completedBy']) || data['completedBy'];
@@ -94,7 +94,7 @@ export class AdminRequestOverviewComponent implements OnInit {
     try {
       const usersRef = collection(this.firestore, 'users');
       const snapshot = await getDocs(usersRef);
-      
+
       for (const doc of snapshot.docs) {
         const data = doc.data();
         if (data['email']?.toLowerCase() === email.toLowerCase()) {
@@ -200,7 +200,7 @@ export class AdminRequestOverviewComponent implements OnInit {
       total: this.filteredRequests.length,
       approved: this.filteredRequests.filter(r => (r.status || '').toLowerCase() === 'approved').length,
       pending: this.filteredRequests.filter(r => (r.status || '').toLowerCase() === 'pending').length,
-      declined: this.filteredRequests.filter(r => ['declined','rejected'].includes((r.status || '').toLowerCase())).length,
+      declined: this.filteredRequests.filter(r => ['declined', 'rejected'].includes((r.status || '').toLowerCase())).length,
       completed: this.filteredRequests.filter(r => (r.status || '').toLowerCase() === 'completed').length
     };
   }
@@ -209,169 +209,169 @@ export class AdminRequestOverviewComponent implements OnInit {
     return `In total, ${cards.total} requests were recorded: ${cards.approved} approved, ${cards.declined} declined, ${cards.pending} pending, and ${cards.completed} completed.`;
   }
 
-async exportPDF() {
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 40;
+  async exportPDF() {
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 40;
 
-  // Load logos
-  const loadLogo = async (url: string) => {
-    try {
-      const res = await fetch(url);
-      const blob = await res.blob();
-      return await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result));
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-    } catch {
-      return null;
-    }
-  };
+    // Load logos
+    const loadLogo = async (url: string) => {
+      try {
+        const res = await fetch(url);
+        const blob = await res.blob();
+        return await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result));
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      } catch {
+        return null;
+      }
+    };
 
-  const leftLogo = await loadLogo('assets/logo2.png');
-  const rightLogo = await loadLogo('assets/comelec_logo.png');
+    const leftLogo = await loadLogo('assets/logo2.png');
+    const rightLogo = await loadLogo('assets/comelec_logo.png');
 
-  const drawHeader = (yStart = 30) => {
-    const logoSize = 50;
-    if (leftLogo) doc.addImage(leftLogo, 'PNG', margin, yStart, logoSize, logoSize);
-    if (rightLogo) doc.addImage(rightLogo, 'PNG', pageWidth - margin - logoSize, yStart, logoSize, logoSize);
+    const drawHeader = (yStart = 30) => {
+      const logoSize = 50;
+      if (leftLogo) doc.addImage(leftLogo, 'PNG', margin, yStart, logoSize, logoSize);
+      if (rightLogo) doc.addImage(rightLogo, 'PNG', pageWidth - margin - logoSize, yStart, logoSize, logoSize);
 
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth - margin, yStart, { align: 'right' });
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
-    const headerLines = ['Republic of the Philippines', 'COMMISSION ON ELECTIONS', 'Olongapo City'];
-    let yText = yStart + 20;
-    headerLines.forEach(line => {
-      doc.text(line, pageWidth / 2, yText, { align: 'center' });
-      yText += 14;
-    });
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
-    yText += 5;
-    doc.text('VoteCertify: Admin Request Overview', pageWidth / 2, yText, { align: 'center' });
-
-    return yText + 40;
-  };
-
-  // Summary cards with light color coding
-  let y = await drawHeader();
-  const cards = this.generateSummaryCards();
-  const cardWidth = (pageWidth - margin * 2 - 16) / 2;
-  const cardHeight = 66;
-  const cardColorMap = {
-    total: { r: 245, g: 247, b: 255 },
-    approved: { r: 245, g: 247, b: 255 },
-    pending: { r: 245, g: 247, b: 255 },
-    declined: { r: 245, g: 247, b: 255 },
-    completed: {r: 245, g: 247, b: 255 }
-  };
-  const cardTitles = [
-    { t: 'Total Requests', v: cards.total, key: 'total' },
-    { t: 'Approved Requests', v: cards.approved, key: 'approved' },
-    { t: 'Pending Requests', v: cards.pending, key: 'pending' },
-    { t: 'Declined Requests', v: cards.declined, key: 'declined' },
-    { t: 'Completed Requests', v: cards.completed, key: 'completed' }
-  ];
-
-  doc.setFontSize(12);
-  for (let i = 0; i < cardTitles.length; i++) {
-    const x = margin + (i % 2) * (cardWidth + 16);
-    const yPos = y + Math.floor(i / 2) * (cardHeight + 12);
-    const color = cardColorMap[cardTitles[i].key as keyof typeof cardColorMap];
-    doc.setFillColor(color.r, color.g, color.b);
-    doc.roundedRect(x, yPos, cardWidth, cardHeight, 8, 8, 'F');
-    doc.setTextColor(30);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.text(cardTitles[i].t, x + 12, yPos + 20);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(20);
-    doc.text(String(cardTitles[i].v), x + 12, yPos + 46);
-  }
-  y += Math.ceil(cardTitles.length / 2) * (cardHeight + 12) + 20;
-
-  // Insights text
-  const cardInsightText = this.generateCardInsightText(cards);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(11);
-  doc.text(cardInsightText, margin, y, { maxWidth: pageWidth - margin * 2, lineHeightFactor: 1.4 });
-  y += 40;
-
-  // Tables by status with numbering
-  const statuses: { key: string; title: string }[] = [
-    { key: 'pending', title: 'Pending Requests' },
-    { key: 'approved', title: 'Approved Requests' },
-    { key: 'declined', title: 'Declined Requests' },
-    { key: 'completed', title: 'Completed Requests' }
-  ];
-const tableHeaderColorMap = {
-  pending: { r: 220, g: 235, b: 255},
-  approved: { r: 220, g: 235, b: 255 },
-  declined: { r: 220, g: 235, b: 255 },
-  completed: { r: 220, g: 235, b: 255 }
-};
-
-let pageIndex = 1;
-for (const status of statuses) {
-  const reqs = this.filteredRequests.filter(r => {
-    const st = (r.status || '').toLowerCase();
-    if (status.key === 'declined') return ['declined','rejected'].includes(st);
-    return st === status.key;
-  });
-
-  if (!reqs.length) continue;
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(12);
-  doc.text(status.title, margin, y);
-  y += 12;
-
-  const columns = ['#', 'Voter Name', 'Date Requested', 'Time Requested', 'Pickup Date', 'Time of Release', 'Completed By'];
-  const rows = reqs.map((r, idx) => [
-    idx + 1,
-    r.fullName || 'N/A',
-    this.formatDate(r.submittedAt),
-    r.submittedAt ? this.formatTimeWithAMPM(r.submittedAt) : 'N/A',
-    this.formatDateString(r.pickupDate),
-    this.getTimeSlotLabel(r.claimTimeSlot),
-    r.completedByName || r.completedBy || 'N/A'
-  ]);
-
-  const headerColor = tableHeaderColorMap[status.key as keyof typeof tableHeaderColorMap];
-
-  autoTable(doc, {
-    startY: y,
-    head: [columns],
-    body: rows,
-    margin: { left: margin, right: margin },
-    styles: { fontSize: 9 },
-    headStyles: { fillColor: [headerColor.r, headerColor.g, headerColor.b], textColor: 30 },
-    didDrawPage: (data) => {
-      if (data.cursor) y = data.cursor.y + 20;
-      // Footer
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.text(`VoteCertify • Generated ${new Date().toLocaleDateString()}`, margin, pageHeight - 30);
-      doc.text(`Page ${pageIndex}`, pageWidth - margin - 40, pageHeight - 30);
+      doc.setFontSize(7);
+      doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth - margin, yStart, { align: 'right' });
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      const headerLines = ['Republic of the Philippines', 'COMMISSION ON ELECTIONS', 'Olongapo City'];
+      let yText = yStart + 20;
+      headerLines.forEach(line => {
+        doc.text(line, pageWidth / 2, yText, { align: 'center' });
+        yText += 14;
+      });
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      yText += 5;
+      doc.text('VoteCertify: Admin Request Overview', pageWidth / 2, yText, { align: 'center' });
+
+      return yText + 40;
+    };
+
+    // Summary cards with light color coding
+    let y = await drawHeader();
+    const cards = this.generateSummaryCards();
+    const cardWidth = (pageWidth - margin * 2 - 16) / 2;
+    const cardHeight = 66;
+    const cardColorMap = {
+      total: { r: 245, g: 247, b: 255 },
+      approved: { r: 245, g: 247, b: 255 },
+      pending: { r: 245, g: 247, b: 255 },
+      declined: { r: 245, g: 247, b: 255 },
+      completed: { r: 245, g: 247, b: 255 }
+    };
+    const cardTitles = [
+      { t: 'Total Requests', v: cards.total, key: 'total' },
+      { t: 'Approved Requests', v: cards.approved, key: 'approved' },
+      { t: 'Pending Requests', v: cards.pending, key: 'pending' },
+      { t: 'Declined Requests', v: cards.declined, key: 'declined' },
+      { t: 'Completed Requests', v: cards.completed, key: 'completed' }
+    ];
+
+    doc.setFontSize(12);
+    for (let i = 0; i < cardTitles.length; i++) {
+      const x = margin + (i % 2) * (cardWidth + 16);
+      const yPos = y + Math.floor(i / 2) * (cardHeight + 12);
+      const color = cardColorMap[cardTitles[i].key as keyof typeof cardColorMap];
+      doc.setFillColor(color.r, color.g, color.b);
+      doc.roundedRect(x, yPos, cardWidth, cardHeight, 8, 8, 'F');
+      doc.setTextColor(30);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.text(cardTitles[i].t, x + 12, yPos + 20);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(20);
+      doc.text(String(cardTitles[i].v), x + 12, yPos + 46);
     }
-  });
+    y += Math.ceil(cardTitles.length / 2) * (cardHeight + 12) + 20;
 
-  if (y > pageHeight - 100) {
-    doc.addPage();
-    y = await drawHeader();
-    pageIndex++;
+    // Insights text
+    const cardInsightText = this.generateCardInsightText(cards);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.text(cardInsightText, margin, y, { maxWidth: pageWidth - margin * 2, lineHeightFactor: 1.4 });
+    y += 40;
+
+    // Tables by status with numbering
+    const statuses: { key: string; title: string }[] = [
+      { key: 'pending', title: 'Pending Requests' },
+      { key: 'approved', title: 'Approved Requests' },
+      { key: 'declined', title: 'Declined Requests' },
+      { key: 'completed', title: 'Completed Requests' }
+    ];
+    const tableHeaderColorMap = {
+      pending: { r: 220, g: 235, b: 255 },
+      approved: { r: 220, g: 235, b: 255 },
+      declined: { r: 220, g: 235, b: 255 },
+      completed: { r: 220, g: 235, b: 255 }
+    };
+
+    let pageIndex = 1;
+    for (const status of statuses) {
+      const reqs = this.filteredRequests.filter(r => {
+        const st = (r.status || '').toLowerCase();
+        if (status.key === 'declined') return ['declined', 'rejected'].includes(st);
+        return st === status.key;
+      });
+
+      if (!reqs.length) continue;
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text(status.title, margin, y);
+      y += 12;
+
+      const columns = ['#', 'Voter Name', 'Date Requested', 'Time Requested', 'Pickup Date', 'Time of Release', 'Completed By'];
+      const rows = reqs.map((r, idx) => [
+        idx + 1,
+        r.fullName || 'N/A',
+        this.formatDate(r.submittedAt),
+        r.submittedAt ? this.formatTimeWithAMPM(r.submittedAt) : 'N/A',
+        this.formatDateString(r.pickupDate),
+        this.getTimeSlotLabel(r.claimTimeSlot),
+        r.completedByName || r.completedBy || 'N/A'
+      ]);
+
+      const headerColor = tableHeaderColorMap[status.key as keyof typeof tableHeaderColorMap];
+
+      autoTable(doc, {
+        startY: y,
+        head: [columns],
+        body: rows,
+        margin: { left: margin, right: margin },
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [headerColor.r, headerColor.g, headerColor.b], textColor: 30 },
+        didDrawPage: (data) => {
+          if (data.cursor) y = data.cursor.y + 20;
+          // Footer
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9);
+          doc.text(`VoteCertify • Generated ${new Date().toLocaleDateString()}`, margin, pageHeight - 30);
+          doc.text(`Page ${pageIndex}`, pageWidth - margin - 40, pageHeight - 30);
+        }
+      });
+
+      if (y > pageHeight - 100) {
+        doc.addPage();
+        y = await drawHeader();
+        pageIndex++;
+      }
+    }
+
+    doc.save(`VoteCertify_Requests_${new Date().toISOString().slice(0, 10)}.pdf`);
   }
-}
-
-  doc.save(`VoteCertify_Requests_${new Date().toISOString().slice(0,10)}.pdf`);
-}
 
 
   formatDate(date: Date | null): string {
@@ -409,6 +409,48 @@ for (const status of statuses) {
     this.pagedRequests = this.filteredRequests.slice(start, start + this.pageSize);
   }
 
+  onPageSizeChange() {
+    this.currentPage = 1;
+    this.setupPagination();
+  }
+
+  get rangeStart(): number {
+    return this.filteredRequests.length > 0 ? (this.currentPage - 1) * this.pageSize + 1 : 0;
+  }
+
+  get rangeEnd(): number {
+    return Math.min(this.currentPage * this.pageSize, this.filteredRequests.length);
+  }
+
+  get visiblePages(): number[] {
+    const total = this.totalPages;
+    const current = this.currentPage;
+    const delta = 2;
+    const range = [];
+    const rangeWithDots: number[] = [];
+    let l: number | undefined;
+
+    for (let i = 1; i <= total; i++) {
+      if (i === 1 || i === total || (i >= current - delta && i <= current + delta)) {
+        range.push(i);
+      }
+    }
+
+    for (const i of range) {
+      if (l) {
+        if (i - l === 2) {
+          rangeWithDots.push(l + 1);
+        } else if (i - l !== 1) {
+          rangeWithDots.push(-1);
+        }
+      }
+      rangeWithDots.push(i);
+      l = i;
+    }
+
+    return rangeWithDots;
+  }
+
   goToPage(page: number) {
     this.currentPage = page;
     this.updatePagedRequests();
@@ -426,31 +468,5 @@ for (const status of statuses) {
       this.currentPage--;
       this.updatePagedRequests();
     }
-  }
-
-  onPageSizeChange() {
-    this.currentPage = 1;
-    this.setupPagination();
-  }
-
-  get rangeStart() {
-    return this.filteredRequests.length === 0 ? 0 : (this.currentPage - 1) * this.pageSize + 1;
-  }
-
-  get rangeEnd() {
-    return Math.min(this.currentPage * this.pageSize, this.filteredRequests.length);
-  }
-
-  get visiblePages(): number[] {
-    const total = this.totalPages;
-    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-    const pages: number[] = [];
-    const cur = this.currentPage;
-    pages.push(1);
-    if (cur > 3) pages.push(-1);
-    for (let p = Math.max(2, cur - 1); p <= Math.min(total - 1, cur + 1); p++) pages.push(p);
-    if (cur < total - 2) pages.push(-1);
-    pages.push(total);
-    return pages;
   }
 }

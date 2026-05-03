@@ -17,7 +17,7 @@ export class LoginHistoryComponent implements OnInit, OnDestroy {
   filteredHistory: LoginHistoryRecord[] = [];
   activityLogs: ActivityLog[] = [];
   filteredActivityLogs: ActivityLog[] = [];
-  
+
   activeTab: 'login' | 'activity' = 'login';
   isLoading = false;
   searchTerm = '';
@@ -26,10 +26,10 @@ export class LoginHistoryComponent implements OnInit, OnDestroy {
   // Pagination
   pageSizeOptions = [10, 20, 30];
   pageSize = 10;
-  
+
   loginCurrentPage = 1;
   loginTotalPages = 1;
-  
+
   activityCurrentPage = 1;
   activityTotalPages = 1;
 
@@ -41,7 +41,7 @@ export class LoginHistoryComponent implements OnInit, OnDestroy {
   constructor(
     private loginHistoryService: LoginHistoryService,
     private activityLogService: ActivityLogService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Subscribe to Login History real-time updates
@@ -92,11 +92,11 @@ export class LoginHistoryComponent implements OnInit, OnDestroy {
 
   applyFilters(): void {
     const term = this.searchTerm.toLowerCase().trim();
-    
+
     // Apply filters to Login History
     let filteredLogin = [...this.loginHistory];
     if (term) {
-      filteredLogin = filteredLogin.filter(r => 
+      filteredLogin = filteredLogin.filter(r =>
         r.userName.toLowerCase().includes(term) || r.userEmail.toLowerCase().includes(term)
       );
     }
@@ -109,8 +109,8 @@ export class LoginHistoryComponent implements OnInit, OnDestroy {
     // Apply filters to Activity Logs
     let filteredActivity = [...this.activityLogs];
     if (term) {
-      filteredActivity = filteredActivity.filter(r => 
-        r.userName.toLowerCase().includes(term) || 
+      filteredActivity = filteredActivity.filter(r =>
+        r.userName.toLowerCase().includes(term) ||
         r.userEmail.toLowerCase().includes(term) ||
         r.description.toLowerCase().includes(term) ||
         r.targetName?.toLowerCase().includes(term)
@@ -217,9 +217,9 @@ export class LoginHistoryComponent implements OnInit, OnDestroy {
     if (!timestamp || timestamp === null || timestamp === undefined) {
       return 'N/A';
     }
-    
+
     let date: Date;
-    
+
     // Handle Firestore Timestamp with toDate() method (most common)
     if (timestamp && typeof timestamp.toDate === 'function') {
       try {
@@ -276,7 +276,7 @@ export class LoginHistoryComponent implements OnInit, OnDestroy {
 
     // If logout time exists, use it; otherwise use current time for ongoing sessions
     let endDate: Date;
-    
+
     if (logoutTime) {
       if (logoutTime instanceof Date) {
         endDate = logoutTime;
@@ -319,10 +319,10 @@ export class LoginHistoryComponent implements OnInit, OnDestroy {
   get todayLogins(): number {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     return this.filteredHistory.filter((record) => {
       let loginDate: Date;
-      
+
       if (record.loginTimestamp instanceof Date) {
         loginDate = record.loginTimestamp;
       } else if (record.loginTimestamp?.toDate) {
@@ -334,10 +334,10 @@ export class LoginHistoryComponent implements OnInit, OnDestroy {
       } else {
         return false;
       }
-      
+
       const recordDate = new Date(loginDate);
       recordDate.setHours(0, 0, 0, 0);
-      
+
       return recordDate.getTime() === today.getTime();
     }).length;
   }

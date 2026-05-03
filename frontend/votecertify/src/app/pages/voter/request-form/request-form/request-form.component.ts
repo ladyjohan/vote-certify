@@ -90,8 +90,8 @@ export class RequestFormComponent implements OnInit {
     const file = event.target.files[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      Swal.fire('File too large', 'File size must not exceed 5MB.', 'warning');
+    if (file.size > 20 * 1024 * 1024) {
+      Swal.fire('File too large', 'File size must not exceed 20MB.', 'warning');
       return;
     }
 
@@ -221,12 +221,12 @@ export class RequestFormComponent implements OnInit {
   async checkRequestCooldown() {
     try {
       const requestsRef = collection(this.firestore, 'requests');
-      
+
       // Check for completed requests (status = 'Completed', 'Claimed', or 'Ready for Pickup')
       // These statuses indicate the user has received or is ready to receive their certificate
       const completedQuery = query(
-        requestsRef, 
-        where('email', '==', this.currentUser?.email), 
+        requestsRef,
+        where('email', '==', this.currentUser?.email),
         where('status', 'in', ['Completed', 'Claimed', 'Ready for Pickup'])
       );
       const completedSnapshot = await getDocs(completedQuery);
@@ -242,14 +242,14 @@ export class RequestFormComponent implements OnInit {
       // Get the most recent completed request
       let mostRecentDate: Date | null = null;
       let mostRecentStatus = '';
-      
+
       completedSnapshot.forEach((doc) => {
         const data = doc.data();
         const completedAt = data['completedAt'] || data['claimedAt'] || data['approvedAt'] || data['pickupDate'] || data['submittedAt'];
-        
+
         if (completedAt) {
           let dateObj: Date;
-          
+
           // Handle both Firestore Timestamp and Date objects
           if (completedAt.toDate) {
             dateObj = completedAt.toDate();
@@ -285,7 +285,7 @@ export class RequestFormComponent implements OnInit {
 
       const today = new Date();
       today.setHours(0, 0, 0, 0); // Reset to start of day for accurate comparison
-      
+
       const timeRemaining = nextRequestDate.getTime() - today.getTime();
       const daysLeft = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24));
 

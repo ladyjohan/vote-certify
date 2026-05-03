@@ -22,6 +22,7 @@ import { AdminRequestOverviewComponent } from './pages/admin/request-overview/re
 import { AdminUserManagementComponent } from './pages/admin/user-management/user-management/user-management.component';
 import { LoginHistoryComponent } from './pages/admin/login-history/login-history.component';
 import { StaffProfileComponent } from './pages/staff/staff-profile/staff-profile.component';
+import { VoterProfileComponent } from './pages/voter/voter-profile/voter-profile.component';
 import { StaffChatComponent } from './pages/staff/chat/staff-chat/staff-chat.component';
 
 export const routes: Routes = [
@@ -64,6 +65,7 @@ export const routes: Routes = [
       { path: 'dashboard', component: VoterDashboardComponent },
       { path: 'request-form', component: RequestFormComponent },
       { path: 'certificate-status', component: CertificateStatusComponent },
+      { path: 'voter-profile', component: VoterProfileComponent },
       { path: 'chat', component: VoterChatComponent },
       { path: 'chat/:requestId', component: VoterChatComponent }
     ],
