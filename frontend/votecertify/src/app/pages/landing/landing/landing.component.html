@@ -73,10 +73,16 @@
         Sorry, your browser does not support embedded videos.
       </video>
       <div class="video-inner-container">
-        <div class="subtitle-lang-switch video-top-right">
-          <button [class.active]="subtitleLang === 'en'" (click)="setSubtitleLang('en')">English</button>
-          <button [class.active]="subtitleLang === 'tl'" (click)="setSubtitleLang('tl')">Tagalog</button>
-          <button [class.active]="subtitleLang === 'off'" (click)="setSubtitleLang('off')">Off</button>
+        <div class="subtitle-dropdown video-top-right" [class.open]="dropdownOpen">
+          <button class="dropdown-toggle" (click)="toggleDropdown()">
+            <span><i class="fas fa-closed-captioning"></i> {{ subtitleLang === 'off' ? 'Subtitles' : (subtitleLang === 'en' ? 'English' : 'Tagalog') }}</span>
+            <i class="fas" [class.fa-chevron-down]="!dropdownOpen" [class.fa-chevron-up]="dropdownOpen"></i>
+          </button>
+          <ul class="dropdown-menu" *ngIf="dropdownOpen">
+            <li [class.active]="subtitleLang === 'en'" (click)="setSubtitleLang('en')">English</li>
+            <li [class.active]="subtitleLang === 'tl'" (click)="setSubtitleLang('tl')">Tagalog</li>
+            <li [class.active]="subtitleLang === 'off'" (click)="setSubtitleLang('off')">Off</li>
+          </ul>
         </div>
         <div class="subtitle-overlay" *ngIf="currentSubtitle">
           {{ currentSubtitle }}
