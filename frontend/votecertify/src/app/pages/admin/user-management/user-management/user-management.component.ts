@@ -51,6 +51,12 @@ export class AdminUserManagementComponent implements OnInit {
   paginatedUsers: User[] = [];
   pages: number[] = [];
 
+  // Edit Modal
+  showEditModal = false;
+  showAddModal = false;
+  editingUser: User | null = null;
+  isSaving = false;
+
   private EMAIL_JS_SERVICE_ID = 'service_rrb00wy';
   private EMAIL_JS_TEMPLATE_ID = 'template_8j29e0p';
   private EMAIL_JS_PUBLIC_KEY = 'VrHsZ86VVPD_U6TsA';
@@ -129,6 +135,18 @@ export class AdminUserManagementComponent implements OnInit {
     event.preventDefault();
   }
 
+  openAddModal() {
+    this.showAddModal = true;
+    this.staffEmail = '';
+    this.staffName = '';
+    this.staffPassword = '';
+    this.selectedRole = 'staff';
+  }
+
+  closeAddModal() {
+    this.showAddModal = false;
+  }
+
   async addStaff() {
     if (!this.isAdmin) return;
 
@@ -182,6 +200,7 @@ export class AdminUserManagementComponent implements OnInit {
       this.staffPassword = '';
       this.staffName = '';
       await this.loadUsers();
+      this.closeAddModal();
     } catch (error) {
       this.toastr.error('Error creating staff/admin account.');
       console.error('❌ Error:', error);
@@ -341,6 +360,56 @@ export class AdminUserManagementComponent implements OnInit {
           this.toastr.error('Failed to update account status.');
         }
       }
+    }
+  }
+
+  // Edit Staff/Admin details (Now using custom modal)
+  editUser(user: User) {
+    // Create a shallow copy to avoid direct binding until saved
+    this.editingUser = { ...user };
+    this.showEditModal = true;
+  }
+
+  closeEditModal() {
+    this.showEditModal = false;
+    this.editingUser = null;
+  }
+
+  async saveUserChanges() {
+    if (!this.editingUser) return;
+
+    if (!this.editingUser.name || !this.editingUser.email) {
+      this.toastr.error('All fields are required.');
+      return;
+    }
+
+    if (!/^[a-zA-Z\s.]+$/.test(this.editingUser.name)) {
+      this.toastr.error('Name can only contain letters, spaces, and periods.');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.editingUser.email)) {
+      this.toastr.error('Please enter a valid email address.');
+      return;
+    }
+
+    this.isSaving = true;
+    try {
+      const userDocRef = doc(this.firestore, 'users', this.editingUser.id);
+      await updateDoc(userDocRef, {
+        name: this.editingUser.name,
+        email: this.editingUser.email,
+        role: this.editingUser.role
+      });
+      
+      this.toastr.success('Account updated successfully.');
+      await this.loadUsers();
+      this.closeEditModal();
+    } catch (error) {
+      console.error('Error updating account:', error);
+      this.toastr.error('An error occurred while updating the account.');
+    } finally {
+      this.isSaving = false;
     }
   }
 }

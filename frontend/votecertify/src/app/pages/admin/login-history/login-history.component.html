@@ -30,44 +30,6 @@
     </select>
   </div>
 
-  <div class="stats-section" *ngIf="activeTab === 'login'">
-    <div class="stat-card total">
-      <div class="stat-icon">
-        <i class="fas fa-users"></i>
-      </div>
-      <div class="stat-content">
-        <p class="stat-label">Total Records</p>
-        <p class="stat-value">{{ filteredHistory.length }}</p>
-      </div>
-    </div>
-    <div class="stat-card today">
-      <div class="stat-icon">
-        <i class="fas fa-calendar-check"></i>
-      </div>
-      <div class="stat-content">
-        <p class="stat-label">Today's Logins</p>
-        <p class="stat-value">{{ todayLogins }}</p>
-      </div>
-    </div>
-    <div class="stat-card admins">
-      <div class="stat-icon">
-        <i class="fas fa-user-shield"></i>
-      </div>
-      <div class="stat-content">
-        <p class="stat-label">Total Admins</p>
-        <p class="stat-value">{{ totalAdmins }}</p>
-      </div>
-    </div>
-    <div class="stat-card staff">
-      <div class="stat-icon">
-        <i class="fas fa-user-tie"></i>
-      </div>
-      <div class="stat-content">
-        <p class="stat-label">Total Staff</p>
-        <p class="stat-value">{{ totalStaff }}</p>
-      </div>
-    </div>
-  </div>
 
   <!-- Login History Table -->
   <div class="table-section" *ngIf="activeTab === 'login'">
@@ -81,8 +43,6 @@
             <th>Login Time</th>
             <th>Logout Time</th>
             <th>Duration</th>
-            <th>Device/Browser</th>
-            <th>Status</th>
           </tr>
         </thead>
         <tbody>
@@ -106,24 +66,6 @@
               <span class="duration-badge">
                 <span class="material-icons">timer</span>
                 {{ calculateSessionDuration(record.loginTimestamp, record.logoutTimestamp) }}
-              </span>
-            </td>
-            <td>
-              <div class="device-info">
-                <span class="info-item">
-                  <span class="material-icons">devices</span>
-                  {{ record.deviceInfo }}
-                </span>
-                <span class="info-item">
-                  <span class="material-icons">open_in_browser</span>
-                  {{ record.browserInfo }}
-                </span>
-              </div>
-            </td>
-            <td>
-              <span class="status-indicator" [style.color]="getStatusColor(record.status)">
-                <span class="material-icons">{{ getStatusIcon(record.status) }}</span>
-                {{ record.status === 'online' ? 'Online' : 'Offline' }}
               </span>
             </td>
           </tr>
