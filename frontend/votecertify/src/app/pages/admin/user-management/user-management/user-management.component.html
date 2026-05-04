@@ -13,16 +13,52 @@
     </div>
   </div>
 
+  <!-- Tabs Section -->
+  <div class="tabs-container">
+    <button class="tab-btn" [class.active]="activeTab === 'users'" (click)="switchTab('users')">
+      <mat-icon>admin_panel_settings</mat-icon> User Accounts
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'voters'" (click)="switchTab('voters')">
+      <mat-icon>people</mat-icon> Registered Voters Accounts
+    </button>
+  </div>
+
   <!-- Full-Width User List Section -->
   <div class="user-management-wrapper">
-    <div class="section-card user-list full-width">
+    <!-- User Accounts Tab -->
+    <div class="section-card user-list full-width" *ngIf="activeTab === 'users'">
       <div class="card-header">
         <div class="header-main">
           <h3>User Accounts</h3>
           <span class="count-badge">{{ filteredUsers.length }} Users</span>
         </div>
         <div class="header-actions">
-          <!-- Search or other list actions could go here -->
+          <div class="filter-group">
+            <label>Status:</label>
+            <select (change)="onStatusFilterChange($event)">
+              <option value="all">All</option>
+              <option value="verified">Verified</option>
+              <option value="pending">Pending</option>
+              <option value="disabled">Disabled</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Sort:</label>
+            <select (change)="onSortFieldChange($event)">
+              <option value="name">Name</option>
+              <option value="email">Email</option>
+              <option value="role">Role</option>
+              <option value="status">Status</option>
+            </select>
+            <select (change)="onSortDirectionChange($event)">
+              <option value="asc">Asc</option>
+              <option value="desc">Desc</option>
+            </select>
+          </div>
+          <div class="search-box">
+            <mat-icon>search</mat-icon>
+            <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="searchUsers()" placeholder="Search staff/admin...">
+          </div>
         </div>
       </div>
 
@@ -95,26 +131,127 @@
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Pagination -->
-      <div class="pagination-bar" *ngIf="filteredUsers.length > 0">
-        <div class="pagination-left">
-          <label for="um_pageSize">Show</label>
-          <select id="um_pageSize" [(ngModel)]="itemsPerPage" (change)="onPageSizeChange()">
-            <option *ngFor="let s of pageSizeOptions" [value]="s">{{ s }}</option>
-          </select>
-          <span>entries</span>
+    <!-- Voter Accounts Tab -->
+    <div class="section-card user-list full-width" *ngIf="activeTab === 'voters'">
+      <div class="card-header">
+        <div class="header-main">
+          <h3>Registered Voter Accounts</h3>
+          <span class="count-badge">{{ filteredVoters.length }} Voters</span>
         </div>
-        <div class="pagination-right">
-          <span class="page-info">{{ rangeStart }}–{{ rangeEnd }} of {{ filteredUsers.length }}</span>
-          <div class="pagination-btns">
-            <button class="pg-btn" [disabled]="currentPage === 1" (click)="prevPage()"><mat-icon>chevron_left</mat-icon></button>
-            <ng-container *ngFor="let p of visiblePages">
-              <button *ngIf="p !== -1" class="pg-btn" [class.active]="currentPage === p" (click)="goToPage(p)">{{ p }}</button>
-              <span *ngIf="p === -1" class="pg-dots">...</span>
-            </ng-container>
-            <button class="pg-btn" [disabled]="currentPage === totalPages" (click)="nextPage()"><mat-icon>chevron_right</mat-icon></button>
+        <div class="header-actions">
+          <div class="filter-group">
+            <label>Status:</label>
+            <select (change)="onStatusFilterChange($event)">
+              <option value="all">All</option>
+              <option value="verified">Verified</option>
+              <option value="pending">Pending</option>
+              <option value="disabled">Disabled</option>
+            </select>
           </div>
+          <div class="filter-group">
+            <label>Sort:</label>
+            <select (change)="onSortFieldChange($event)">
+              <option value="name">Name</option>
+              <option value="email">Email</option>
+              <option value="status">Status</option>
+              <option value="birthdate">Birthdate</option>
+            </select>
+            <select (change)="onSortDirectionChange($event)">
+              <option value="asc">Asc</option>
+              <option value="desc">Desc</option>
+            </select>
+          </div>
+          <div class="search-box">
+            <mat-icon>search</mat-icon>
+            <input type="text" [(ngModel)]="searchQuery" (ngModelChange)="searchUsers()" placeholder="Search voters...">
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop Table -->
+      <div class="table-responsive">
+        <table class="table desktop-view">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Birthdate</th>
+              <th>Status</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let voter of paginatedVoters">
+              <td class="name-cell">
+                <span>{{ voter.name }}</span>
+              </td>
+              <td>{{ voter.email }}</td>
+              <td>{{ voter.birthdate }}</td>
+              <td><span class="badge status-badge" [ngClass]="voter.status">{{ voter.status | titlecase }}</span></td>
+              <td class="actions-cell text-right">
+                <button *ngIf="voter.status === 'pending'" class="btn-icon-action delete" (click)="disableAccount(voter.id)" title="Delete">
+                  <mat-icon>delete</mat-icon>
+                </button>
+                <button *ngIf="voter.status === 'verified'" class="btn-icon-action disable" (click)="disableAccount(voter.id)" title="Disable">
+                  <mat-icon>block</mat-icon>
+                </button>
+                <button *ngIf="voter.status === 'disabled'" class="btn-icon-action enable" (click)="disableAccount(voter.id)" title="Enable">
+                  <mat-icon>check_circle</mat-icon>
+                </button>
+                <button class="btn-icon-action edit" (click)="editUser(voter)" title="Edit">
+                  <mat-icon>edit</mat-icon>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mobile Cards for Voters -->
+      <div class="mobile-cards">
+        <div class="user-card" *ngFor="let voter of paginatedVoters">
+          <div class="card-top">
+            <div class="user-meta">
+              <div class="details">
+                <strong>{{ voter.name }}</strong>
+                <span>{{ voter.email }}</span>
+              </div>
+            </div>
+            <span class="badge status-badge" [ngClass]="voter.status">{{ voter.status | titlecase }}</span>
+          </div>
+          <div class="card-bottom">
+            <span class="voter-birthdate">{{ voter.birthdate }}</span>
+            <div class="card-actions">
+              <button class="btn-icon-action edit" (click)="editUser(voter)"><mat-icon>edit</mat-icon></button>
+              <button *ngIf="voter.status === 'verified'" class="btn-icon-action disable" (click)="disableAccount(voter.id)"><mat-icon>block</mat-icon></button>
+              <button *ngIf="voter.status === 'disabled'" class="btn-icon-action enable" (click)="disableAccount(voter.id)"><mat-icon>check_circle</mat-icon></button>
+              <button *ngIf="voter.status === 'pending'" class="btn-icon-action delete" (click)="disableAccount(voter.id)"><mat-icon>delete</mat-icon></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Common Pagination (Shared UI but tab-aware data) -->
+    <div class="pagination-bar" *ngIf="(activeTab === 'users' ? filteredUsers.length : filteredVoters.length) > 0">
+      <div class="pagination-left">
+        <label for="um_pageSize">Show</label>
+        <select id="um_pageSize" [(ngModel)]="itemsPerPage" (change)="onPageSizeChange()">
+          <option *ngFor="let s of pageSizeOptions" [value]="s">{{ s }}</option>
+        </select>
+        <span>entries</span>
+      </div>
+      <div class="pagination-right">
+        <span class="page-info">{{ rangeStart }}–{{ rangeEnd }} of {{ activeTab === 'users' ? filteredUsers.length : filteredVoters.length }}</span>
+        <div class="pagination-btns">
+          <button class="pg-btn" [disabled]="currentPage === 1" (click)="prevPage()"><mat-icon>chevron_left</mat-icon></button>
+          <ng-container *ngFor="let p of visiblePages">
+            <button *ngIf="p !== -1" class="pg-btn" [class.active]="currentPage === p" (click)="goToPage(p)">{{ p }}</button>
+            <span *ngIf="p === -1" class="pg-dots">...</span>
+          </ng-container>
+          <button class="pg-btn" [disabled]="currentPage === totalPages" (click)="nextPage()"><mat-icon>chevron_right</mat-icon></button>
         </div>
       </div>
     </div>

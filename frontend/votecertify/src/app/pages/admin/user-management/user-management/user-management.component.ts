@@ -22,6 +22,8 @@ interface User {
   email: string;
   role: string;
   status: string;
+  birthdate?: string;
+  fullName?: string;
 }
 
 @Component({
@@ -38,17 +40,29 @@ export class AdminUserManagementComponent implements OnInit {
   selectedRole: string = 'staff';
   users: User[] = [];
   filteredUsers: User[] = [];
+  voters: User[] = [];
+  filteredVoters: User[] = [];
   searchQuery: string = '';
+  activeTab: 'users' | 'voters' = 'users';
   isAdmin = false;
   currentUserId: string = '';
   nameError: string = '';
 
+  // Sorting & Filtering
+  currentSortField: string = 'name';
+  currentSortDirection: 'asc' | 'desc' = 'asc';
+  currentStatusFilter: string = 'all';
+
   // Pagination
-  currentPage: number = 1;
   itemsPerPage: number = 10;
-  pageSizeOptions = [10, 20, 30];
-  totalPages: number = 1;
-  paginatedUsers: User[] = [];
+  pageSizeOptions = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+  
+  userCurrentPage: number = 1;
+  userTotalPages: number = 1;
+  
+  voterCurrentPage: number = 1;
+  voterTotalPages: number = 1;
+
   pages: number[] = [];
 
   // Edit Modal
@@ -225,69 +239,152 @@ export class AdminUserManagementComponent implements OnInit {
     const usersCollectionRef = collection(this.firestore, 'users');
     const querySnapshot = await getDocs(usersCollectionRef);
 
-    this.users = querySnapshot.docs
-      .map(doc => {
-        const data = doc.data() as User;
-        return {
-          id: doc.id,
-          name: data.name || '',
-          email: data.email,
-          role: data.role,
-          status: data.status,
-        };
-      })
-      .filter(user => user.role === 'admin' || user.role === 'staff');
+    const allUsers = querySnapshot.docs.map(doc => {
+      const data = doc.data() as User;
+      return {
+        id: doc.id,
+        name: data.name || data.fullName || '',
+        email: data.email,
+        role: data.role,
+        status: data.status,
+        birthdate: data.birthdate || '-',
+      };
+    });
 
-    this.filteredUsers = this.users;
-    this.setupPagination();
+    // Categorize users
+    this.users = allUsers.filter(user => user.role === 'admin' || user.role === 'staff');
+    this.voters = allUsers.filter(user => user.role === 'voter');
+
+    this.applyFilters();
+  }
+
+  switchTab(tab: 'users' | 'voters') {
+    this.activeTab = tab;
+    this.searchQuery = '';
+    this.applyFilters();
+  }
+
+  applyFilters() {
+    const query = this.searchQuery.toLowerCase().trim();
+
+    // Filter Users (Staff/Admin)
+    this.filteredUsers = this.users.filter(user => {
+      const matchesSearch = user.name.toLowerCase().includes(query) ||
+                            user.email.toLowerCase().includes(query) ||
+                            user.role.toLowerCase().includes(query);
+      const matchesStatus = this.currentStatusFilter === 'all' || user.status === this.currentStatusFilter;
+      return matchesSearch && matchesStatus;
+    });
+    this.sortList(this.filteredUsers);
+    this.userTotalPages = Math.max(1, Math.ceil(this.filteredUsers.length / this.itemsPerPage));
+    if (this.userCurrentPage > this.userTotalPages) this.userCurrentPage = 1;
+
+    // Filter Voters
+    this.filteredVoters = this.voters.filter(voter => {
+      const matchesSearch = voter.name.toLowerCase().includes(query) ||
+                            voter.email.toLowerCase().includes(query) ||
+                            voter.status.toLowerCase().includes(query);
+      const matchesStatus = this.currentStatusFilter === 'all' || voter.status === this.currentStatusFilter;
+      return matchesSearch && matchesStatus;
+    });
+    this.sortList(this.filteredVoters);
+    this.voterTotalPages = Math.max(1, Math.ceil(this.filteredVoters.length / this.itemsPerPage));
+    if (this.voterCurrentPage > this.voterTotalPages) this.voterCurrentPage = 1;
+  }
+
+  sortList(list: User[]) {
+    list.sort((a, b) => {
+      let valueA = (a as any)[this.currentSortField] || '';
+      let valueB = (b as any)[this.currentSortField] || '';
+
+      if (typeof valueA === 'string') valueA = valueA.toLowerCase();
+      if (typeof valueB === 'string') valueB = valueB.toLowerCase();
+
+      if (valueA < valueB) return this.currentSortDirection === 'asc' ? -1 : 1;
+      if (valueA > valueB) return this.currentSortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  onSortFieldChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.currentSortField = target.value;
+    this.applyFilters();
+  }
+
+  onSortDirectionChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.currentSortDirection = target.value as 'asc' | 'desc';
+    this.applyFilters();
+  }
+
+  onStatusFilterChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.currentStatusFilter = target.value;
+    this.applyFilters();
+  }
+
+  get paginatedUsers(): User[] {
+    const start = (this.userCurrentPage - 1) * this.itemsPerPage;
+    return this.filteredUsers.slice(start, start + this.itemsPerPage);
+  }
+
+  get paginatedVoters(): User[] {
+    const start = (this.voterCurrentPage - 1) * this.itemsPerPage;
+    return this.filteredVoters.slice(start, start + this.itemsPerPage);
+  }
+
+  get currentPage(): number {
+    return this.activeTab === 'users' ? this.userCurrentPage : this.voterCurrentPage;
+  }
+
+  get totalPages(): number {
+    return this.activeTab === 'users' ? this.userTotalPages : this.voterTotalPages;
   }
 
   // Pagination methods
   setupPagination() {
-    this.totalPages = Math.ceil(this.filteredUsers.length / this.itemsPerPage) || 1;
-    this.currentPage = Math.min(this.currentPage, this.totalPages) || 1;
-    
-    this.pages = Array.from({ length: this.totalPages }, (_, i) => i + 1);
-    this.updatePaginatedUsers();
+    // This method is now replaced by applyFilters and getters
   }
 
   updatePaginatedUsers() {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedUsers = this.filteredUsers.slice(startIndex, endIndex);
+    // This method is now replaced by getters
   }
 
   goToPage(page: number) {
     if (page < 1 || page > this.totalPages) return;
-    this.currentPage = page;
-    this.updatePaginatedUsers();
+    if (this.activeTab === 'users') this.userCurrentPage = page;
+    else this.voterCurrentPage = page;
   }
 
   nextPage() {
     if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.updatePaginatedUsers();
+      if (this.activeTab === 'users') this.userCurrentPage++;
+      else this.voterCurrentPage++;
     }
   }
 
   prevPage() {
     if (this.currentPage > 1) {
-      this.currentPage--;
-      this.updatePaginatedUsers();
+      if (this.activeTab === 'users') this.userCurrentPage--;
+      else this.voterCurrentPage--;
     }
   }
 
   onPageSizeChange() {
-    this.currentPage = 1;
-    this.setupPagination();
+    this.userCurrentPage = 1;
+    this.voterCurrentPage = 1;
+    this.applyFilters();
   }
 
   get rangeStart() {
-    return this.filteredUsers.length === 0 ? 0 : (this.currentPage - 1) * this.itemsPerPage + 1;
+    const count = this.activeTab === 'users' ? this.filteredUsers.length : this.filteredVoters.length;
+    return count === 0 ? 0 : (this.currentPage - 1) * this.itemsPerPage + 1;
   }
 
   get rangeEnd() {
-    return Math.min(this.currentPage * this.itemsPerPage, this.filteredUsers.length);
+    const count = this.activeTab === 'users' ? this.filteredUsers.length : this.filteredVoters.length;
+    return Math.min(this.currentPage * this.itemsPerPage, count);
   }
 
   get visiblePages(): number[] {
@@ -304,13 +401,7 @@ export class AdminUserManagementComponent implements OnInit {
   }
 
   searchUsers() {
-    const query = this.searchQuery.toLowerCase();
-    this.filteredUsers = this.users.filter(user =>
-      user.name.toLowerCase().includes(query) ||
-      user.email.toLowerCase().includes(query) ||
-      user.role.toLowerCase().includes(query)
-    );
-    this.setupPagination();
+    this.applyFilters();
   }
 
   // Disable / Enable account

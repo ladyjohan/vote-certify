@@ -24,7 +24,7 @@ export class LoginHistoryComponent implements OnInit, OnDestroy {
   filterRole: 'all' | 'admin' | 'staff' = 'all';
 
   // Pagination
-  pageSizeOptions = [10, 20, 30];
+  pageSizeOptions = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
   pageSize = 10;
 
   loginCurrentPage = 1;
